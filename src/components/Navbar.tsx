@@ -1,0 +1,171 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Menu, X, Globe, ChevronDown, User } from "lucide-react";
+import { siteConfig } from "@/config/site";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
+export default function Navbar() {
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Add scroll effect for glassmorphism enhancement on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <header 
+      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        scrolled 
+          ? "bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-slate-800/50 shadow-sm py-2" 
+          : "bg-white dark:bg-[#0F172A] border-b border-transparent py-2.5"
+      }`}
+    >
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center group">
+          <Image 
+            src="/logo.png" 
+            alt="Cash My Property" 
+            width={120} 
+            height={34} 
+            style={{ width: "auto", height: "auto" }} 
+            className="object-contain lg:w-[130px] lg:h-[38px] group-hover:opacity-90 transition-opacity" 
+            priority
+          />
+        </Link>
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden lg:flex items-center gap-10">
+          {siteConfig.mainNav.map((item, index) => (
+            <Link 
+              key={index} 
+              href={item.href} 
+              className="relative group px-1 py-2 font-medium text-[14px] uppercase tracking-wider text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors"
+            >
+              {item.title}
+              <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-[#1A3626] dark:bg-[#5CD284] transition-all duration-300 group-hover:w-full rounded-full"></span>
+            </Link>
+          ))}
+        </nav>
+        
+        {/* Desktop Actions */}
+        <div className="hidden lg:flex items-center gap-6">
+          <div className="flex items-center gap-2 border-r border-gray-200 dark:border-slate-700 pr-6">
+            <ThemeToggle />
+            
+            {/* Language Selector */}
+            <div className="relative group cursor-pointer ml-2">
+              <div className="flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-all">
+                <Globe className="w-4 h-4" />
+                <span className="font-semibold text-[13px] tracking-wide">EN</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <div className="absolute top-full right-0 mt-2 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right group-hover:scale-100 scale-95 overflow-hidden">
+                <div className="p-1.5">
+                  <button className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] text-[#1A3626] dark:text-[#5CD284] bg-green-50/80 dark:bg-slate-700/80 font-bold tracking-wide">English</button>
+                  <button className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium transition-colors">العربية</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {isLoginPage ? (
+            <Link 
+              href="/signup" 
+              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-7 py-2.5 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            >
+              <User className="w-4 h-4" /> Join Now
+            </Link>
+          ) : (
+            <Link 
+              href="/login" 
+              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-7 py-2.5 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            >
+              <User className="w-4 h-4" /> Login
+            </Link>
+          )}
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <button 
+          className="lg:hidden p-2 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Drawer */}
+      <div 
+        className={`lg:hidden fixed inset-x-0 top-[72px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 shadow-2xl transition-all duration-300 origin-top overflow-hidden ${
+          mobileMenuOpen ? "opacity-100 scale-y-100 max-h-screen" : "opacity-0 scale-y-0 max-h-0"
+        }`}
+      >
+        <div className="flex flex-col px-8 py-8 gap-6">
+          <nav className="flex flex-col gap-5 font-semibold text-[16px] text-gray-800 dark:text-gray-200">
+            {siteConfig.mainNav.map((item, index) => (
+              <Link 
+                key={index} 
+                href={item.href} 
+                className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors uppercase tracking-widest text-[13px]" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.title}
+              </Link>
+            ))}
+            
+            <div className="h-px bg-gray-200 dark:bg-slate-800 my-2" />
+            
+            {/* Mobile Theme Toggle */}
+            <div className="flex items-center justify-between py-2">
+              <span className="text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[12px] font-bold">Theme</span>
+              <ThemeToggle />
+            </div>
+
+            {/* Mobile Language Selector */}
+            <div className="flex items-center justify-between py-2">
+              <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[12px] font-bold">
+                <Globe className="w-4 h-4" /> Language
+              </span>
+              <div className="flex gap-2 text-[13px] font-bold">
+                <span className="text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800 px-3 py-1.5 rounded-full">EN</span>
+                <span className="text-gray-400 dark:text-gray-500 px-3 py-1.5">عربي</span>
+              </div>
+            </div>
+          </nav>
+          
+          <div className="mt-4 pt-6 border-t border-gray-200 dark:border-slate-800">
+            {isLoginPage ? (
+              <Link 
+                href="/signup" 
+                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#4ab872] transition-colors" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <User className="w-4 h-4" /> Join Now
+              </Link>
+            ) : (
+              <Link 
+                href="/login" 
+                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#4ab872] transition-colors" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <User className="w-4 h-4" /> Login
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
