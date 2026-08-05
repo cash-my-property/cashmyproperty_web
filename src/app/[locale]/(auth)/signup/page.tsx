@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
-import { content } from "@/config/content";
+import { Eye, EyeOff, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { useDictionary } from "@/components/DictionaryProvider";
 
-export default function SignUpPage() {
+export default function SignupPage() {
+  const { dict } = useDictionary();
+  const content = dict;
   const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -23,7 +25,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 transition-colors">
+    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 pt-28 sm:pt-32 transition-colors">
       <div className="w-full max-w-[1200px] bg-white dark:bg-[#1E293B] rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex overflow-hidden min-h-[500px] transition-colors">
         
         {/* LEFT PANEL */}

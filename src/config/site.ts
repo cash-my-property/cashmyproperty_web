@@ -3,10 +3,10 @@ export const siteConfig = {
   description: "The premier digital real estate auction platform in the UAE.",
   url: "https://cashmyproperty.ae",
   mainNav: [
-    { title: "Live Auctions", href: "#" },
+    { title: "Home", href: "/" },
     { title: "About Us", href: "/about" },
     { title: "Blog", href: "/blog" },
-    { title: "Contact", href: "#" },
+    { title: "Contact", href: "/contact" },
   ],
   footer: {
     quickLinks: [

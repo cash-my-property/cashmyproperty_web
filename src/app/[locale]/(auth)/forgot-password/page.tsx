@@ -3,9 +3,11 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
-import { content } from "@/config/content";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function ForgotPasswordPage() {
+  const { dict } = useDictionary();
+  const content = dict;
   const [email, setEmail] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -49,7 +51,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 transition-colors">
+    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 pt-28 sm:pt-32 transition-colors">
       <div className="w-full max-w-[1000px] bg-white dark:bg-[#1E293B] rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex overflow-hidden min-h-[640px] transition-colors">
         
         {/* LEFT PANEL */}

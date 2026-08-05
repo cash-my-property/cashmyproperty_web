@@ -3,13 +3,27 @@
 
 @layer base {
   :root {
-    --background: #07090e;
+    --background: #F4F5F7;
+    --foreground: #002045;
+    
+    /* CMP Theme Colors */
+    --brand-primary: #002045;
+    --brand-primary-hover: #001731;
+    --brand-secondary: #5CD284;
+    --brand-secondary-hover: #4ab872;
+    --brand-dark-green: #1A3626;
+    --brand-forest-green: #1B3A2D;
+    
+    --card: #FFFFFF;
+    --card-border: rgba(0, 32, 69, 0.05);
+  }
+
+  .dark {
+    --background: #0A101C;
     --foreground: #f1f5f9;
-    --card: rgba(15, 23, 42, 0.6);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --accent-cyan: #06b6d4;
-    --accent-indigo: #6366f1;
-    --accent-violet: #8b5cf6;
+    
+    --card: #1E293B;
+    --card-border: rgba(255, 255, 255, 0.05);
   }
 
   body {
@@ -18,6 +32,30 @@
     font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
     overflow-x: hidden;
     selection-background-color: rgba(99, 102, 241, 0.3);
+  }
+
+  /* Global Green Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #5CD284;
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4ab872;
   }
 }
 
@@ -47,32 +85,16 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Typography Gradient */
-.gradient-text {
-  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-amber {
-  background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-emerald {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+/* Typography Gradient for CMP */
+.gradient-text-brand {
+  background: linear-gradient(135deg, #5CD284 0%, #1A3626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 /* Glowing Ambient Accents */
-.glow-cyan {
-  box-shadow: 0 0 50px -10px rgba(6, 182, 212, 0.3);
-}
-
-.glow-indigo {
-  box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.3);
+.glow-brand {
+  box-shadow: 0 0 50px -10px rgba(92, 210, 132, 0.3);
 }
 
 /* Grid & Radial Background */

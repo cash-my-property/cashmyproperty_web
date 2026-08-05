@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { CheckCircle2, Building2, ShieldCheck, Users } from "lucide-react";
-import { content } from "@/config/content";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function AboutPage() {
+  const { dict } = useDictionary();
+  const content = dict;
   return (
     <main className="flex-1 flex flex-col bg-white dark:bg-[#0F172A] transition-colors min-h-screen">
       

@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Home } from "lucide-react";
-import { content } from "@/config/content";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function LogoutPage() {
+  const { dict } = useDictionary();
+  const content = dict;
   const [animateIn, setAnimateIn] = useState(false);
 
   useEffect(() => {

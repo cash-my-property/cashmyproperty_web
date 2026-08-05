@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail, ArrowRight, ShieldCheck } from "lucide-react";
 import { siteConfig } from "@/config/site";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
@@ -16,82 +19,108 @@ const TwitterIcon = ({ className }: { className?: string }) => (
 );
 
 export default function Footer() {
+  const { dict } = useDictionary();
   return (
-    <footer className="bg-white dark:bg-[#1E293B] pt-16 pb-8 px-6 sm:px-12 lg:px-24 transition-colors">
-      <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-        {/* Brand Info */}
-        <div className="lg:pr-8">
-          <Image src="/logo.png" alt={siteConfig.name} width={120} height={40} className="mb-6 object-contain dark:brightness-200" />
-          <p className="text-gray-500 dark:text-gray-400 text-[13px] leading-relaxed">
+    <footer className="relative bg-gradient-to-b from-[#1B3A2D] to-[#0A1C12] text-gray-300 pt-20 lg:pt-28 pb-8 px-6 sm:px-12 lg:px-24 overflow-hidden border-t border-[#5CD284]/10">
+      
+      {/* Decorative Glow Elements */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#5CD284]/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
+
+      <div className="relative z-10 max-w-[1300px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+        
+        {/* Brand Info (Spans 4 cols on Desktop) */}
+        <div className="lg:col-span-4 lg:pr-8 flex flex-col items-start">
+          <Image src="/logo.png" alt={siteConfig.name} width={150} height={42} style={{ width: "auto", height: "auto" }} className="mb-6 object-contain brightness-0 invert opacity-100 transition-opacity" />
+          <p className="text-green-100/60 text-[15px] leading-relaxed mb-8">
             {siteConfig.description}
           </p>
+          <div className="inline-flex items-center gap-2.5 px-4 py-2.5 border border-[#5CD284]/20 rounded-full bg-[#5CD284]/10 shadow-[0_0_15px_rgba(92,210,132,0.05)]">
+            <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
+            <span className="text-[#5CD284] font-bold text-[11px] uppercase tracking-widest">
+              Verified by DLD
+            </span>
+          </div>
         </div>
         
-        {/* Quick Links */}
-        <div>
-          <h4 className="font-bold text-gray-900 dark:text-white text-[13px] tracking-widest mb-6">QUICK LINKS</h4>
-          <ul className="space-y-3.5 text-[14px] text-gray-500 dark:text-gray-400">
-            {siteConfig.footer.quickLinks.map((link, idx) => (
-              <li key={idx}><Link href={link.href} className="hover:text-gray-900 dark:hover:text-white transition-colors">{link.title}</Link></li>
+        {/* Quick Links (Spans 2 cols) */}
+        <div className="lg:col-span-2">
+          <h4 className="font-bold text-white text-[12px] tracking-[0.2em] uppercase mb-8 opacity-80">{dict.footer.quickLinksTitle}</h4>
+          <ul className="space-y-4">
+            {dict.footer.quickLinks.map((link, idx) => (
+              <li key={idx}>
+                <Link href={link.href} className="group inline-flex items-center text-[14px] text-green-100/60 hover:text-[#5CD284] transition-colors">
+                  <span className="w-0 h-px bg-[#5CD284] mr-0 group-hover:w-3 group-hover:mr-2 transition-all duration-300"></span>
+                  {link.title}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>
 
-        {/* Legal */}
-        <div>
-          <h4 className="font-bold text-gray-900 dark:text-white text-[13px] tracking-widest mb-6">LEGAL</h4>
-          <ul className="space-y-3.5 text-[14px] text-gray-500 dark:text-gray-400">
-            {siteConfig.footer.legalLinks.map((link, idx) => (
-              <li key={idx}><Link href={link.href} className="hover:text-gray-900 dark:hover:text-white transition-colors">{link.title}</Link></li>
+        {/* Legal (Spans 2 cols) */}
+        <div className="lg:col-span-2">
+          <h4 className="font-bold text-white text-[12px] tracking-[0.2em] uppercase mb-8 opacity-80">{dict.footer.legalLinksTitle}</h4>
+          <ul className="space-y-4">
+            {dict.footer.legalLinks.map((link, idx) => (
+              <li key={idx}>
+                <Link href={link.href} className="group inline-flex items-center text-[14px] text-green-100/60 hover:text-[#5CD284] transition-colors">
+                  <span className="w-0 h-px bg-[#5CD284] mr-0 group-hover:w-3 group-hover:mr-2 transition-all duration-300"></span>
+                  {link.title}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>
 
-        {/* Contact */}
-        <div>
-          <h4 className="font-bold text-gray-900 dark:text-white text-[13px] tracking-widest mb-6">CONTACT US</h4>
-          <ul className="space-y-4 text-[14px] text-gray-500 dark:text-gray-400">
-            <li className="flex items-start gap-3.5">
-              <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400 dark:text-gray-500" />
-              <span className="leading-relaxed" dangerouslySetInnerHTML={{ __html: siteConfig.footer.contact.address.replace(', ', ',<br/>') }}></span>
+        {/* Contact (Spans 4 cols) */}
+        <div className="lg:col-span-4 lg:pl-8">
+          <h4 className="font-bold text-white text-[12px] tracking-[0.2em] uppercase mb-8 opacity-80">{dict.footer.contactTitle}</h4>
+          <ul className="space-y-5">
+            <li className="flex items-start gap-4 text-green-100/60 hover:text-white transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-[#5CD284]/20 group-hover:text-[#5CD284] transition-colors">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <span className="leading-relaxed text-[14px] mt-2" dangerouslySetInnerHTML={{ __html: dict.footer.address.replace(', ', ',<br/>') }}></span>
             </li>
-            <li className="flex items-center gap-3.5">
-              <Phone className="w-4 h-4 shrink-0 text-gray-400 dark:text-gray-500" />
-              <span>{siteConfig.footer.contact.phone}</span>
+            <li className="flex items-center gap-4 text-green-100/60 hover:text-white transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-[#5CD284]/20 group-hover:text-[#5CD284] transition-colors">
+                <Phone className="w-4 h-4" />
+              </div>
+              <span className="text-[14px]">{dict.footer.phone}</span>
             </li>
-            <li className="flex items-center gap-3.5">
-              <Mail className="w-4 h-4 shrink-0 text-gray-400 dark:text-gray-500" />
-              <span>{siteConfig.footer.contact.email}</span>
+            <li className="flex items-center gap-4 text-green-100/60 hover:text-white transition-colors group">
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-[#5CD284]/20 group-hover:text-[#5CD284] transition-colors">
+                <Mail className="w-4 h-4" />
+              </div>
+              <span className="text-[14px]">{dict.footer.email}</span>
             </li>
           </ul>
         </div>
       </div>
 
       {/* Social & Copyright */}
-      <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between pt-8 border-t border-gray-100 dark:border-slate-800">
-        <p className="text-gray-400 dark:text-gray-500 text-[13px] mb-6 md:mb-0">
-          {siteConfig.footer.copyright}
+      <div className="relative z-10 max-w-[1300px] mx-auto flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/10">
+        <p className="text-green-100/50 text-[13px] mb-6 md:mb-0">
+          {dict.footer.copyright}
         </p>
         
-        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-10">
           <div className="flex items-center gap-3">
-            <Link href={siteConfig.footer.socials.facebook} className="w-9 h-9 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+            <Link href={siteConfig.footer.socials.facebook} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-green-100/60 hover:bg-[#5CD284] hover:text-[#1B3A2D] transition-colors hover:-translate-y-1 transform duration-300">
               <FacebookIcon className="w-4 h-4" />
             </Link>
-            <Link href={siteConfig.footer.socials.instagram} className="w-9 h-9 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+            <Link href={siteConfig.footer.socials.instagram} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-green-100/60 hover:bg-[#5CD284] hover:text-[#1B3A2D] transition-colors hover:-translate-y-1 transform duration-300">
               <InstagramIcon className="w-4 h-4" />
             </Link>
-            <Link href={siteConfig.footer.socials.twitter} className="w-9 h-9 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+            <Link href={siteConfig.footer.socials.twitter} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-green-100/60 hover:bg-[#5CD284] hover:text-[#1B3A2D] transition-colors hover:-translate-y-1 transform duration-300">
               <TwitterIcon className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="flex items-center gap-5 text-[13px] text-gray-400 dark:text-gray-500">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 border border-green-200/50 dark:border-green-900/30 rounded-full text-green-700 dark:text-green-400 bg-green-50/50 dark:bg-green-900/20 font-semibold text-[11px] uppercase tracking-wider">
-              <span className="w-3 h-3 flex items-center justify-center text-green-600 dark:text-green-400">🛡️</span> Verified by DLD
-            </span>
-            <Link href="#" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Sitemap</Link>
-            <Link href="#" className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors">Support</Link>
+          <div className="flex items-center gap-6 text-[13px] text-green-100/50 font-medium">
+            <Link href="#" className="hover:text-[#5CD284] transition-colors">Sitemap</Link>
+            <Link href="#" className="hover:text-[#5CD284] transition-colors">Support</Link>
           </div>
         </div>
       </div>

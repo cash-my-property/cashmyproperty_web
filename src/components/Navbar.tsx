@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Globe, ChevronDown, User } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
+  const router = useRouter();
+  const { locale, dict } = useDictionary();
+  const isLoginPage = pathname === `/${locale}/login` || pathname === "/login";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -23,15 +26,35 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const switchLanguage = (newLocale: string) => {
+    if (newLocale === locale) return;
+    
+    // Remove current locale from pathname and add new one
+    const segments = pathname.split('/');
+    if (segments[1] === locale) {
+      segments[1] = newLocale;
+    } else {
+      segments.splice(1, 0, newLocale);
+    }
+    
+    // Construct new path
+    const newPath = segments.join('/') || '/';
+    
+    // Set cookie explicitly to help middleware
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+    router.push(newPath);
+    router.refresh(); // Refresh to ensure layout gets updated params
+  };
+
   return (
-    <header 
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        scrolled 
-          ? "bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-xl border-b border-gray-200/50 dark:border-slate-800/50 shadow-sm py-2" 
-          : "bg-white dark:bg-[#0F172A] border-b border-transparent py-2.5"
-      }`}
-    >
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+    <header className="fixed top-2 sm:top-4 z-50 w-full px-4 sm:px-6 transition-all duration-300 pointer-events-none">
+      <div 
+        className={`max-w-[1400px] mx-auto flex items-center justify-between rounded-full transition-all duration-300 pointer-events-auto ${
+          scrolled 
+            ? "bg-white/85 dark:bg-[#0F172A]/85 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/20 dark:border-slate-700/50 py-1.5 px-6 lg:px-8" 
+            : "bg-white/95 dark:bg-[#0F172A]/95 shadow-sm border border-gray-100 dark:border-slate-800/80 py-2.5 px-6 lg:px-8"
+        }`}
+      >
         {/* Logo */}
         <Link href="/" className="flex items-center group">
           <Image 
@@ -40,18 +63,19 @@ export default function Navbar() {
             width={120} 
             height={34} 
             style={{ width: "auto", height: "auto" }} 
-            className="object-contain lg:w-[130px] lg:h-[38px] group-hover:opacity-90 transition-opacity" 
+            className="object-contain w-[110px] sm:w-[120px] lg:w-[130px] group-hover:opacity-90 transition-opacity" 
             priority
           />
         </Link>
         
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-10">
-          {siteConfig.mainNav.map((item, index) => (
+          {dict.navbar.links.map((item, index) => (
             <Link 
               key={index} 
-              href={item.href} 
-              className="relative group px-1 py-2 font-medium text-[14px] uppercase tracking-wider text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors"
+              href={`/${locale}${item.href === "/" ? "" : item.href}`} 
+              className="relative group px-1 py-2 font-semibold text-[15px] tracking-wide text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors"
+              style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               {item.title}
               <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-[#1A3626] dark:bg-[#5CD284] transition-all duration-300 group-hover:w-full rounded-full"></span>
@@ -68,13 +92,13 @@ export default function Navbar() {
             <div className="relative group cursor-pointer ml-2">
               <div className="flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-all">
                 <Globe className="w-4 h-4" />
-                <span className="font-semibold text-[13px] tracking-wide">EN</span>
+                <span className="font-semibold text-[13px] tracking-wide uppercase">{locale}</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="absolute top-full right-0 mt-2 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right group-hover:scale-100 scale-95 overflow-hidden">
-                <div className="p-1.5">
-                  <button className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] text-[#1A3626] dark:text-[#5CD284] bg-green-50/80 dark:bg-slate-700/80 font-bold tracking-wide">English</button>
-                  <button className="w-full text-left px-4 py-2.5 rounded-lg text-[13px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 font-medium transition-colors">العربية</button>
+              <div className="absolute top-[120%] right-0 mt-2 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-slate-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right group-hover:scale-100 scale-95 overflow-hidden">
+                <div className="p-1.5 flex flex-col gap-1">
+                  <button onClick={() => switchLanguage('en')} className={`w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold tracking-wide transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50/80 dark:bg-slate-700/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>English</button>
+                  <button onClick={() => switchLanguage('ar')} className={`w-full text-left px-4 py-2.5 rounded-lg text-[13px] font-bold tracking-wide transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50/80 dark:bg-slate-700/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>العربية</button>
                 </div>
               </div>
             </div>
@@ -82,14 +106,14 @@ export default function Navbar() {
 
           {isLoginPage ? (
             <Link 
-              href="/signup" 
+              href={`/${locale}/signup`}
               className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-7 py-2.5 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
               <User className="w-4 h-4" /> Join Now
             </Link>
           ) : (
             <Link 
-              href="/login" 
+              href={`/${locale}/login`}
               className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-7 py-2.5 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
               <User className="w-4 h-4" /> Login
@@ -108,17 +132,18 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       <div 
-        className={`lg:hidden fixed inset-x-0 top-[72px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800 shadow-2xl transition-all duration-300 origin-top overflow-hidden ${
-          mobileMenuOpen ? "opacity-100 scale-y-100 max-h-screen" : "opacity-0 scale-y-0 max-h-0"
+        className={`lg:hidden fixed inset-x-4 top-[80px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border border-gray-100 dark:border-slate-700/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 origin-top overflow-hidden pointer-events-auto ${
+          mobileMenuOpen ? "opacity-100 scale-y-100 max-h-[80vh]" : "opacity-0 scale-y-0 max-h-0"
         }`}
       >
         <div className="flex flex-col px-8 py-8 gap-6">
-          <nav className="flex flex-col gap-5 font-semibold text-[16px] text-gray-800 dark:text-gray-200">
-            {siteConfig.mainNav.map((item, index) => (
+          <nav className="flex flex-col gap-6 font-semibold text-[18px] text-gray-800 dark:text-gray-200">
+            {dict.navbar.links.map((item, index) => (
               <Link 
                 key={index} 
-                href={item.href} 
-                className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors uppercase tracking-widest text-[13px]" 
+                href={`/${locale}${item.href === "/" ? "" : item.href}`} 
+                className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors tracking-wide" 
+                style={{ fontFamily: "var(--font-inter), sans-serif" }}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.title}
@@ -139,8 +164,8 @@ export default function Navbar() {
                 <Globe className="w-4 h-4" /> Language
               </span>
               <div className="flex gap-2 text-[13px] font-bold">
-                <span className="text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800 px-3 py-1.5 rounded-full">EN</span>
-                <span className="text-gray-400 dark:text-gray-500 px-3 py-1.5">عربي</span>
+                <button onClick={() => switchLanguage('en')} className={`px-3 py-1.5 rounded-full transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800' : 'text-gray-400 dark:text-gray-500'}`}>EN</button>
+                <button onClick={() => switchLanguage('ar')} className={`px-3 py-1.5 rounded-full transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800' : 'text-gray-400 dark:text-gray-500'}`}>عربي</button>
               </div>
             </div>
           </nav>
@@ -148,7 +173,7 @@ export default function Navbar() {
           <div className="mt-4 pt-6 border-t border-gray-200 dark:border-slate-800">
             {isLoginPage ? (
               <Link 
-                href="/signup" 
+                href={`/${locale}/signup`}
                 className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#4ab872] transition-colors" 
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -156,7 +181,7 @@ export default function Navbar() {
               </Link>
             ) : (
               <Link 
-                href="/login" 
+                href={`/${locale}/login`}
                 className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#4ab872] transition-colors" 
                 onClick={() => setMobileMenuOpen(false)}
               >
