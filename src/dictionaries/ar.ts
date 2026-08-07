@@ -516,75 +516,7 @@ export const content = {
     email: "info@cashmyproperty.ae",
     copyright: "© 2026 كاش ماي بروبرتي. جميع الحقوق محفوظة."
   },
-  auth: {
-    hero: {
-      tagline: "وصول حصري",
-      title: "افتح أبواب\nالعقارات الفاخرة",
-      description: "انضم إلى النخبة من المشترين والوكلاء المعتمدين. احصل على إمكانية الوصول إلى العقارات المتعثرة قبل طرحها في السوق المفتوح."
-    },
-    login: {
-      heading: "مرحباً بعودتك",
-      subheading: "يرجى إدخال بيانات الاعتماد الخاصة بك للوصول إلى حسابك.",
-      emailLabel: "البريد الإلكتروني",
-      emailPlaceholder: "أدخل بريدك الإلكتروني",
-      passwordLabel: "كلمة المرور",
-      passwordPlaceholder: "أدخل كلمة المرور",
-      forgotPasswordText: "هل نسيت كلمة المرور؟",
-      submitButton: "تسجيل الدخول",
-      dividerText: "أو المتابعة باستخدام",
-      uaePassButton: "تسجيل الدخول باستخدام UAE PASS",
-      signupPrompt: "ليس لديك حساب؟",
-      signupLinkText: "سجل الآن"
-    },
-    signup: {
-      heading: "إنشاء حساب",
-      subheading: "انضم إلى منصتنا لبدء المزايدة والشراء.",
-      firstNameLabel: "الاسم الأول",
-      firstNamePlaceholder: "محمد",
-      lastNameLabel: "الاسم الأخير",
-      lastNamePlaceholder: "علي",
-      brnLabel: "رقم تسجيل الوسيط (للوكلاء فقط)",
-      brnPlaceholder: "أدخل رقم التسجيل",
-      referralLabel: "رمز الإحالة",
-      referralOptional: "(اختياري)",
-      referralPlaceholder: "أدخل رمز الإحالة",
-      emailLabel: "البريد الإلكتروني",
-      emailPlaceholder: "أدخل بريدك الإلكتروني",
-      phoneLabel: "رقم الهاتف",
-      phonePlaceholder: "50 123 4567",
-      passwordLabel: "كلمة المرور",
-      passwordPlaceholder: "أنشئ كلمة مرور",
-      confirmPasswordLabel: "تأكيد كلمة المرور",
-      confirmPasswordPlaceholder: "أكد كلمة المرور",
-      termsAgreeStart: "أوافق على",
-      termsOfService: "شروط الخدمة",
-      and: "و",
-      privacyPolicy: "سياسة الخصوصية",
-      submitButton: "إنشاء حساب",
-      dividerText: "أو المتابعة باستخدام",
-      uaePassButton: "التسجيل باستخدام UAE PASS",
-      loginPrompt: "لديك حساب بالفعل؟",
-      loginLinkText: "تسجيل الدخول"
-    },
-    forgotPassword: {
-      heading: "إعادة تعيين كلمة المرور",
-      subheading: "أدخل بريدك الإلكتروني وسنرسل لك رمزاً لإعادة تعيين كلمة المرور.",
-      emailLabel: "البريد الإلكتروني",
-      emailPlaceholder: "أدخل بريدك الإلكتروني",
-      submitButton: "إرسال الرمز",
-      backToLoginText: "العودة لتسجيل الدخول",
-      otpLabel: "إدخال الرمز",
-      verifyButton: "تأكيد الرمز",
-      resendOtpText: "إعادة إرسال الرمز"
-    },
-    logout: {
-      heading: "لقد تم\nتسجيل خروجك بنجاح",
-      description: "شكراً لاستخدامك منصتنا. لقد انتهت جلستك بأمان.",
-      reloginButton: "تسجيل الدخول مرة أخرى",
-      homeButton: "العودة للرئيسية",
-      securityNote: "لأمانك، أغلق نافذة المتصفح هذه إذا كنت تستخدم حاسوباً عاماً."
-    }
-  },
+
   dashboard: {
     sidebar: {
       overview: "نظرة عامة",

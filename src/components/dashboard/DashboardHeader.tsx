@@ -8,16 +8,26 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardHeader() {
-  const { dict, locale, setLocale } = useDictionary();
+  const { dict, locale } = useDictionary();
   const content = dict.dashboard.header;
   const router = useRouter();
   const { user, logout } = useAuth();
 
   const switchLanguage = (newLocale: string) => {
-    setLocale(newLocale as any);
-    const currentPath = window.location.pathname;
-    const pathWithoutLocale = currentPath.replace(/^\/[^\/]+/, '');
-    router.push(`/${newLocale}${pathWithoutLocale}`);
+    if (newLocale === locale) return;
+    
+    const segments = window.location.pathname.split('/');
+    if (segments[1] === locale) {
+      segments[1] = newLocale;
+    } else {
+      segments.splice(1, 0, newLocale);
+    }
+    
+    const newPath = segments.join('/') || '/';
+    
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+    router.push(newPath);
+    router.refresh();
   };
 
   return (
@@ -72,7 +82,7 @@ export default function DashboardHeader() {
                 {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : "User"}
               </span>
               <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 capitalize">
-                {user?.role?.main || "Buyer"}
+                {typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "Buyer"}
               </span>
             </div>
             <div className="w-10 h-10 rounded-full bg-[#1A3626]/10 dark:bg-[#5CD284]/20 border border-[#1A3626]/20 dark:border-[#5CD284]/30 flex items-center justify-center text-[#1A3626] dark:text-[#5CD284] group-hover:scale-105 transition-transform">

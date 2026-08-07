@@ -320,6 +320,51 @@ export const content = {
       buttonText: "Create an Account"
     }
   },
+  auctions: {
+    hero: {
+      tagline: "Live Offers",
+      title: "Make Offers on\nPremium Properties",
+      description: "Participate in live offers for high-value properties. Secure, transparent, and fast."
+    },
+    liveStatus: "Live Now",
+    bidding: {
+      currentBid: "Current Highest Offer",
+      minIncrement: "Minimum Increment",
+      endsIn: "Offer Ends In",
+      placeBidBtn: "Place Offer",
+      bidPlaceholder: "Enter offer amount",
+      bidHistory: "Offer History",
+      bidders: "Participants"
+    },
+    property: {
+      description: "Property Description",
+      features: "Key Features",
+      location: "Location",
+      documents: "Verified Documents"
+    },
+    auctionData: {
+      id: "AUC-2026-892",
+      title: "Signature Villa in Palm Jumeirah",
+      location: "Frond M, Palm Jumeirah, Dubai",
+      type: "Villa",
+      beds: 6,
+      baths: 7,
+      sqft: "13,000",
+      basePrice: 25000000,
+      minIncrement: 100000,
+      images: [
+        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+      ],
+      initialBids: [
+        { id: 1, user: "A***K", amount: 26500000, time: "2 mins ago" },
+        { id: 2, user: "M***R", amount: 26200000, time: "15 mins ago" },
+        { id: 3, user: "S***D", amount: 25800000, time: "1 hour ago" },
+        { id: 4, user: "H***N", amount: 25100000, time: "3 hours ago" }
+      ]
+    }
+  },
   navbar: {
     links: [
       { title: "Home", href: "/" },
