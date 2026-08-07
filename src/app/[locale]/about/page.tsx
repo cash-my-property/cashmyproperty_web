@@ -99,32 +99,50 @@ export default function AboutPage() {
       </section>
 
       {/* ADDITIONAL VALUES SECTION */}
-      <section className="py-20 px-6 lg:px-12 w-full bg-[#1A3626] dark:bg-slate-900 text-center">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-[32px] sm:text-[40px] font-bold text-white mb-16 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+      <section className="py-24 px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0A101C] text-center relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#5CD284]/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
             Why Choose Us?
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
-                <ShieldCheck className="w-8 h-8 text-[#5CD284]" />
+          <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-16 text-[16px]">
+            We provide a transparent, secure, and highly efficient platform tailored for the modern real estate market.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1 */}
+            <div className="flex flex-col items-center bg-white dark:bg-[#1E293B] p-10 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-20 h-20 bg-green-50 dark:bg-slate-800/80 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#5CD284] group-hover:scale-110 transition-all duration-300">
+                <ShieldCheck className="w-10 h-10 text-[#1A3626] dark:text-[#5CD284] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">100% Secure</h3>
-              <p className="text-white/70 text-[15px] leading-relaxed max-w-sm">Every transaction is fully encrypted, and every user is verified against DLD guidelines.</p>
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">100% Secure</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">
+                Every transaction is fully encrypted, and every user is verified against DLD guidelines to ensure complete safety.
+              </p>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
-                <Building2 className="w-8 h-8 text-[#5CD284]" />
+
+            {/* Card 2 */}
+            <div className="flex flex-col items-center bg-white dark:bg-[#1E293B] p-10 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-20 h-20 bg-green-50 dark:bg-slate-800/80 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#5CD284] group-hover:scale-110 transition-all duration-300">
+                <Building2 className="w-10 h-10 text-[#1A3626] dark:text-[#5CD284] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Verified Properties</h3>
-              <p className="text-white/70 text-[15px] leading-relaxed max-w-sm">We ensure all listings are genuine and tied to a real BRN to eliminate market noise.</p>
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">Verified Properties</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">
+                We ensure all listings are genuine and tied to a real BRN to eliminate market noise and fake listings.
+              </p>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
-                <Users className="w-8 h-8 text-[#5CD284]" />
+
+            {/* Card 3 */}
+            <div className="flex flex-col items-center bg-white dark:bg-[#1E293B] p-10 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800 hover:-translate-y-2 transition-all duration-300 group">
+              <div className="w-20 h-20 bg-green-50 dark:bg-slate-800/80 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#5CD284] group-hover:scale-110 transition-all duration-300">
+                <Users className="w-10 h-10 text-[#1A3626] dark:text-[#5CD284] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Expert Support</h3>
-              <p className="text-white/70 text-[15px] leading-relaxed max-w-sm">Our dedicated team of professionals is available to assist you at every step of the process.</p>
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">Expert Support</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">
+                Our dedicated team of professionals is available to assist you at every step of the real estate process.
+              </p>
             </div>
           </div>
         </div>

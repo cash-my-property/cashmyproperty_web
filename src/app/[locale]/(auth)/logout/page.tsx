@@ -16,7 +16,7 @@ export default function LogoutPage() {
   }, []);
 
   return (
-    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 transition-colors">
+    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 pt-32 sm:pt-36 transition-colors">
       <div className="w-full max-w-[1000px] bg-white dark:bg-[#1E293B] rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex overflow-hidden min-h-[500px] transition-colors">
         
         {/* LEFT PANEL */}

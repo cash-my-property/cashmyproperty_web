@@ -180,9 +180,9 @@ export const content = {
         },
         prices: {
           all: "Any Price",
-          under1m: "Under 1M AED",
-          "1mTo5m": "1M - 5M AED",
-          over5m: "5M+ AED"
+          under1m: "Under 1M Ð",
+          "1mTo5m": "1M - 5M Ð",
+          over5m: "5M+ Ð"
         },
         sortOptions: {
           newest: "Newest First",
@@ -201,7 +201,7 @@ export const content = {
           id: "r1",
           title: "Luxury Marina Penthouse",
           location: "Dubai Marina, Dubai",
-          currentBid: "AED 4,500,000",
+          currentBid: "Ð 4,500,000",
           image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           timeLeft: "2d 04h 15m",
           beds: 4,
@@ -212,7 +212,7 @@ export const content = {
           id: "r2",
           title: "Modern Downtown Apartment",
           location: "Downtown Dubai",
-          currentBid: "AED 2,100,000",
+          currentBid: "Ð 2,100,000",
           image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           timeLeft: "0d 12h 30m",
           beds: 2,
@@ -223,7 +223,7 @@ export const content = {
           id: "r3",
           title: "Palm Jumeirah Signature Villa",
           location: "Palm Jumeirah, Dubai",
-          currentBid: "AED 18,500,000",
+          currentBid: "Ð 18,500,000",
           image: "https://images.unsplash.com/photo-1613490908571-9ce2249b49be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           timeLeft: "5d 08h 45m",
           beds: 6,
@@ -242,7 +242,7 @@ export const content = {
           id: "s1",
           title: "JLT Lake View Office Space",
           location: "Jumeirah Lake Towers",
-          price: "AED 1,800,000",
+          price: "Ð 1,800,000",
           image: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           type: "Commercial",
           area: "2,000 sqft"
@@ -251,7 +251,7 @@ export const content = {
           id: "s2",
           title: "Arabian Ranches Townhouse",
           location: "Arabian Ranches",
-          price: "AED 3,250,000",
+          price: "Ð 3,250,000",
           image: "https://images.unsplash.com/photo-1512918580421-b2feaf3cb582?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           beds: 3,
           baths: 4,
@@ -261,7 +261,7 @@ export const content = {
           id: "s3",
           title: "Dubai Hills Estate Mansion",
           location: "Dubai Hills Estate",
-          price: "AED 12,000,000",
+          price: "Ð 12,000,000",
           image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           beds: 5,
           baths: 6,
@@ -347,5 +347,72 @@ export const content = {
     phone: "+971 4 000 0000",
     email: "info@cashmyproperty.ae",
     copyright: "© 2026 Cash My Property. All rights reserved."
+  },
+  dashboard: {
+    sidebar: {
+      overview: "Overview",
+      myBids: "My Offers",
+      favorites: "Favorites",
+      settings: "Settings",
+      logout: "Log Out"
+    },
+    header: {
+      welcome: "Welcome Back",
+      backToSite: "Back to Site"
+    },
+    overview: {
+      title: "Overview",
+      stats: {
+        activeBids: "Active Offers",
+        wonAuctions: "Won Properties",
+        savedProperties: "Saved Properties"
+      },
+      recentActivity: "Recent Activity",
+      viewAll: "View All",
+      noActivity: "No recent activity."
+    },
+    bids: {
+      title: "My Offers",
+      description: "Manage and track all your active and past property offers.",
+      table: {
+        property: "Property",
+        bidAmount: "Your Offer",
+        currentHighest: "Highest Offer",
+        status: "Status",
+        date: "Date"
+      },
+      status: {
+        winning: "Winning",
+        outbid: "Outbid",
+        won: "Won",
+        lost: "Lost"
+      }
+    },
+    favorites: {
+      title: "Saved Properties",
+      description: "Properties you have saved as favorites.",
+      noFavorites: "You haven't saved any properties yet.",
+      browse: "Browse Properties"
+    },
+    settings: {
+      title: "Account Settings",
+      description: "Manage your account details and preferences.",
+      tabs: {
+        personal: "Personal Info",
+        security: "Security",
+        notifications: "Notifications"
+      },
+      form: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email Address",
+        phone: "Phone Number",
+        brn: "Broker Registration Number",
+        saveChanges: "Save Changes",
+        currentPassword: "Current Password",
+        newPassword: "New Password",
+        updatePassword: "Update Password"
+      }
+    }
   }
 };

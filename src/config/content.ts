@@ -1,9 +1,9 @@
 export const content = {
   auth: {
     hero: {
-      tagline: "Auction Platform",
+      tagline: "Offer Platform",
       title: "The Art of\nOwnership.",
-      description: "Redefining real estate in the UAE through transparent digital auctions.",
+      description: "Redefining real estate in the UAE through transparent digital offers.",
     },
     login: {
       heading: "Welcome back",
@@ -77,15 +77,15 @@ export const content = {
     },
     main: {
       label: "About Cash My Property",
-      heading: "The premier digital real estate auction platform in the UAE",
+      heading: "The premier digital real estate offer platform in the UAE",
       paragraphs: [
         "Founded on the principles of transparency, efficiency, and innovation, Cash My Property is redefining how real estate is bought and sold in the UAE.",
-        "We provide a secure, encrypted platform that connects verified sellers with qualified buyers. Our digital auctions eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against DLD regulations."
+        "We provide a secure, encrypted platform that connects verified sellers with qualified buyers. Our digital offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against DLD regulations."
       ],
       features: [
         {
           title: "Transparency",
-          description: "Clear bidding processes with no hidden fees or scraped ads."
+          description: "Clear offer processes with no hidden fees or scraped ads."
         },
         {
           title: "Security",
@@ -109,7 +109,7 @@ export const content = {
       posts: [
         {
           id: 1,
-          title: "The Future of Digital Real Estate Auctions in Dubai",
+          title: "The Future of Digital Real Estate Offers in Dubai",
           date: "August 4, 2026",
           category: "Market Trends",
           excerpt: "How technology is reshaping the property market and making transactions more transparent than ever before."
@@ -140,7 +140,7 @@ export const content = {
     main: {
       label: "Contact Information",
       heading: "We'd love to hear from you",
-      description: "Whether you are looking to buy, sell, or simply want to learn more about our secure digital auction platform, feel free to drop us a message.",
+      description: "Whether you are looking to buy, sell, or simply want to learn more about our secure digital offer platform, feel free to drop us a message.",
       form: {
         firstNameLabel: "First Name",
         firstNamePlaceholder: "John",
@@ -164,8 +164,8 @@ export const content = {
   },
   home: {
     hero: {
-      headline: "The Premier Digital Real Estate Auction Platform in the UAE",
-      subheadline: "Buy, sell, and bid on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
+      headline: "The Premier Digital Real Estate Offer Platform in the UAE",
+      subheadline: "Buy, sell, and make offers on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
       searchPlaceholder: "Search by location, property type, or keywords...",
       searchButton: "Search Properties",
       filters: {
@@ -180,9 +180,9 @@ export const content = {
         },
         prices: {
           all: "Any Price",
-          under1m: "Under 1M AED",
-          "1mTo5m": "1M - 5M AED",
-          over5m: "5M+ AED"
+          under1m: "Under 1M Ð",
+          "1mTo5m": "1M - 5M Ð",
+          over5m: "5M+ Ð"
         },
         sortOptions: {
           newest: "Newest First",
@@ -192,16 +192,16 @@ export const content = {
       }
     },
     realtimeOffers: {
-      label: "Live Auctions",
-      heading: "Realtime Offers",
-      description: "Distress listings currently in an active 7-Day Auction. Bid now before the timer runs out.",
-      viewAllText: "View All Auctions",
+      label: "Live Offers",
+      heading: "Distress Listings",
+      description: "Distress listings currently in an active 7-Day Offer. Make an offer now before the timer runs out.",
+      viewAllText: "View All Offers",
       items: [
         {
           id: "r1",
           title: "Luxury Marina Penthouse",
           location: "Dubai Marina, Dubai",
-          currentBid: "AED 4,500,000",
+          currentBid: "Ð 4,500,000",
           image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           timeLeft: "2d 04h 15m",
           beds: 4,
@@ -212,7 +212,7 @@ export const content = {
           id: "r2",
           title: "Modern Downtown Apartment",
           location: "Downtown Dubai",
-          currentBid: "AED 2,100,000",
+          currentBid: "Ð 2,100,000",
           image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           timeLeft: "0d 12h 30m",
           beds: 2,
@@ -223,7 +223,7 @@ export const content = {
           id: "r3",
           title: "Palm Jumeirah Signature Villa",
           location: "Palm Jumeirah, Dubai",
-          currentBid: "AED 18,500,000",
+          currentBid: "Ð 18,500,000",
           image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           timeLeft: "5d 08h 45m",
           beds: 6,
@@ -242,7 +242,7 @@ export const content = {
           id: "s1",
           title: "JLT Lake View Office Space",
           location: "Jumeirah Lake Towers",
-          price: "AED 1,800,000",
+          price: "Ð 1,800,000",
           image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           type: "Commercial",
           area: "2,000 sqft"
@@ -251,7 +251,7 @@ export const content = {
           id: "s2",
           title: "Arabian Ranches Townhouse",
           location: "Arabian Ranches",
-          price: "AED 3,250,000",
+          price: "Ð 3,250,000",
           image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           beds: 3,
           baths: 4,
@@ -261,7 +261,7 @@ export const content = {
           id: "s3",
           title: "Dubai Hills Estate Mansion",
           location: "Dubai Hills Estate",
-          price: "AED 12,000,000",
+          price: "Ð 12,000,000",
           image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
           beds: 5,
           baths: 6,
@@ -282,8 +282,8 @@ export const content = {
           description: "Buyers must upload mandatory documents (Contract B, Emirates ID, 10% Cheque) to unlock the 'Place Offer' capability on live properties."
         },
         {
-          title: "Bid, Win & Close",
-          description: "Place your offers on Distress Listings (7-Day Auctions) or purchase Simple Listings. Highest bidder wins at the end of the countdown timer!"
+          title: "Offer, Win & Close",
+          description: "Place your offers on Distress Listings (7-Day Offers) or purchase Simple Listings. Highest offer wins at the end of the countdown timer!"
         }
       ]
     },
@@ -292,23 +292,23 @@ export const content = {
       heading: "Why Choose CMP",
       features: [
         {
-          title: "100% Transparency",
-          description: "No hidden fees, no opaque processes. All bids are tracked and visible, ensuring a fair market value for every transaction."
+          title: "Transparency First",
+          description: "No hidden fees, no opaque processes. All offers are tracked and visible, ensuring a fair market value for every transaction."
         },
         {
-          title: "DLD Verified",
-          description: "Fully compliant with the Dubai Land Department regulations. We enforce mandatory document checks before any bid is placed."
+          title: "Secure Verification",
+          description: "Fully compliant with the Dubai Land Department regulations. We enforce mandatory document checks before any offer is placed."
         },
         {
-          title: "Speed & Liquidity",
-          description: "Our 7-Day Auction model provides immediate liquidity for motivated sellers, while buyers get fair access to distress listings."
+          title: "Immediate Liquidity",
+          description: "Our 7-Day Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to distress listings."
         }
       ]
     },
     appDownload: {
       tagline: "Get the CMP App",
       heading: "Your Real Estate Portfolio, Now in Your Pocket",
-      description: "Experience the fastest way to bid, buy, and sell properties in the UAE. Download the Cash My Property app for real-time auction alerts, document management, and seamless transactions.",
+      description: "Experience the fastest way to make offers, buy, and sell properties in the UAE. Download the Cash My Property app for real-time offer alerts, document management, and seamless transactions.",
       appStoreText: "Download on the",
       appStore: "App Store",
       playStoreText: "GET IT ON",
@@ -316,8 +316,17 @@ export const content = {
     },
     cta: {
       heading: "Ready to find your next property?",
-      description: "Join the premier digital real estate auction platform in the UAE. Verified listings, transparent bidding, and secure transactions.",
+      description: "Join the premier digital real estate offer platform in the UAE. Verified listings, transparent processes, and secure transactions.",
       buttonText: "Create an Account"
+    }
+  },
+  dashboard: {
+    sidebar: {
+      overview: "Overview",
+      myBids: "My Offers",
+      favorites: "Favorites",
+      settings: "Settings",
+      logout: "Log Out"
     }
   }
 };

@@ -8,11 +8,14 @@ import { Menu, X, Globe, ChevronDown, User } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { locale, dict } = useDictionary();
+  const { isAuthenticated, user } = useAuth();
+  
   const isLoginPage = pathname === `/${locale}/login` || pathname === "/login";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -51,8 +54,8 @@ export default function Navbar() {
       <div 
         className={`max-w-[1400px] mx-auto flex items-center justify-between rounded-full transition-all duration-300 pointer-events-auto ${
           scrolled 
-            ? "bg-white/85 dark:bg-[#0F172A]/85 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/20 dark:border-slate-700/50 py-1.5 px-6 lg:px-8" 
-            : "bg-white/95 dark:bg-[#0F172A]/95 shadow-sm border border-gray-100 dark:border-slate-800/80 py-2.5 px-6 lg:px-8"
+            ? "bg-white/85 dark:bg-[#0F172A]/85 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-white/20 dark:border-slate-700/50 py-0.5 px-4 lg:px-6" 
+            : "bg-white/95 dark:bg-[#0F172A]/95 shadow-sm border border-gray-100 dark:border-slate-800/80 py-1 px-4 lg:px-6"
         }`}
       >
         {/* Logo */}
@@ -74,7 +77,7 @@ export default function Navbar() {
             <Link 
               key={index} 
               href={`/${locale}${item.href === "/" ? "" : item.href}`} 
-              className="relative group px-1 py-2 font-semibold text-[15px] tracking-wide text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors"
+              className="relative group px-1 py-1 font-semibold text-[15px] tracking-wide text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors"
               style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               {item.title}
@@ -90,7 +93,7 @@ export default function Navbar() {
             
             {/* Language Selector */}
             <div className="relative group cursor-pointer ml-2">
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-all">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-all">
                 <Globe className="w-4 h-4" />
                 <span className="font-semibold text-[13px] tracking-wide uppercase">{locale}</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -104,17 +107,24 @@ export default function Navbar() {
             </div>
           </div>
 
-          {isLoginPage ? (
+          {isAuthenticated ? (
+            <Link 
+              href={`/${locale}/dashboard`}
+              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-6 py-2 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            >
+              <User className="w-4 h-4" /> Dashboard
+            </Link>
+          ) : isLoginPage ? (
             <Link 
               href={`/${locale}/signup`}
-              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-7 py-2.5 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-6 py-2 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
               <User className="w-4 h-4" /> Join Now
             </Link>
           ) : (
             <Link 
               href={`/${locale}/login`}
-              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-7 py-2.5 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+              className="flex items-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] px-6 py-2 rounded-full font-bold text-[14px] tracking-wide hover:bg-[#12261a] dark:hover:bg-[#4ab872] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
               <User className="w-4 h-4" /> Login
             </Link>
@@ -132,12 +142,12 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       <div 
-        className={`lg:hidden fixed inset-x-4 top-[80px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border border-gray-100 dark:border-slate-700/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 origin-top overflow-hidden pointer-events-auto ${
+        className={`lg:hidden fixed inset-x-4 top-[70px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border border-gray-100 dark:border-slate-700/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 origin-top overflow-hidden pointer-events-auto ${
           mobileMenuOpen ? "opacity-100 scale-y-100 max-h-[80vh]" : "opacity-0 scale-y-0 max-h-0"
         }`}
       >
-        <div className="flex flex-col px-8 py-8 gap-6">
-          <nav className="flex flex-col gap-6 font-semibold text-[18px] text-gray-800 dark:text-gray-200">
+        <div className="flex flex-col px-6 py-6 gap-4">
+          <nav className="flex flex-col gap-4 font-semibold text-[16px] text-gray-800 dark:text-gray-200">
             {dict.navbar.links.map((item, index) => (
               <Link 
                 key={index} 
@@ -150,28 +160,36 @@ export default function Navbar() {
               </Link>
             ))}
             
-            <div className="h-px bg-gray-200 dark:bg-slate-800 my-2" />
+            <div className="h-px bg-gray-200 dark:bg-slate-800 my-1" />
             
             {/* Mobile Theme Toggle */}
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[12px] font-bold">Theme</span>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[11px] font-bold">Theme</span>
               <ThemeToggle />
             </div>
 
             {/* Mobile Language Selector */}
-            <div className="flex items-center justify-between py-2">
-              <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[12px] font-bold">
-                <Globe className="w-4 h-4" /> Language
+            <div className="flex items-center justify-between py-1">
+              <span className="flex items-center gap-2 text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[11px] font-bold">
+                <Globe className="w-3.5 h-3.5" /> Language
               </span>
-              <div className="flex gap-2 text-[13px] font-bold">
-                <button onClick={() => switchLanguage('en')} className={`px-3 py-1.5 rounded-full transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800' : 'text-gray-400 dark:text-gray-500'}`}>EN</button>
-                <button onClick={() => switchLanguage('ar')} className={`px-3 py-1.5 rounded-full transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800' : 'text-gray-400 dark:text-gray-500'}`}>عربي</button>
+              <div className="flex gap-1 text-[12px] font-bold">
+                <button onClick={() => switchLanguage('en')} className={`px-2 py-1 rounded-full transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800' : 'text-gray-400 dark:text-gray-500'}`}>EN</button>
+                <button onClick={() => switchLanguage('ar')} className={`px-2 py-1 rounded-full transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-slate-800' : 'text-gray-400 dark:text-gray-500'}`}>عربي</button>
               </div>
             </div>
           </nav>
           
           <div className="mt-4 pt-6 border-t border-gray-200 dark:border-slate-800">
-            {isLoginPage ? (
+            {isAuthenticated ? (
+              <Link 
+                href={`/${locale}/dashboard`}
+                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#4ab872] transition-colors" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <User className="w-4 h-4" /> Dashboard
+              </Link>
+            ) : isLoginPage ? (
               <Link 
                 href={`/${locale}/signup`}
                 className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#4ab872] transition-colors" 

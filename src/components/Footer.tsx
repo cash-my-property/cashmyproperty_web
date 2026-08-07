@@ -19,7 +19,7 @@ const TwitterIcon = ({ className }: { className?: string }) => (
 );
 
 export default function Footer() {
-  const { dict } = useDictionary();
+  const { dict, locale } = useDictionary();
   return (
     <footer className="relative bg-gradient-to-b from-[#1B3A2D] to-[#0A1C12] text-gray-300 pt-20 lg:pt-28 pb-8 px-6 sm:px-12 lg:px-24 overflow-hidden border-t border-[#5CD284]/10">
       
@@ -49,7 +49,7 @@ export default function Footer() {
           <ul className="space-y-4">
             {dict.footer.quickLinks.map((link, idx) => (
               <li key={idx}>
-                <Link href={link.href} className="group inline-flex items-center text-[14px] text-green-100/60 hover:text-[#5CD284] transition-colors">
+                <Link href={link.href.startsWith("/") ? `/${locale}${link.href}` : link.href} className="group inline-flex items-center text-[14px] text-green-100/60 hover:text-[#5CD284] transition-colors">
                   <span className="w-0 h-px bg-[#5CD284] mr-0 group-hover:w-3 group-hover:mr-2 transition-all duration-300"></span>
                   {link.title}
                 </Link>
@@ -64,7 +64,7 @@ export default function Footer() {
           <ul className="space-y-4">
             {dict.footer.legalLinks.map((link, idx) => (
               <li key={idx}>
-                <Link href={link.href} className="group inline-flex items-center text-[14px] text-green-100/60 hover:text-[#5CD284] transition-colors">
+                <Link href={link.href.startsWith("/") ? `/${locale}${link.href}` : link.href} className="group inline-flex items-center text-[14px] text-green-100/60 hover:text-[#5CD284] transition-colors">
                   <span className="w-0 h-px bg-[#5CD284] mr-0 group-hover:w-3 group-hover:mr-2 transition-all duration-300"></span>
                   {link.title}
                 </Link>

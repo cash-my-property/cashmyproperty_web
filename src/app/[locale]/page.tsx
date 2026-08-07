@@ -1,18 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, ArrowDownUp, ChevronDown } from "lucide-react";
+import { Search, Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, ArrowDownUp, ChevronDown, Loader2, Share2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
+import axios from "axios";
 
 export default function HomePage() {
-  const { dict } = useDictionary();
+  const { dict, locale } = useDictionary();
   const { home } = dict;
   
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
+
+  const [liveProperties, setLiveProperties] = useState<any[]>([]);
+  const [upcomingProperties, setUpcomingProperties] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+        const [liveRes, upcomingRes] = await Promise.all([
+          axios.get(`${API_URL}/public/live-properties?limit=6`),
+          axios.get(`${API_URL}/public/upcoming-properties?limit=6`)
+        ]);
+        setLiveProperties(liveRes.data.data || []);
+        setUpcomingProperties(upcomingRes.data.data || []);
+      } catch (err) {
+        console.error("Error fetching properties", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#0A101C]">
@@ -174,47 +198,140 @@ export default function HomePage() {
               {home.realtimeOffers.description}
             </p>
           </div>
-          <Link href="/auctions" className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#5CD284] hover:opacity-80 transition-opacity">
+          <Link href={`/${locale}/auctions`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#5CD284] hover:opacity-80 transition-opacity">
             {home.realtimeOffers.viewAllText} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {home.realtimeOffers.items.map((item) => (
-            <div key={item.id} className="group bg-white dark:bg-[#1E293B] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800 transition-all duration-300">
-              <div className="relative h-[240px] overflow-hidden">
-                <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
-                   <Clock className="w-3.5 h-3.5" /> 7-Day Auction
-                </div>
-                <div className="absolute bottom-4 right-4 bg-[#0A101C]/80 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-xl font-bold text-[14px] flex items-center gap-2">
-                   <Clock className="w-4 h-4 text-[#5CD284]" /> {item.timeLeft}
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div>
-                    <h3 className="font-bold text-[18px] text-gray-900 dark:text-white mb-1 leading-tight group-hover:text-[#5CD284] transition-colors line-clamp-1">{item.title}</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-[13px] flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5" /> {item.location}
-                    </p>
+          {isLoading ? (
+            Array(6).fill(0).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-[#1E293B] rounded-[24px] overflow-hidden border border-gray-100 dark:border-slate-800 flex flex-col p-2 animate-pulse shadow-sm">
+                <div className="relative h-[240px] rounded-[20px] bg-gray-200 dark:bg-slate-700 w-full" />
+                <div className="p-4 pt-5 flex flex-col flex-1 gap-4">
+                  <div className="flex justify-between items-center gap-4">
+                    <div className="h-6 bg-gray-200 dark:bg-slate-700 rounded-md w-2/3" />
+                    <div className="h-6 bg-gray-200 dark:bg-slate-700 rounded-md w-1/4" />
+                  </div>
+                  <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded-md w-1/2 mb-2" />
+                  <div className="flex gap-4">
+                    <div className="h-5 bg-gray-200 dark:bg-slate-700 rounded-md w-16" />
+                    <div className="h-5 bg-gray-200 dark:bg-slate-700 rounded-md w-16" />
+                    <div className="h-5 bg-gray-200 dark:bg-slate-700 rounded-md w-20" />
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-800 flex justify-between">
+                    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded-md w-24" />
+                    <div className="h-8 bg-gray-200 dark:bg-slate-700 rounded-md w-24" />
                   </div>
                 </div>
-                <div className="flex items-center gap-4 py-4 border-y border-gray-100 dark:border-slate-800/60 mb-4">
-                   <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Bed className="w-4 h-4 text-gray-400" /> {item.beds}</div>
-                   <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Bath className="w-4 h-4 text-gray-400" /> {item.baths}</div>
-                   <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Maximize className="w-4 h-4 text-gray-400" /> {item.area}</div>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[12px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Current Highest Bid</span>
-                  <span className="text-[22px] font-bold text-[#1A3626] dark:text-white leading-none">{item.currentBid}</span>
-                </div>
-                <button className="w-full mt-6 py-3.5 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] text-white dark:text-[#1A3626] rounded-xl font-bold text-[14px] transition-colors shadow-md">
-                  Place Offer
-                </button>
               </div>
+            ))
+          ) : [...liveProperties, ...upcomingProperties].length > 0 ? (
+            [...liveProperties, ...upcomingProperties].slice(0, 6).map((item) => {
+              const details = item.propertyDetails || {};
+              const title = details.propertyTitle || "Untitled Property";
+              const location = details.propertyLocation?.city || "Dubai";
+              const image = details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+              const beds = details.propertyBedrooms || 0;
+              const baths = details.propertyBathrooms || 0;
+              const getArea = (area: any) => {
+                if (!area) return "N/A";
+                if (typeof area === 'object' && area.value !== undefined) return `${area.value} ${area.unit || 'sqft'}`;
+                return `${area} sqft`;
+              };
+              const area = getArea(details.propertyArea || details.propertyBuiltUpArea);
+              const price = item.currentHighestBid ? `Ð ${item.currentHighestBid.toLocaleString()}` : `Ð ${details.propertyPrice?.toLocaleString() || 0}`;
+              
+              const endDate = new Date(item.endTime);
+              const startDate = new Date(item.startTime);
+              const now = new Date().getTime();
+              
+              let timeDisplay = "";
+              if (item.status === 'UPCOMING') {
+                timeDisplay = `Starts: ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+              } else {
+                const timeDiff = endDate.getTime() - now;
+                if (timeDiff > 0) {
+                  const d = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                  const h = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const m = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                  timeDisplay = `${d}d ${h}h ${m}m`;
+                } else {
+                  timeDisplay = 'Ended';
+                }
+              }
+              const priceValue = item.currentHighestBid ? item.currentHighestBid.toLocaleString() : (details.propertyPrice?.toLocaleString() || 0);
+              const type = details.propertyType || "Property";
+
+              return (
+              <div key={item._id} className="bg-white dark:bg-[#1E293B] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800 transition-all duration-300 flex flex-col p-2 group">
+                <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-slate-800">
+                  <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  
+                  {/* Badges */}
+                  <div className="absolute top-4 left-4 bg-white dark:bg-[#1E293B] text-[#1A3626] dark:text-[#5CD284] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                     <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {item.status || 'ACTIVE'}
+                  </div>
+                  
+                  <div className="absolute top-4 right-4 bg-white dark:bg-[#1E293B] text-[#1A3626] dark:text-[#5CD284] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
+                     <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
+                  </div>
+
+                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#1E293B] text-[#1A3626] dark:text-[#5CD284] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
+                     PID-{item.PID || item._id.substring(0,8).toUpperCase()}
+                  </div>
+
+                  <div className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#5CD284] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md cursor-pointer hover:bg-[#124d31] dark:hover:bg-[#4ab872] transition-colors">
+                     <Share2 className="w-4 h-4" />
+                  </div>
+                </div>
+                
+                <div className="p-4 pt-5 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
+                    <span className="font-bold text-[22px] text-gray-900 dark:text-white leading-none whitespace-nowrap">Ð {priceValue}</span>
+                  </div>
+                  
+                  <p className="text-[#1A3626] dark:text-[#5CD284] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                    <MapPin className="w-4 h-4" /> {location}
+                  </p>
+                  
+                  <div className="flex items-center gap-4 mb-5">
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#5CD284]" /> {beds}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#5CD284]" /> {baths}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284]" /> {area}</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
+                    <Link href={`/${locale}/listings/${item._id}`} className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#5CD284] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#4ab872] transition-colors">
+                      Make Offer
+                    </Link>
+                  </div>
+
+                  {/* Footer Grid */}
+                  <div className="mt-auto bg-[#F4F5F7] dark:bg-slate-800 rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-slate-600">
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-[#1A3626] dark:text-[#5CD284] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-[#1A3626] dark:text-[#5CD284] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
+                    </div>
+                    <div className="flex flex-col items-center justify-center text-center px-1">
+                      <span className="text-[#1A3626] dark:text-[#5CD284] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )})
+          ) : (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
+              No live properties available at the moment.
             </div>
-          ))}
+          )}
         </div>
       </section>
 
@@ -232,45 +349,19 @@ export default function HomePage() {
               {home.simpleListings.description}
             </p>
           </div>
-          <Link href="#" className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#5CD284] hover:opacity-80 transition-opacity">
+          <Link href={`/${locale}/listings`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#5CD284] hover:opacity-80 transition-opacity">
             {home.simpleListings.viewAllText} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {home.simpleListings.items.map((item) => (
-            <div key={item.id} className="group bg-white dark:bg-[#1E293B] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800 transition-all duration-300 flex flex-col">
-              <div className="relative h-[220px] overflow-hidden">
-                <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#0A101C]/80 backdrop-blur-md text-gray-900 dark:text-white px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider shadow-sm">
-                   For Sale
-                </div>
-              </div>
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className="font-bold text-[18px] text-gray-900 dark:text-white mb-1 leading-tight group-hover:text-[#5CD284] transition-colors line-clamp-1">{item.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-[13px] flex items-center gap-1.5 mb-4">
-                  <MapPin className="w-3.5 h-3.5" /> {item.location}
-                </p>
-                <div className="flex items-center gap-4 py-3 border-t border-gray-100 dark:border-slate-800/60 mt-auto mb-4">
-                   {item.type ? (
-                     <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Building className="w-4 h-4 text-gray-400" /> {item.type}</div>
-                   ) : (
-                     <>
-                      <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Bed className="w-4 h-4 text-gray-400" /> {item.beds}</div>
-                      <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Bath className="w-4 h-4 text-gray-400" /> {item.baths}</div>
-                     </>
-                   )}
-                   <div className="flex items-center gap-1.5 text-[13px] text-gray-600 dark:text-gray-300"><Maximize className="w-4 h-4 text-gray-400" /> {item.area}</div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[12px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Asking Price</span>
-                    <span className="text-[20px] font-bold text-[#1A3626] dark:text-white leading-none">{item.price}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white dark:bg-[#1E293B] rounded-3xl border border-gray-200 dark:border-slate-800 shadow-sm mt-8">
+          <div className="w-20 h-20 bg-green-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+            <Building className="w-10 h-10 text-[#1A3626] dark:text-[#5CD284]" />
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Coming Soon</h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-[15px] leading-relaxed">
+            Our standard property listings are currently under development. Stay tuned for an exclusive selection of premium properties available for direct purchase.
+          </p>
         </div>
       </section>
 

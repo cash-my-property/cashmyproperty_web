@@ -2,22 +2,66 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, ShieldCheck, Loader2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const { dict } = useDictionary();
+  const { dict, locale } = useDictionary();
   const content = dict;
+  const router = useRouter();
+  const { login } = useAuth();
+  
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await api.post("/login", { 
+        email, 
+        password,
+        deviceInfo: {
+          deviceId: "DEVICE_ID_1234",
+          uniqueId: "UNIQUE_ID_456",
+          model: "iPhone 15 Pro",
+          platform: "ios",
+          systemVersion: "17.4",
+          appVersion: "1.0.0",
+          fcmToken: "FCM_TOKEN_ABC_XYZ",
+          ipAddress: "192.168.1.1"
+        }
+      });
+      
+      // Backend returns data with message and user info in response.data.user
+      // Token is set in HttpOnly cookies
+      if (response.data && response.data.user) {
+        login("dummy-token-because-httponly", response.data.user);
+        router.push(`/${locale}`);
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (err: any) {
+      if (err.response?.data?.status === "verification_pending") {
+        router.push(`/${locale}/verify-otp?email=${encodeURIComponent(err.response.data.email || email)}&type=verify`);
+        return;
+      }
+      setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 pt-28 sm:pt-32 transition-colors">
+    <main className="flex-1 flex items-center justify-center p-6 sm:p-12 pt-32 sm:pt-36 transition-colors">
       <div className="w-full max-w-[1000px] bg-white dark:bg-[#1E293B] rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex overflow-hidden min-h-[640px] transition-colors">
         
         {/* LEFT PANEL */}
@@ -67,6 +111,13 @@ export default function LoginPage() {
             </p>
           </div>
           
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl text-[14px] font-medium flex items-start gap-3">
+              <span className="mt-0.5">⚠️</span>
+              <p>{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -112,8 +163,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full py-4 mt-2 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] text-white dark:text-[#1A3626] rounded-lg font-semibold text-[15px] transition-colors shadow-sm"
+              disabled={isLoading}
+              className="w-full py-4 mt-2 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-lg font-semibold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2"
             >
+              {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
               {content.auth.login.submitButton}
             </button>
 

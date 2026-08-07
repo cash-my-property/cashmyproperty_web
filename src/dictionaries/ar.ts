@@ -320,6 +320,174 @@ export const content = {
       buttonText: "إنشاء حساب"
     }
   },
+  listings: {
+    hero: {
+      tagline: "قوائم العقارات",
+      title: "اكتشف عقارك\nالتالي",
+      description: "استكشف عقاراتنا الحصرية الموثقة من دائرة الأراضي والأملاك المتاحة للشراء أو المزايدة الفورية."
+    },
+    filters: {
+      searchPlaceholder: "ابحث عن العقارات بالاسم أو الموقع...",
+      priceLabel: "نطاق السعر",
+      typeLabel: "نوع العقار",
+      bedsLabel: "غرف النوم",
+      searchButton: "بحث"
+    },
+    cards: {
+      baths: "حمامات",
+      beds: "غرف",
+      sqft: "قدم مربع",
+      viewDetails: "عرض التفاصيل",
+      startingBid: "يبدأ المزاد من"
+    },
+    items: [
+      {
+        id: 1,
+        title: "فيلا فاخرة في نخلة جميرا",
+        location: "نخلة جميرا، دبي",
+        price: "15,000,000 درهم",
+        beds: 5,
+        baths: 6,
+        sqft: "8,500",
+        image: "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        type: "فيلا"
+      },
+      {
+        id: 2,
+        title: "شقة حديثة بإطلالة على المارينا",
+        location: "دبي مارينا، دبي",
+        price: "3,200,000 درهم",
+        beds: 3,
+        baths: 3,
+        sqft: "2,100",
+        image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        type: "شقة"
+      },
+      {
+        id: 3,
+        title: "بنتهاوس حصري في وسط المدينة",
+        location: "وسط مدينة دبي",
+        price: "8,500,000 درهم",
+        beds: 4,
+        baths: 5,
+        sqft: "4,200",
+        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        type: "بنتهاوس"
+      },
+      {
+        id: 4,
+        title: "تاون هاوس عائلي في المرابع العربية",
+        location: "المرابع العربية، دبي",
+        price: "4,800,000 درهم",
+        beds: 4,
+        baths: 4,
+        sqft: "3,500",
+        image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        type: "تاون هاوس"
+      },
+      {
+        id: 5,
+        title: "قصر على شاطئ البحر",
+        location: "جزيرة خليج جميرا، دبي",
+        price: "45,000,000 درهم",
+        beds: 7,
+        baths: 8,
+        sqft: "14,000",
+        image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        type: "فيلا"
+      },
+      {
+        id: 6,
+        title: "شقة فاخرة في طابق مرتفع",
+        location: "الخليج التجاري، دبي",
+        price: "2,500,000 درهم",
+        beds: 2,
+        baths: 2,
+        sqft: "1,450",
+        image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        type: "شقة"
+      }
+    ],
+    propertyData: {
+      id: "PROP-2026-105",
+      title: "فيلا فاخرة في نخلة جميرا",
+      location: "سعفة م، نخلة جميرا، دبي",
+      type: "فيلا",
+      beds: 5,
+      baths: 6,
+      sqft: "8,500",
+      price: "15,000,000 درهم",
+      description: "استمتع بالفخامة التي لا مثيل لها في هذه الفيلا الرائعة المكونة من 5 غرف نوم في نخلة جميرا. تتميز هذه المنشأة بإطلالات خلابة على أفق دبي والخليج العربي، وتتميز بمدخل شاطئ خاص وحديقة ذات مناظر طبيعية وحوض سباحة إنفينيتي. تم تصميم الديكور الداخلي بدقة مع تشطيبات متميزة ومناطق معيشة واسعة ومطبخ حديث. مثالي لأولئك الذين يبحثون عن أسلوب حياة مرموق في أحد أكثر المواقع شهرة في دبي.",
+      features: [
+        "دخول خاص للشاطئ",
+        "حوض سباحة إنفينيتي",
+        "نظام المنزل الذكي",
+        "غرفة خادمة",
+        "حديقة ذات مناظر طبيعية",
+        "مطبخ مجهز بالكامل"
+      ],
+      images: [
+        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+      ]
+    },
+    contactForm: {
+      title: "اتصل بالوكيل",
+      name: "اسمك",
+      email: "البريد الإلكتروني",
+      phone: "رقم الهاتف",
+      message: "رسالتك",
+      button: "إرسال رسالة",
+      agentName: "سارة أحمد",
+      agentRole: "مستشار عقاري أول"
+    }
+  },
+  auctions: {
+    hero: {
+      tagline: "مزادات مباشرة",
+      title: "زايد على\nعقارات متميزة",
+      description: "شارك في مزادات حية للعقارات ذات القيمة العالية. آمنة، شفافة، وسريعة."
+    },
+    liveStatus: "مباشر الآن",
+    bidding: {
+      currentBid: "أعلى مزايدة حالية",
+      minIncrement: "الحد الأدنى للزيادة",
+      endsIn: "ينتهي المزاد في",
+      placeBidBtn: "قدم مزايدة",
+      bidPlaceholder: "أدخل مبلغ المزايدة",
+      bidHistory: "سجل المزايدات",
+      bidders: "المزايدون"
+    },
+    property: {
+      description: "وصف العقار",
+      features: "الميزات الرئيسية",
+      location: "الموقع",
+      documents: "المستندات الموثقة"
+    },
+    auctionData: {
+      id: "AUC-2026-892",
+      title: "فيلا سيغنتشر في نخلة جميرا",
+      location: "سعفة م، نخلة جميرا، دبي",
+      type: "فيلا",
+      beds: 6,
+      baths: 7,
+      sqft: "13,000",
+      basePrice: 25000000,
+      minIncrement: 100000,
+      images: [
+        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+      ],
+      initialBids: [
+        { id: 1, user: "أ***ك", amount: 26500000, time: "منذ دقيقتين" },
+        { id: 2, user: "م***ر", amount: 26200000, time: "منذ 15 دقيقة" },
+        { id: 3, user: "س***د", amount: 25800000, time: "منذ ساعة" },
+        { id: 4, user: "ح***ن", amount: 25100000, time: "منذ 3 ساعات" }
+      ]
+    }
+  },
   navbar: {
     links: [
       { title: "الرئيسية", href: "/" },
@@ -332,8 +500,8 @@ export const content = {
     quickLinksTitle: "روابط سريعة",
     quickLinks: [
       { title: "الرئيسية", href: "/" },
-      { title: "المزادات", href: "#" },
-      { title: "قوائم العقارات", href: "#" },
+      { title: "المزادات", href: "/auctions" },
+      { title: "قوائم العقارات", href: "/listings" },
       { title: "الأسئلة الشائعة", href: "#" }
     ],
     legalLinksTitle: "قانوني",
@@ -343,9 +511,145 @@ export const content = {
       { title: "سياسة ملفات تعريف الارتباط", href: "#" }
     ],
     contactTitle: "اتصل بنا",
-    address: "بيزنس باي، فيجن تاور، الطابق 24، دبي، الإمارات العربية المتحدة",
+    address: "الخليج التجاري، برج فيجن، الطابق 24، دبي، الإمارات",
     phone: "+971 4 000 0000",
     email: "info@cashmyproperty.ae",
     copyright: "© 2026 كاش ماي بروبرتي. جميع الحقوق محفوظة."
+  },
+  auth: {
+    hero: {
+      tagline: "وصول حصري",
+      title: "افتح أبواب\nالعقارات الفاخرة",
+      description: "انضم إلى النخبة من المشترين والوكلاء المعتمدين. احصل على إمكانية الوصول إلى العقارات المتعثرة قبل طرحها في السوق المفتوح."
+    },
+    login: {
+      heading: "مرحباً بعودتك",
+      subheading: "يرجى إدخال بيانات الاعتماد الخاصة بك للوصول إلى حسابك.",
+      emailLabel: "البريد الإلكتروني",
+      emailPlaceholder: "أدخل بريدك الإلكتروني",
+      passwordLabel: "كلمة المرور",
+      passwordPlaceholder: "أدخل كلمة المرور",
+      forgotPasswordText: "هل نسيت كلمة المرور؟",
+      submitButton: "تسجيل الدخول",
+      dividerText: "أو المتابعة باستخدام",
+      uaePassButton: "تسجيل الدخول باستخدام UAE PASS",
+      signupPrompt: "ليس لديك حساب؟",
+      signupLinkText: "سجل الآن"
+    },
+    signup: {
+      heading: "إنشاء حساب",
+      subheading: "انضم إلى منصتنا لبدء المزايدة والشراء.",
+      firstNameLabel: "الاسم الأول",
+      firstNamePlaceholder: "محمد",
+      lastNameLabel: "الاسم الأخير",
+      lastNamePlaceholder: "علي",
+      brnLabel: "رقم تسجيل الوسيط (للوكلاء فقط)",
+      brnPlaceholder: "أدخل رقم التسجيل",
+      referralLabel: "رمز الإحالة",
+      referralOptional: "(اختياري)",
+      referralPlaceholder: "أدخل رمز الإحالة",
+      emailLabel: "البريد الإلكتروني",
+      emailPlaceholder: "أدخل بريدك الإلكتروني",
+      phoneLabel: "رقم الهاتف",
+      phonePlaceholder: "50 123 4567",
+      passwordLabel: "كلمة المرور",
+      passwordPlaceholder: "أنشئ كلمة مرور",
+      confirmPasswordLabel: "تأكيد كلمة المرور",
+      confirmPasswordPlaceholder: "أكد كلمة المرور",
+      termsAgreeStart: "أوافق على",
+      termsOfService: "شروط الخدمة",
+      and: "و",
+      privacyPolicy: "سياسة الخصوصية",
+      submitButton: "إنشاء حساب",
+      dividerText: "أو المتابعة باستخدام",
+      uaePassButton: "التسجيل باستخدام UAE PASS",
+      loginPrompt: "لديك حساب بالفعل؟",
+      loginLinkText: "تسجيل الدخول"
+    },
+    forgotPassword: {
+      heading: "إعادة تعيين كلمة المرور",
+      subheading: "أدخل بريدك الإلكتروني وسنرسل لك رمزاً لإعادة تعيين كلمة المرور.",
+      emailLabel: "البريد الإلكتروني",
+      emailPlaceholder: "أدخل بريدك الإلكتروني",
+      submitButton: "إرسال الرمز",
+      backToLoginText: "العودة لتسجيل الدخول",
+      otpLabel: "إدخال الرمز",
+      verifyButton: "تأكيد الرمز",
+      resendOtpText: "إعادة إرسال الرمز"
+    },
+    logout: {
+      heading: "لقد تم\nتسجيل خروجك بنجاح",
+      description: "شكراً لاستخدامك منصتنا. لقد انتهت جلستك بأمان.",
+      reloginButton: "تسجيل الدخول مرة أخرى",
+      homeButton: "العودة للرئيسية",
+      securityNote: "لأمانك، أغلق نافذة المتصفح هذه إذا كنت تستخدم حاسوباً عاماً."
+    }
+  },
+  dashboard: {
+    sidebar: {
+      overview: "نظرة عامة",
+      myBids: "مزايداتي",
+      favorites: "المفضلة",
+      settings: "الإعدادات",
+      logout: "تسجيل الخروج"
+    },
+    header: {
+      welcome: "مرحباً بعودتك",
+      backToSite: "العودة للموقع"
+    },
+    overview: {
+      title: "نظرة عامة",
+      stats: {
+        activeBids: "المزايدات النشطة",
+        wonAuctions: "المزادات الرابحة",
+        savedProperties: "العقارات المحفوظة"
+      },
+      recentActivity: "الأنشطة الأخيرة",
+      viewAll: "عرض الكل",
+      noActivity: "لا توجد أنشطة أخيرة."
+    },
+    bids: {
+      title: "مزايداتي",
+      description: "إدارة وتتبع جميع مزايداتك العقارية النشطة والسابقة.",
+      table: {
+        property: "العقار",
+        bidAmount: "مزايدتك",
+        currentHighest: "أعلى مزايدة",
+        status: "الحالة",
+        date: "التاريخ"
+      },
+      status: {
+        winning: "رابح",
+        outbid: "تم تجاوزه",
+        won: "فاز",
+        lost: "خسر"
+      }
+    },
+    favorites: {
+      title: "العقارات المحفوظة",
+      description: "العقارات التي قمت بحفظها كمفضلة.",
+      noFavorites: "لم تقم بحفظ أي عقارات بعد.",
+      browse: "تصفح العقارات"
+    },
+    settings: {
+      title: "إعدادات الحساب",
+      description: "إدارة تفاصيل حسابك وتفضيلاتك.",
+      tabs: {
+        personal: "المعلومات الشخصية",
+        security: "الأمان",
+        notifications: "الإشعارات"
+      },
+      form: {
+        firstName: "الاسم الأول",
+        lastName: "الاسم الأخير",
+        email: "البريد الإلكتروني",
+        phone: "رقم الهاتف",
+        brn: "رقم تسجيل الوسيط",
+        saveChanges: "حفظ التغييرات",
+        currentPassword: "كلمة المرور الحالية",
+        newPassword: "كلمة المرور الجديدة",
+        updatePassword: "تحديث كلمة المرور"
+      }
+    }
   }
-};
+}; 
