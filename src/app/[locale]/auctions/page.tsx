@@ -33,7 +33,7 @@ export default function AuctionsListingPage() {
         setLiveAuctions(liveRes.data.data || []);
         setUpcomingAuctions(upcomingRes.data.data || []);
       } catch (err) {
-        console.error("Error fetching auctions:", err);
+        console.error("Error fetching live offers:", err);
       } finally {
         setIsLoading(false);
       }

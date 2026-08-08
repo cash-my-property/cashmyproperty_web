@@ -64,7 +64,7 @@ export default function LiveAuctionPage() {
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 font-medium">
             <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/auctions`} className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors">Auctions</Link>
+            <Link href={`/${locale}/auctions`} className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors">Live Offers</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold">{auctionData.id}</span>
           </div>
@@ -144,7 +144,7 @@ export default function LiveAuctionPage() {
 
             <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">{content.property.description}</h3>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-[15px] mb-8">
-              An exceptional {auctionData.type.toLowerCase()} offering luxurious living spaces, premium finishes, and breathtaking views. This distress property is listed exclusively on our platform for a 7-day fast-track auction. Act quickly to secure this premium asset below market value.
+              An exceptional {auctionData.type.toLowerCase()} offering luxurious living spaces, premium finishes, and breathtaking views. This distress property is listed exclusively on our platform for a 7-day fast-track live offer. Act quickly to secure this premium asset below market value.
             </p>
           </div>
         </div>

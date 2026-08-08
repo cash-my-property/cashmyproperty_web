@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Cash My Property",
-  description: "The premier digital real estate auction platform in the UAE.",
+  description: "The premier digital real estate live offer platform in the UAE.",
   url: "https://cashmyproperty.ae",
   mainNav: [
     { title: "Home", href: "/" },
@@ -11,7 +11,7 @@ export const siteConfig = {
   footer: {
     quickLinks: [
       { title: "Home", href: "/" },
-      { title: "Auctions", href: "#" },
+      { title: "Live Offers", href: "#" },
       { title: "Property Listings", href: "#" },
       { title: "FAQs", href: "#" },
     ],

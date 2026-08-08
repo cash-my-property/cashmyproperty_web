@@ -18,7 +18,7 @@ export default function FavoritesPage() {
       beds: 5,
       baths: 6,
       sqft: "8,500",
-      status: "Active Auction"
+      status: "Active Live Offer"
     },
     {
       id: "PROP-8102",
