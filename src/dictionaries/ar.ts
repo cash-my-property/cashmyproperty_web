@@ -191,7 +191,7 @@ export const content = {
         }
       }
     },
-    realtimeOffers: {
+    realtimebids: {
       label: "مزادات مباشرة",
       heading: "عروض في الوقت الفعلي",
       description: "قوائم العقارات المتعثرة حالياً في مزاد نشط لمدة 7 أيام. قدم عطاءك الآن قبل انتهاء الوقت.",
@@ -338,7 +338,7 @@ export const content = {
       beds: "غرف",
       sqft: "قدم مربع",
       viewDetails: "عرض التفاصيل",
-      startingBid: "يبدأ المزاد من"
+      startingOffer: "يبدأ المزاد من"
     },
     items: [
       {
@@ -450,14 +450,14 @@ export const content = {
       description: "شارك في مزادات حية للعقارات ذات القيمة العالية. آمنة، شفافة، وسريعة."
     },
     liveStatus: "مباشر الآن",
-    bidding: {
+    offering: {
       currentBid: "أعلى مزايدة حالية",
       minIncrement: "الحد الأدنى للزيادة",
       endsIn: "ينتهي المزاد في",
-      placeBidBtn: "قدم مزايدة",
-      bidPlaceholder: "أدخل مبلغ المزايدة",
-      bidHistory: "سجل المزايدات",
-      bidders: "المزايدون"
+      placeOfferBtn: "قدم مزايدة",
+      offerPlaceholder: "أدخل مبلغ المزايدة",
+      offerHistory: "سجل المزايدات",
+      buyers: "المزايدون"
     },
     property: {
       description: "وصف العقار",

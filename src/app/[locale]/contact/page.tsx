@@ -9,7 +9,7 @@ export default function ContactPage() {
   const content = dict;
 
   return (
-    <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#0F172A] transition-colors min-h-screen">
+    <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* HERO BANNER */}
       <section className="relative w-full h-[300px] sm:h-[400px] flex items-center justify-center overflow-hidden">
@@ -20,7 +20,7 @@ export default function ContactPage() {
             backgroundImage: 'url("https://images.unsplash.com/photo-1577493340887-b7bfff550145?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")'
           }}
         />
-        <div className="absolute inset-0 bg-[#1B3A2D]/85 dark:bg-[#0F172A]/90 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-[#1B3A2D]/85 dark:bg-[#091711]/90 mix-blend-multiply" />
         
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center pt-10">
           <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[12px] mb-4 uppercase bg-white/10 px-5 py-2 rounded-full backdrop-blur-sm border border-white/10">
@@ -39,8 +39,8 @@ export default function ContactPage() {
       <section className="py-16 sm:py-24 px-6 lg:px-12 w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-start">
         
         {/* Left Side: Contact Form */}
-        <div className="w-full lg:w-[60%] bg-white dark:bg-[#1E293B] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-slate-800">
-          <p className="text-[#1A3626] dark:text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase">
+        <div className="w-full lg:w-[60%] bg-white dark:bg-[#102418] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626]">
+          <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-3 uppercase">
             {content.contact.main.label}
           </p>
           <h2 className="text-[32px] sm:text-[38px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -59,7 +59,7 @@ export default function ContactPage() {
                 <input
                   type="text"
                   placeholder={content.contact.main.form.firstNamePlaceholder}
-                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -70,7 +70,7 @@ export default function ContactPage() {
                 <input
                   type="text"
                   placeholder={content.contact.main.form.lastNamePlaceholder}
-                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
             </div>
@@ -83,7 +83,7 @@ export default function ContactPage() {
                 <input
                   type="email"
                   placeholder={content.contact.main.form.emailPlaceholder}
-                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -94,7 +94,7 @@ export default function ContactPage() {
                 <input
                   type="tel"
                   placeholder={content.contact.main.form.phonePlaceholder}
-                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
               </div>
             </div>
@@ -106,14 +106,14 @@ export default function ContactPage() {
               <textarea
                 placeholder={content.contact.main.form.messagePlaceholder}
                 rows={4}
-                className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
+                className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
                 required
               ></textarea>
             </div>
 
             <button
               type="submit"
-              className="w-full py-4 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-all duration-300 shadow-sm hover:shadow-md mt-4"
+              className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-all duration-300 shadow-sm hover:shadow-md mt-4"
             >
               {content.contact.main.form.submitButton}
             </button>
@@ -124,7 +124,7 @@ export default function ContactPage() {
         <div className="w-full lg:w-[40%] flex flex-col gap-8">
           
           {/* Office Info Card */}
-          <div className="bg-[#1A3626] dark:bg-slate-800 rounded-3xl p-8 sm:p-10 text-white shadow-lg">
+          <div className="bg-[#1A3626] dark:bg-[#102418] rounded-3xl p-8 sm:p-10 text-white shadow-lg">
             <h3 className="text-[24px] font-bold mb-8" style={{ fontFamily: "var(--font-playfair), serif" }}>
               {content.contact.main.office.title}
             </h3>
@@ -175,15 +175,15 @@ export default function ContactPage() {
           </div>
           
           {/* Map Placeholder */}
-          <div className="w-full h-[300px] bg-gray-200 dark:bg-slate-700 rounded-3xl overflow-hidden shadow-sm relative group">
+          <div className="w-full h-[300px] bg-gray-200 dark:bg-[#163321] rounded-3xl overflow-hidden shadow-sm relative group">
             <div 
               className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
               style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80")' }}
             />
             {/* Map Overlay Button */}
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-               <button className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white px-6 py-3 rounded-full font-bold text-[14px] shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
-                 <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284]" /> Get Directions
+               <button className="bg-white dark:bg-[#102418] text-gray-900 dark:text-white px-6 py-3 rounded-full font-bold text-[14px] shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+                 <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> Get Directions
                </button>
             </div>
           </div>

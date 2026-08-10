@@ -7,10 +7,14 @@ import { useParams } from "next/navigation";
 import { ShieldCheck, MapPin, ChevronRight, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
+import api from "@/lib/api";
 
 export default function PropertyDetailPage() {
   const { dict, locale } = useDictionary();
   const params = useParams();
+  const { isAuthenticated, user } = useAuth();
   const contactForm = dict.contact.main.form;
 
   const [activeImage, setActiveImage] = useState(0);
@@ -23,8 +27,15 @@ export default function PropertyDetailPage() {
         const id = params.id as string;
         if (!id) return;
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-        const res = await axios.get(`${API_URL}/public/property-details/${id}`);
-        setPropertyInfo(res.data.data);
+        
+        let res;
+        if (isAuthenticated && user?.role === 'buyer') {
+          res = await api.get(`/buyer/auction-details/${id}`);
+        } else {
+          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        }
+        
+        setPropertyInfo(res.data.data || res.data);
       } catch (err) {
         console.error("Error fetching property details", err);
       } finally {
@@ -32,7 +43,7 @@ export default function PropertyDetailPage() {
       }
     };
     fetchDetails();
-  }, [params.id]);
+  }, [params.id, isAuthenticated, user]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,17 +52,17 @@ export default function PropertyDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#0A101C] pt-32 sm:pt-36 pb-16 items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
+      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </main>
     );
   }
 
   if (!propertyInfo) {
     return (
-      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#0A101C] pt-32 sm:pt-36 pb-16 items-center justify-center">
+      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Property not found</h1>
-        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#5CD284] underline">Back to listings</Link>
+        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">Back to listings</Link>
       </main>
     );
   }
@@ -61,7 +72,8 @@ export default function PropertyDetailPage() {
   const title = details.propertyTitle || "Untitled Property";
   const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
   const priceAmount = details.propertyPrice?.amount || details.propertyPrice || 0;
-  const price = propertyInfo.currentHighestBid ? `Ð ${propertyInfo.currentHighestBid.toLocaleString()}` : `Ð ${priceAmount.toLocaleString()}`;
+  const highestBid = propertyInfo.currentHighestBid || (typeof propertyInfo.currentHighestOffer === 'object' ? propertyInfo.currentHighestOffer?.amount : propertyInfo.currentHighestOffer);
+  const price = highestBid ? `Ð ${highestBid.toLocaleString()}` : `Ð ${priceAmount.toLocaleString()}`;
   const type = details.propertyType || "N/A";
   const beds = details.propertyBedrooms || 0;
   const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
@@ -77,21 +89,21 @@ export default function PropertyDetailPage() {
   const features = details.propertyFeatures || ["Central A/C", "Balcony", "Shared Pool", "Security"];
 
   return (
-    <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#0A101C] pt-32 sm:pt-36 pb-16 transition-colors">
+    <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 transition-colors">
       
       {/* Top Breadcrumb & Status */}
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors">Home</Link>
+            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#5CD284] transition-colors">Properties</Link>
+            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Properties</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold">{propertyInfo.PID || propertyInfo._id}</span>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] px-4 py-1.5 rounded-full border border-[#5CD284]/20">
+            <div className="flex items-center gap-2 bg-[#5CD284]/10 text-[#1A3626] dark:text-[#c9a14b] px-4 py-1.5 rounded-full border border-[#5CD284]/20">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-[12px] font-bold tracking-widest uppercase">{propertyInfo.status || 'Available'}</span>
             </div>
@@ -105,10 +117,10 @@ export default function PropertyDetailPage() {
         <div className="lg:col-span-8 flex flex-col gap-8">
           
           {/* Gallery */}
-          <div className="bg-white dark:bg-[#1E293B] p-2 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-slate-800">
-            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] rounded-2xl overflow-hidden mb-2 bg-gray-100 dark:bg-slate-900 group">
+          <div className="bg-white dark:bg-[#102418] p-2 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-[#1A3626]">
+            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] rounded-2xl overflow-hidden mb-2 bg-gray-100 dark:bg-[#091711] group">
               <Image src={images[activeImage] || images[0]} alt="Property" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#1E293B]/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 flex items-center gap-2">
+              <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-[#1A3626] flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
                 <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Verified by DLD</span>
               </div>
@@ -120,7 +132,7 @@ export default function PropertyDetailPage() {
                 <button 
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative w-24 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 ${activeImage === idx ? 'border-[#1A3626] dark:border-[#5CD284] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  className={`relative w-24 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 ${activeImage === idx ? 'border-[#1A3626] dark:border-[#c9a14b] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
                   <Image src={img} alt="Thumbnail" fill className="object-cover" />
                 </button>
@@ -129,7 +141,7 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Property Info */}
-          <div className="bg-white dark:bg-[#1E293B] rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-[#1A3626]">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
               <div>
                 <h1 className="text-[28px] sm:text-[32px] font-bold text-gray-900 dark:text-white mb-2 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -140,28 +152,28 @@ export default function PropertyDetailPage() {
                   <span>{location}</span>
                 </div>
               </div>
-              <div className="shrink-0 bg-green-50 dark:bg-slate-800/80 px-5 py-3 rounded-2xl border border-green-100 dark:border-slate-700">
-                <p className="text-[13px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">{propertyInfo.currentHighestBid ? 'Highest Bid' : 'Asking Price'}</p>
-                <p className="text-[24px] font-bold text-[#1A3626] dark:text-[#5CD284] tabular-nums">
+              <div className="shrink-0 bg-green-50 dark:bg-[#102418]/80 px-5 py-3 rounded-2xl border border-green-100 dark:border-[#1A3626]">
+                <p className="text-[13px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">{propertyInfo.currentHighestOffer ? 'Highest Offer' : 'Asking Price'}</p>
+                <p className="text-[24px] font-bold text-[#1A3626] dark:text-[#c9a14b] tabular-nums">
                   {price}
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-gray-100 dark:border-slate-700 mb-8 bg-gray-50 dark:bg-slate-800/30 rounded-2xl px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-gray-100 dark:border-[#1A3626] mb-8 bg-gray-50 dark:bg-[#102418]/30 rounded-2xl px-6">
               <div className="flex flex-col gap-1">
                 <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Building2 className="w-4 h-4"/> Type</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{type}</span>
               </div>
-              <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-slate-700 pl-4">
+              <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-[#1A3626] pl-4">
                 <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Bed className="w-4 h-4"/> Bedrooms</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{beds}</span>
               </div>
-              <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-slate-700 pl-4">
+              <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-[#1A3626] pl-4">
                 <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Bath className="w-4 h-4"/> Bathrooms</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{baths}</span>
               </div>
-              <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-slate-700 pl-4">
+              <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-[#1A3626] pl-4">
                 <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Square className="w-4 h-4"/> Area (Sqft)</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{sqft}</span>
               </div>
@@ -199,11 +211,20 @@ export default function PropertyDetailPage() {
         <div className="lg:col-span-4">
           <div className="sticky top-24 flex flex-col gap-6">
             
-            {/* Reserved for Future Google Ads */}
-            <div className="bg-gray-100 dark:bg-slate-800/50 rounded-3xl p-6 border-2 border-dashed border-gray-300 dark:border-slate-700 flex flex-col items-center justify-center min-h-[400px] text-center">
-              <span className="text-gray-400 dark:text-gray-500 font-bold text-[14px] uppercase tracking-widest mb-2">Advertisement</span>
-              <p className="text-gray-500 dark:text-gray-400 text-[13px]">Space reserved for future Google Ads integration.</p>
-            </div>
+            {isAuthenticated && user?.role === 'buyer' ? (
+              <BuyerActionSidebar 
+                auctionId={params.id as string}
+                contractStatus={propertyInfo.userContractStatus?.status || 'NOT_SIGNED'}
+                canBid={propertyInfo.userContractStatus?.canBid || false}
+                onBidSuccess={() => window.location.reload()}
+                onContractSubmitted={() => window.location.reload()}
+              />
+            ) : (
+              <div className="bg-gray-100 dark:bg-[#102418]/50 rounded-3xl p-6 border-2 border-dashed border-gray-300 dark:border-[#1A3626] flex flex-col items-center justify-center min-h-[400px] text-center">
+                <span className="text-gray-400 dark:text-gray-500 font-bold text-[14px] uppercase tracking-widest mb-2">Advertisement</span>
+                <p className="text-gray-500 dark:text-gray-400 text-[13px]">Space reserved for future Google Ads integration.</p>
+              </div>
+            )}
 
           </div>
         </div>

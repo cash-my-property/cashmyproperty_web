@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const response = await api.post("/forgot-password", { email });
+      const response = await api.post("/auth/forgot-password", { email });
       if (response.data) {
         // Redirect to OTP verification with type=reset
         router.push(`/${locale}/verify-otp?email=${encodeURIComponent(email)}&type=reset`);
@@ -40,11 +40,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="flex-1 flex items-center justify-center p-6 pt-32 sm:pt-36 min-h-[80vh]">
-      <div className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
+      <div className="w-full max-w-md bg-white dark:bg-[#102418] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
         
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-[#1A3626]/10 dark:bg-[#5CD284]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail className="w-8 h-8 text-[#1A3626] dark:text-[#5CD284]" />
+          <div className="w-16 h-16 bg-[#1A3626]/10 dark:bg-[#c9a14b]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Mail className="w-8 h-8 text-[#1A3626] dark:text-[#c9a14b]" />
           </div>
           <h1 className="text-[32px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
             Forgot Password
@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
               placeholder="name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-colors"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
               required
             />
           </div>
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-4 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 group"
+            className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 group"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

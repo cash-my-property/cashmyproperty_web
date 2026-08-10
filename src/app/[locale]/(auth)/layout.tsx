@@ -15,14 +15,14 @@ export default function AuthLayout({
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push("/dashboard");
+      router.push("/");
     }
   }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-white dark:bg-[#0A101C]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
+      <div className="flex w-full min-h-screen items-center justify-center bg-white dark:bg-[#091711]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </div>
     );
   }

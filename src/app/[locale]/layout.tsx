@@ -51,7 +51,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} ${inter.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-screen flex flex-col bg-[#F4F5F7] dark:bg-[#0F172A] text-gray-900 dark:text-gray-100 font-sans selection:bg-green-500/20 selection:text-green-900 transition-colors">
+      <body suppressHydrationWarning className="min-h-screen flex flex-col bg-[#F4F5F7] dark:bg-[#091711] text-gray-900 dark:text-gray-100 font-sans selection:bg-green-500/20 selection:text-green-900 transition-colors">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <DictionaryProvider locale={locale as Locale}>

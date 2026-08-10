@@ -85,7 +85,7 @@ export const content = {
       features: [
         {
           title: "Transparency",
-          description: "Clear bidding processes with no hidden fees or scraped ads."
+          description: "Clear offering processes with no hidden fees or scraped ads."
         },
         {
           title: "Security",
@@ -165,7 +165,7 @@ export const content = {
   home: {
     hero: {
       headline: "The Premier Digital Real Estate Live Offer Platform in the UAE",
-      subheadline: "Buy, sell, and bid on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
+      subheadline: "Buy, sell, and offer on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
       searchPlaceholder: "Search by location, property type, or keywords...",
       searchButton: "Search Properties",
       filters: {
@@ -191,10 +191,10 @@ export const content = {
         }
       }
     },
-    realtimeOffers: {
+    realtimebids: {
       label: "Live Live Offers",
       heading: "Realtime Offers",
-      description: "Distress listings currently in an active 7-Day Live Offer. Bid now before the timer runs out.",
+      description: "Distress listings currently in an active 7-Day Live Offer. Offer now before the timer runs out.",
       viewAllText: "View All Live Offers",
       items: [
         {
@@ -282,8 +282,8 @@ export const content = {
           description: "Buyers must upload mandatory documents (Contract B, Emirates ID, 10% Cheque) to unlock the 'Place Offer' capability on live properties."
         },
         {
-          title: "Bid, Win & Close",
-          description: "Place your offers on Distress Listings (7-Day Live Offers) or purchase Simple Listings. Highest bidder wins at the end of the countdown timer!"
+          title: "Offer, Win & Close",
+          description: "Place your offers on Distress Listings (7-Day Live Offers) or purchase Simple Listings. Highest buyer wins at the end of the countdown timer!"
         }
       ]
     },
@@ -293,11 +293,11 @@ export const content = {
       features: [
         {
           title: "100% Transparency",
-          description: "No hidden fees, no opaque processes. All bids are tracked and visible, ensuring a fair market value for every transaction."
+          description: "No hidden fees, no opaque processes. All offers are tracked and visible, ensuring a fair market value for every transaction."
         },
         {
           title: "DLD Verified",
-          description: "Fully compliant with the Dubai Land Department regulations. We enforce mandatory document checks before any bid is placed."
+          description: "Fully compliant with the Dubai Land Department regulations. We enforce mandatory document checks before any offer is placed."
         },
         {
           title: "Speed & Liquidity",
@@ -308,7 +308,7 @@ export const content = {
     appDownload: {
       tagline: "Get the CMP App",
       heading: "Your Real Estate Portfolio, Now in Your Pocket",
-      description: "Experience the fastest way to bid, buy, and sell properties in the UAE. Download the Cash My Property app for real-time live offer alerts, document management, and seamless transactions.",
+      description: "Experience the fastest way to offer, buy, and sell properties in the UAE. Download the Cash My Property app for real-time live offer alerts, document management, and seamless transactions.",
       appStoreText: "Download on the",
       appStore: "App Store",
       playStoreText: "GET IT ON",
@@ -316,7 +316,7 @@ export const content = {
     },
     cta: {
       heading: "Ready to find your next property?",
-      description: "Join the premier digital real estate live offer platform in the UAE. Verified listings, transparent bidding, and secure transactions.",
+      description: "Join the premier digital real estate live offer platform in the UAE. Verified listings, transparent offering, and secure transactions.",
       buttonText: "Create an Account"
     }
   },
@@ -327,14 +327,14 @@ export const content = {
       description: "Participate in live offers for high-value properties. Secure, transparent, and fast."
     },
     liveStatus: "Live Now",
-    bidding: {
+    offering: {
       currentBid: "Current Highest Offer",
       minIncrement: "Minimum Increment",
       endsIn: "Offer Ends In",
-      placeBidBtn: "Place Offer",
-      bidPlaceholder: "Enter offer amount",
-      bidHistory: "Offer History",
-      bidders: "Participants"
+      placeOfferBtn: "Place Offer",
+      offerPlaceholder: "Enter offer amount",
+      offerHistory: "Offer History",
+      buyers: "Participants"
     },
     property: {
       description: "Property Description",
@@ -428,7 +428,7 @@ export const content = {
       },
       status: {
         winning: "Winning",
-        outbid: "Outbid",
+        outbid: "Outoffer",
         won: "Won",
         lost: "Lost"
       }

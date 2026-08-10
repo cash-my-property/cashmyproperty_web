@@ -45,7 +45,7 @@ function ResetPasswordContent() {
     setError("");
 
     try {
-      const response = await api.post("/reset-password", { 
+      const response = await api.post("/auth/reset-password", { 
         resetToken: token,
         newPassword
       });
@@ -64,11 +64,11 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
+    <div className="w-full max-w-md bg-white dark:bg-[#102418] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
       
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-[#1A3626]/10 dark:bg-[#5CD284]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Lock className="w-8 h-8 text-[#1A3626] dark:text-[#5CD284]" />
+        <div className="w-16 h-16 bg-[#1A3626]/10 dark:bg-[#c9a14b]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Lock className="w-8 h-8 text-[#1A3626] dark:text-[#c9a14b]" />
         </div>
         <h1 className="text-[32px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
           Set New Password
@@ -101,7 +101,7 @@ function ResetPasswordContent() {
               placeholder="Enter new password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-colors pr-10"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors pr-10"
               required
             />
             <button
@@ -122,7 +122,7 @@ function ResetPasswordContent() {
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#5CD284] transition-colors pr-10"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors pr-10"
               required
             />
             <button
@@ -138,7 +138,7 @@ function ResetPasswordContent() {
         <button
           type="submit"
           disabled={isLoading || success}
-          className="w-full py-4 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 group mt-2"
+          className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 group mt-2"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -159,7 +159,7 @@ export default function ResetPasswordPage() {
     <main className="flex-1 flex items-center justify-center p-6 pt-32 sm:pt-36 min-h-[80vh]">
       <Suspense fallback={
         <div className="flex items-center justify-center h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
         </div>
       }>
         <ResetPasswordContent />

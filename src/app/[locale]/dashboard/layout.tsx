@@ -19,8 +19,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading) {
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-[#F8F9FA] dark:bg-[#0A101C]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
+      <div className="flex w-full min-h-screen items-center justify-center bg-[#F8F9FA] dark:bg-[#091711]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </div>
     );
   }
@@ -28,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null; // prevent flashing content before redirect
 
   return (
-    <div className="flex w-full min-h-screen bg-[#F8F9FA] dark:bg-[#0A101C]">
+    <div className="flex w-full min-h-screen bg-[#F8F9FA] dark:bg-[#091711]">
       {/* Sidebar - fixed on desktop */}
       <div className="hidden lg:block fixed inset-y-0 z-50">
         <Sidebar />

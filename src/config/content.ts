@@ -323,7 +323,7 @@ export const content = {
   dashboard: {
     sidebar: {
       overview: "Overview",
-      myBids: "My Offers",
+      myOffers: "My Offers",
       favorites: "Favorites",
       settings: "Settings",
       logout: "Log Out"

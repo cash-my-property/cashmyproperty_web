@@ -56,7 +56,7 @@ function VerifyOtpContent() {
     setError("");
     
     try {
-      await api.post("/resend-otp", {
+      await api.post("/auth/resend-otp", {
         email: emailParam,
         type: typeParam
       });
@@ -79,7 +79,7 @@ function VerifyOtpContent() {
     setError("");
 
     try {
-      const response = await api.post("/verify-otp", {
+      const response = await api.post("/auth/verify-otp", {
         email: emailParam,
         enteredOtp,
         type: typeParam
@@ -105,7 +105,7 @@ function VerifyOtpContent() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white dark:bg-[#1E293B] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
+    <div className="w-full max-w-md bg-white dark:bg-[#102418] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
       <div className="text-center mb-8">
         <h1 className="text-[32px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>Verify Email</h1>
         <p className="text-[14px] text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -142,7 +142,7 @@ function VerifyOtpContent() {
               onChange={(e) => handleChange(e.target, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onFocus={(e) => e.target.select()}
-              className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-bold bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:border-[#1A3626] dark:focus:border-[#5CD284] focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 outline-none transition-all text-gray-900 dark:text-white"
+              className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-bold bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-xl focus:border-[#1A3626] dark:focus:border-[#c9a14b] focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 outline-none transition-all text-gray-900 dark:text-white"
             />
           ))}
         </div>
@@ -150,7 +150,7 @@ function VerifyOtpContent() {
         <button
           type="submit"
           disabled={isLoading || success}
-          className="w-full py-4 bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 group"
+          className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 group"
         >
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -172,7 +172,7 @@ function VerifyOtpContent() {
               <button
                 type="button"
                 onClick={handleResend}
-                className="font-bold text-[#1A3626] dark:text-[#5CD284] hover:underline ml-1 focus:outline-none"
+                className="font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline ml-1 focus:outline-none"
               >
                 Resend Now
               </button>
@@ -189,7 +189,7 @@ export default function VerifyOtpPage() {
     <main className="flex-1 flex items-center justify-center p-6 pt-32 sm:pt-36 min-h-[80vh]">
       <Suspense fallback={
         <div className="flex items-center justify-center h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
+          <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
         </div>
       }>
         <VerifyOtpContent />

@@ -30,8 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = async () => {
     try {
-      const response = await api.get('/my-profile');
-      setUser(response.data.data || response.data);
+      const response = await api.get('/auth/my-profile');
+      setUser(response.data.user || response.data.data || response.data);
     } catch (error) {
       console.error("Failed to fetch profile", error);
       Cookies.remove('token');
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       // Call backend logout
-      await api.post('/logout', {
+      await api.post('/auth/logout', {
         deviceInformation: {
           deviceId: "DEVICE_ID_1234"
         }
@@ -67,11 +67,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Logout API failed", e);
     } finally {
       Cookies.remove('token');
-      setUser(null);
-      // Redirect to the logout success page
+      // Redirect to the logout success page first
+      // We don't call setUser(null) here because the dashboard layout will instantly catch it 
+      // and redirect to /login before the window.location.href can execute, causing a race condition.
       if (typeof window !== 'undefined') {
         const locale = window.location.pathname.split('/')[1] || 'en';
         window.location.href = `/${locale}/logout`;
+      } else {
+        setUser(null);
       }
     }
   };

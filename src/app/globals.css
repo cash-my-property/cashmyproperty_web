@@ -19,11 +19,18 @@
   }
 
   .dark {
-    --background: #0A101C;
+    /* Exact match to the screenshot's dark green theme */
+    --background: #091711;
     --foreground: #f1f5f9;
     
-    --card: #1E293B;
+    --card: #102418;
     --card-border: rgba(255, 255, 255, 0.05);
+
+    /* Update brand colors for dark mode to match the gold accents */
+    --brand-primary: #c9a14b;
+    --brand-primary-hover: #D6A733;
+    --brand-secondary: #c9a14b;
+    --brand-secondary-hover: #D6A733;
   }
 
   body {

@@ -17,7 +17,7 @@ export default function LogoutPage() {
 
   return (
     <main className="flex-1 flex items-center justify-center p-6 sm:p-12 pt-32 sm:pt-36 transition-colors">
-      <div className="w-full max-w-[1000px] bg-white dark:bg-[#1E293B] rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex overflow-hidden min-h-[500px] transition-colors">
+      <div className="w-full max-w-[1000px] bg-white dark:bg-[#102418] rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] flex overflow-hidden min-h-[500px] transition-colors">
         
         {/* LEFT PANEL */}
         <div className="hidden lg:flex w-[45%] relative bg-[#1B3A2D] overflow-hidden flex-col items-center justify-center p-12 text-center">
@@ -99,14 +99,14 @@ export default function LogoutPage() {
             <div className="space-y-4 w-full">
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-white dark:text-[#1A3626] text-[15px] font-semibold transition-colors shadow-sm bg-[#1A3626] dark:bg-[#5CD284] hover:bg-[#12261a] dark:hover:bg-[#4ab872]"
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-white dark:text-[#1A3626] text-[15px] font-semibold transition-colors shadow-sm bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f]"
               >
                 {content.auth.logout.reloginButton} <ArrowRight className="w-4 h-4" />
               </Link>
 
               <Link
                 href="/"
-                className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-gray-700 dark:text-gray-300 text-[15px] font-semibold transition-colors bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700"
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-gray-700 dark:text-gray-300 text-[15px] font-semibold transition-colors bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] hover:bg-gray-50 dark:hover:bg-[#163321]"
               >
                 <Home className="w-4 h-4" />
                 {content.auth.logout.homeButton}
