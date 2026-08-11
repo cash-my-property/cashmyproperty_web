@@ -56,7 +56,7 @@ export default function OffersPage() {
             className="w-full bg-transparent border-none outline-none text-[13px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-xl text-[13px] font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#102418] w-full sm:w-auto transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-xl text-[13px] font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#102418] w-full sm:w-auto transition-colors cursor-pointer">
           <Filter className="w-4 h-4" /> Filter
         </button>
       </div>
@@ -65,7 +65,7 @@ export default function OffersPage() {
       <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden min-h-[400px]">
         {isLoading ? (
           <div className="flex items-center justify-center h-full min-h-[300px]">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
           </div>
         ) : bids.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-500 dark:text-gray-400">
@@ -102,7 +102,7 @@ export default function OffersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-bold uppercase ${
-                        offer.status === 'leading' ? 'bg-[#5CD284]/10 text-[#1A3626] dark:text-[#c9a14b]' :
+                        offer.status === 'leading' ? 'bg-[#5CD284]/10 text-[#1A3626] dark:text-[#915331]' :
                         offer.status === 'outbid' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400' :
                         offer.status === 'won' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
                         offer.status === 'lost' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :
@@ -119,7 +119,7 @@ export default function OffersPage() {
                       {offer.date}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-lg transition-colors">
+                      <button className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-lg transition-colors cursor-pointer">
                         <MoreHorizontal className="w-5 h-5" />
                       </button>
                     </td>

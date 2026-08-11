@@ -181,7 +181,7 @@ export default function SignupPage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300">{content.auth.signup.brnLabel} *</label>
-                {isFetchingBRN && <span className="text-[11px] text-[#1A3626] dark:text-[#c9a14b] flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> Validating...</span>}
+                {isFetchingBRN && <span className="text-[11px] text-[#1A3626] dark:text-[#915331] flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> Validating...</span>}
               </div>
               <div className="relative">
                 <input
@@ -192,7 +192,7 @@ export default function SignupPage() {
                     setBrokerNumber(e.target.value);
                     if (brnLocked) setBrnLocked(false); // Unlock if they change BRN
                   }}
-                  className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                  className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#915331] transition-colors"
                   required
                 />
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -210,7 +210,7 @@ export default function SignupPage() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   readOnly={brnLocked}
-                  className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#c9a14b]'}`}
+                  className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#915331]'}`}
                   required
                 />
               </div>
@@ -222,7 +222,7 @@ export default function SignupPage() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   readOnly={brnLocked}
-                  className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#c9a14b]'}`}
+                  className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#915331]'}`}
                   required
                 />
               </div>
@@ -238,7 +238,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   readOnly={brnLocked}
-                  className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#c9a14b]'}`}
+                  className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#915331]'}`}
                   required
                 />
               </div>
@@ -267,13 +267,13 @@ export default function SignupPage() {
                   placeholder="Create a strong password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors pr-12"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#915331] transition-colors pr-12"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -293,7 +293,7 @@ export default function SignupPage() {
                   placeholder={content.auth.signup.referralPlaceholder}
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#915331] transition-colors"
                 />
               </div>
 
@@ -305,7 +305,7 @@ export default function SignupPage() {
                     type="date"
                     value={emiratesIdIssue}
                     onChange={(e) => setEmiratesIdIssue(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                    className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#915331] transition-colors"
                     required
                   />
                 </div>
@@ -315,7 +315,7 @@ export default function SignupPage() {
                     type="date"
                     value={emiratesIdExpiry}
                     onChange={(e) => setEmiratesIdExpiry(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                    className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#915331] transition-colors"
                     required
                   />
                 </div>
@@ -329,7 +329,7 @@ export default function SignupPage() {
                     value={brokerCardIssue}
                     onChange={(e) => setBrokerCardIssue(e.target.value)}
                     readOnly={brnLocked}
-                    className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#c9a14b]'}`}
+                    className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#915331]'}`}
                     required
                   />
                 </div>
@@ -340,7 +340,7 @@ export default function SignupPage() {
                     value={brokerCardExpiry}
                     onChange={(e) => setBrokerCardExpiry(e.target.value)}
                     readOnly={brnLocked}
-                    className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#c9a14b]'}`}
+                    className={`w-full px-4 py-3 rounded-lg text-[14px] focus:outline-none transition-colors ${brnLocked ? 'bg-gray-100 dark:bg-[#163321]/50 border border-transparent text-gray-500 cursor-not-allowed' : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#915331]'}`}
                     required
                   />
                 </div>
@@ -364,7 +364,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 mt-6 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-lg font-semibold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2"
+              className="w-full py-4 mt-6 bg-[#1A3626] dark:bg-[#915331] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-lg font-semibold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
               {content.auth.signup.submitButton}

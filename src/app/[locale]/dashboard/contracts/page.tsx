@@ -39,7 +39,7 @@ export default function ContractsPage() {
       <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden min-h-[400px]">
         {isLoading ? (
           <div className="flex items-center justify-center h-full min-h-[300px]">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
           </div>
         ) : contracts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-500 dark:text-gray-400">
@@ -94,7 +94,7 @@ export default function ContractsPage() {
                       {new Date(contract.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link href={`/${locale}/listings/${contract.property?.propertyId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
+                      <Link href={`/${locale}/listings/${contract.property?.propertyId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#915331] hover:underline">
                         View Auction <ArrowRight className="w-4 h-4" />
                       </Link>
                     </td>

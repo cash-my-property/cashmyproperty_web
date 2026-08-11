@@ -22,7 +22,7 @@ export default function AuthLayout({
   if (isLoading) {
     return (
       <div className="flex w-full min-h-screen items-center justify-center bg-white dark:bg-[#091711]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
       </div>
     );
   }

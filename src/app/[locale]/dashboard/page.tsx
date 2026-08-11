@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardOverviewPage() {
   const { dict, locale } = useDictionary();
@@ -17,10 +18,22 @@ export default function DashboardOverviewPage() {
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
+        const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
+        
+        if (role === 'seller') {
+          // Temporarily set empty stats for seller until seller dashboard API is ready
+          setActiveBidsCount("0");
+          setWonAuctionsCount("0");
+          setRecentActivity([]);
+          return;
+        }
+
         // Fetch active bids and history in parallel
         const [myBidsRes, historyRes] = await Promise.all([
           api.get('/buyer/my-bids'),
@@ -69,8 +82,10 @@ export default function DashboardOverviewPage() {
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const stats = [
     { label: content.stats.activeBids, value: activeBidsCount, icon: Gavel, color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -81,7 +96,7 @@ export default function DashboardOverviewPage() {
   if (isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
       </div>
     );
   }
@@ -113,7 +128,7 @@ export default function DashboardOverviewPage() {
       <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
         <div className="p-6 border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{content.recentActivity}</h2>
-          <Link href={`/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:underline flex items-center gap-1">
+          <Link href={`/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#915331] hover:underline flex items-center gap-1">
             {content.viewAll} <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

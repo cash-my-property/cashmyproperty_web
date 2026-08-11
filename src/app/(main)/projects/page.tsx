@@ -209,7 +209,7 @@ export default function ProjectsPage() {
           <div className="glass-card rounded-3xl border border-slate-700 max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-200">
             <button
               onClick={() => setActiveModalProject(null)}
-              className="absolute top-6 right-6 p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white"
+              className="absolute top-6 right-6 p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -269,7 +269,7 @@ export default function ProjectsPage() {
 
             <button
               onClick={() => setActiveModalProject(null)}
-              className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-slate-800 hover:bg-slate-700 transition-colors"
+              className="w-full py-3 rounded-xl font-semibold text-sm text-white bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer"
             >
               Close Case Study
             </button>

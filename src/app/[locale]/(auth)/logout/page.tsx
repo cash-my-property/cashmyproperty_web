@@ -99,7 +99,7 @@ export default function LogoutPage() {
             <div className="space-y-4 w-full">
               <Link
                 href="/login"
-                className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-white dark:text-[#1A3626] text-[15px] font-semibold transition-colors shadow-sm bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f]"
+                className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-white dark:text-[#1A3626] text-[15px] font-semibold transition-colors shadow-sm bg-[#1A3626] dark:bg-[#915331] hover:bg-[#12261a] dark:hover:bg-[#b38d3f]"
               >
                 {content.auth.logout.reloginButton} <ArrowRight className="w-4 h-4" />
               </Link>

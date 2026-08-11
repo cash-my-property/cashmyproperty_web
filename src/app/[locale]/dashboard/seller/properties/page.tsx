@@ -1,0 +1,287 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import api from "@/lib/api";
+import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useDictionary } from "@/components/DictionaryProvider";
+import { useRouter } from "next/navigation";
+
+export default function MyPropertiesPage() {
+  const { locale } = useDictionary();
+  const router = useRouter();
+  const [properties, setProperties] = useState<any[]>([]);
+  const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
+  const [editModalProperty, setEditModalProperty] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setIsLoading(true);
+        // Pass page, limit, status, and sortBy to bypass cache issues and get precise data
+        let url = `/seller/my-properties?page=${currentPage}&limit=10&sortBy=${sortBy}`;
+        if (statusFilter !== "all") {
+          url += `&status=${statusFilter}`;
+        }
+        const response = await api.get(url);
+        setProperties(response.data?.result?.data || response.data?.data || []);
+      } catch (error) {
+        console.error("Failed to fetch my properties", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProperties();
+  }, [currentPage, statusFilter, sortBy]);
+
+  return (
+    <div className="p-4 sm:p-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Properties</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Manage all the properties you have added</p>
+        </div>
+        <Link 
+          href={`/${locale}/dashboard/seller/add-property`}
+          className="bg-[#1A3626] dark:bg-[#915331] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#1A3626]/90 transition-colors"
+        >
+          Add New Property
+        </Link>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-[#5CD284]" />
+        </div>
+      ) : properties.length === 0 ? (
+        <div className="bg-white dark:bg-[#102418] rounded-3xl p-12 border border-gray-100 dark:border-[#1A3626] text-center flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-20 h-20 bg-gray-50 dark:bg-[#1A3626]/30 rounded-full flex items-center justify-center mb-6">
+            <Building className="w-10 h-10 text-gray-400 dark:text-[#915331]" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Properties Yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">You haven't added any properties to the platform yet. Add your first property to start receiving offers.</p>
+          <Link 
+            href={`/${locale}/dashboard/seller/add-property`}
+            className="bg-[#1A3626] dark:bg-[#915331] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity"
+          >
+            Add Property
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {properties.map((property) => (
+            <div key={property._id || property.propertyId} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group">
+              <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711] w-full">
+                {property.image ? (
+                  <img 
+                    src={property.image} 
+                    alt={property.title || "Property"}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Building className="w-10 h-10 text-gray-300" />
+                  </div>
+                )}
+                
+                <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-bold text-[#1A3626] dark:text-[#915331] uppercase tracking-wider shadow-md flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${property.status === 'REJECTED' ? 'bg-red-500' : property.status === 'AWAITING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {property.status || "PENDING"}
+                </div>
+              </div>
+
+              <div className="p-4 pt-5 flex flex-col flex-1">
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">
+                    {property.title}
+                  </h3>
+                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#915331] leading-none whitespace-nowrap">
+                    Ð {property.price?.amount?.toLocaleString() || 0}
+                  </span>
+                </div>
+                
+                <p className="text-[#1A3626] dark:text-[#915331] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                  <MapPin className="w-4 h-4" />
+                  <span className="line-clamp-1">{property.location || "Dubai"}</span>
+                </p>
+                
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {property.specs?.beds || 0}</div>
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {property.specs?.washrooms || property.specs?.baths || 0}</div>
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#915331]" /> {property.area?.value || 0} {property.area?.unit || "sqft"}</div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
+                  <button 
+                    onClick={() => setViewModalProperty(property)}
+                    className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Eye className="w-4 h-4" /> View
+                  </button>
+                  <button 
+                    onClick={() => setEditModalProperty(property)}
+                    className="flex-1 py-2 text-sm font-semibold text-[#1A3626] dark:text-[#915331] bg-green-50 dark:bg-[#915331]/10 hover:bg-green-100 dark:hover:bg-[#915331]/20 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Edit className="w-4 h-4" /> Edit
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* View Property Modal */}
+      {viewModalProperty && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-[#1A3626]">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Property Details</h2>
+              <button onClick={() => setViewModalProperty(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-full transition-colors">
+                <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                {viewModalProperty.image ? (
+                  <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden shadow-sm">
+                    <img 
+                      src={viewModalProperty.image} 
+                      alt={viewModalProperty.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <Building className="w-12 h-12 text-gray-300" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{viewModalProperty.title}</h3>
+                  <p className="text-[#1A3626] dark:text-[#5CD284] text-xl font-bold">AED {viewModalProperty.price?.amount?.toLocaleString() || 0}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-gray-50 dark:bg-[#163321]/50 p-4 rounded-2xl">
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.status || "PENDING"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Property ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.propertyId || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
+                    <p className="font-semibold text-gray-900 dark:text-white line-clamp-1">{viewModalProperty.location}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Area</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.area?.value || 0} {viewModalProperty.area?.unit || "sqft"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Bedrooms</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.specs?.beds || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Washrooms</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.specs?.washrooms || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Date Added</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{new Date(viewModalProperty.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Description</h4>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {viewModalProperty.description || "No description provided."}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] flex justify-end">
+              <button 
+                onClick={() => setViewModalProperty(null)}
+                className="px-6 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Property Modal */}
+      {editModalProperty && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-[#1A3626]">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Property</h2>
+              <button onClick={() => setEditModalProperty(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-full transition-colors">
+                <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto space-y-6">
+              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 text-orange-800 dark:text-orange-400 p-4 rounded-xl text-sm">
+                <strong>Note:</strong> Currently, properties that are {editModalProperty.status} cannot be edited directly via the generic endpoint. Wait for admin rejection to make changes, or contact support.
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Title</label>
+                <input 
+                  defaultValue={editModalProperty.title} 
+                  className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Price (AED)</label>
+                <input 
+                  type="number"
+                  defaultValue={editModalProperty.price?.amount} 
+                  className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                <textarea 
+                  rows={4}
+                  defaultValue={editModalProperty.description} 
+                  className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] resize-none" 
+                />
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] flex justify-end gap-3">
+              <button 
+                onClick={() => setEditModalProperty(null)}
+                className="px-6 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  alert("Property Edit action is mocked for this modal.");
+                  setEditModalProperty(null);
+                }}
+                className="px-6 py-2.5 bg-[#1A3626] dark:bg-[#915331] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

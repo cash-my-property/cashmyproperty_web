@@ -51,7 +51,7 @@ export default function FavoritesPage() {
             className="w-full bg-transparent border-none outline-none text-[13px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-xl text-[13px] font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#102418] w-full sm:w-auto transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-xl text-[13px] font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#102418] w-full sm:w-auto transition-colors cursor-pointer">
           <Filter className="w-4 h-4" /> Filter
         </button>
       </div>
@@ -67,17 +67,17 @@ export default function FavoritesPage() {
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <button className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-rose-500 hover:bg-white transition-colors shadow-sm">
+              <button className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-rose-500 hover:bg-white transition-colors shadow-sm cursor-pointer">
                 <Heart className="w-4 h-4 fill-current" />
               </button>
-              <div className="absolute top-4 left-4 bg-[#1A3626]/90 dark:bg-[#c9a14b]/90 backdrop-blur-sm text-white dark:text-[#1A3626] px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase">
+              <div className="absolute top-4 left-4 bg-[#1A3626]/90 dark:bg-[#915331]/90 backdrop-blur-sm text-white dark:text-[#1A3626] px-3 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase">
                 {prop.status}
               </div>
             </div>
             
             <div className="p-5">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-1">{prop.property}</h3>
-              <p className="text-xl font-bold text-[#1A3626] dark:text-[#c9a14b] mb-4">{prop.price}</p>
+              <p className="text-xl font-bold text-[#1A3626] dark:text-[#915331] mb-4">{prop.price}</p>
               
               <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-[#1A3626] pt-4 mb-4">
                 <div className="flex items-center gap-1">
@@ -93,9 +93,9 @@ export default function FavoritesPage() {
 
               <Link 
                 href={`/${locale}/listings/${prop.id}`}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-50 dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] font-bold text-[13px] hover:bg-green-50 dark:hover:bg-[#c9a14b]/10 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-50 dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] font-bold text-[13px] hover:bg-green-50 dark:hover:bg-[#915331]/10 transition-colors"
               >
-                View Details <ArrowRight className="w-4 h-4" />
+                Make Offer <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>

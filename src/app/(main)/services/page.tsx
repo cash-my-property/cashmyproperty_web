@@ -113,7 +113,7 @@ export default function ServicesPage() {
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className="w-14 h-8 rounded-full bg-slate-800 border border-slate-700 p-1 relative transition-colors focus:outline-none"
+            className="w-14 h-8 rounded-full bg-slate-800 border border-slate-700 p-1 relative transition-colors focus:outline-none cursor-pointer"
             aria-label="Toggle Billing Frequency"
           >
             <div
@@ -248,7 +248,7 @@ export default function ServicesPage() {
             >
               <button
                 onClick={() => setOpenFaq(openFaq === fIdx ? null : fIdx)}
-                className="w-full p-6 text-left flex items-center justify-between gap-4 font-semibold text-white hover:text-cyan-300 transition-colors"
+                className="w-full p-6 text-left flex items-center justify-between gap-4 font-semibold text-white hover:text-cyan-300 transition-colors cursor-pointer"
               >
                 <span>{faq.q}</span>
                 <ChevronDown

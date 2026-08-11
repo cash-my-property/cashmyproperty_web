@@ -31,7 +31,7 @@ export default function Footer() {
         
         {/* Brand Info (Spans 4 cols on Desktop) */}
         <div className="lg:col-span-4 lg:pr-8 flex flex-col items-start">
-          <Image src="/logo.png" alt={siteConfig.name} width={150} height={42} style={{ width: "auto", height: "auto" }} className="mb-6 object-contain brightness-0 invert opacity-100 transition-opacity" />
+          <Image src="/cmpfavicon-removebg-preview.png" alt={siteConfig.name} width={150} height={42} style={{ width: "auto", height: "auto" }} className="mb-6 object-contain opacity-100 transition-opacity" />
           <p className="text-green-100/60 text-[15px] leading-relaxed mb-8">
             {siteConfig.description}
           </p>

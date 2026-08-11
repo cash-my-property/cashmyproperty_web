@@ -91,7 +91,7 @@ export default function AuctionsListingPage() {
                   {Object.entries(dict.home.hero.filters.types).map(([key, value]) => (
                     <div 
                       key={key} 
-                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#915331]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                       onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
                     >
                       {value as string}
@@ -118,7 +118,7 @@ export default function AuctionsListingPage() {
                   {["All", "Active", "Upcoming"].map((statusValue) => (
                     <div 
                       key={statusValue} 
-                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedStatus === statusValue ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedStatus === statusValue ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#915331]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                       onClick={() => { setSelectedStatus(statusValue); setActiveDropdown(null); }}
                     >
                       {statusValue}
@@ -128,7 +128,7 @@ export default function AuctionsListingPage() {
               )}
             </div>
 
-            <button className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold text-[14px] hover:bg-red-600 transition-colors flex items-center justify-center gap-2">
+            <button className="bg-red-500 text-white px-8 py-3 rounded-xl font-bold text-[14px] hover:bg-red-600 transition-colors flex items-center justify-center gap-2 cursor-pointer">
               <Filter className="w-4 h-4" />
               {content.hero.searchButton}
             </button>
@@ -235,21 +235,31 @@ export default function AuctionsListingPage() {
                   <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   
                   {/* Badges */}
-                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
                      <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {item.status || 'ACTIVE'}
                   </div>
                   
-                  <div className="absolute top-4 right-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
+                  <div className="absolute top-4 right-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
                      <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
                   </div>
 
-                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
+                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
                      PID-{item.PID || item._id.substring(0,8).toUpperCase()}
                   </div>
 
                   <div 
-                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); /* Add share logic here */ }}
+                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#915331] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors"
+                    onClick={(e) => { 
+                      e.preventDefault(); 
+                      e.stopPropagation(); 
+                      const shareUrl = `${window.location.origin}/${locale}/auctions/${item._id}`;
+                      if (navigator.share) {
+                        navigator.share({ title: title, url: shareUrl }).catch(console.error);
+                      } else {
+                        navigator.clipboard.writeText(shareUrl);
+                        alert("Link copied to clipboard!");
+                      }
+                    }}
                   >
                      <Share2 className="w-4 h-4" />
                   </div>
@@ -258,38 +268,38 @@ export default function AuctionsListingPage() {
                 <div className="p-4 pt-5 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">Ð {priceValue}</span>
+                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#915331] leading-none whitespace-nowrap">Ð {priceValue}</span>
                   </div>
                   
-                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                  <p className="text-[#1A3626] dark:text-[#915331] text-[13px] font-medium flex items-center gap-1.5 mb-4">
                     <MapPin className="w-4 h-4" /> {location}
                   </p>
                   
                   <div className="flex items-center gap-4 mb-5">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {beds}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {baths}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#915331]" /> {area}</div>
                   </div>
                   
                   <div className="flex items-center justify-between mb-5">
                     <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
-                    <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                      View Details
+                    <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#915331] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
+                      Make Offer
                     </div>
                   </div>
 
                   {/* Footer Grid */}
                   <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
+                      <span className="text-[#1A3626] dark:text-[#915331] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
+                      <span className="text-[#1A3626] dark:text-[#915331] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
+                      <span className="text-[#1A3626] dark:text-[#915331] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
                     </div>
                   </div>

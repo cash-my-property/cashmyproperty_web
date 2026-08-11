@@ -3,17 +3,20 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, ShieldCheck, MapPin, ChevronRight, CheckCircle2, TrendingUp, Users } from "lucide-react";
+import { Clock, ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, TrendingUp, Users, Share2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LiveAuctionPage() {
   const { dict, locale } = useDictionary();
+  const { isAuthenticated } = useAuth();
   const content = dict.auctions;
   const auctionData = content.auctionData;
 
   const [activeImage, setActiveImage] = useState(0);
   const [offers, setBids] = useState(auctionData.initialBids);
   const [currentBid, setCurrentBid] = useState(auctionData.initialBids[0].amount);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Countdown timer logic
   const [timeLeftStr, setTimeLeftStr] = useState("Loading...");
@@ -44,6 +47,10 @@ export default function LiveAuctionPage() {
 
   const handlePlaceOffer = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
     const newBid = currentBid + auctionData.minIncrement;
     const newBidObj = {
       id: offers.length + 1,
@@ -91,12 +98,38 @@ export default function LiveAuctionPage() {
           
           {/* Gallery */}
           <div className="bg-white dark:bg-[#102418] p-2 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]">
-            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] rounded-2xl overflow-hidden mb-2 bg-gray-100 dark:bg-[#091711]">
-              <Image src={auctionData.images[activeImage]} alt="Property" fill className="object-cover" />
-              <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-[#1A3626] flex items-center gap-2">
+            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] rounded-2xl overflow-hidden mb-2 bg-gray-100 dark:bg-[#091711] group">
+              <Image src={auctionData.images[activeImage]} alt="Property" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+              <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-[#1A3626] flex items-center gap-2 z-10">
                 <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
                 <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Verified by DLD</span>
               </div>
+              
+              {/* Carousel Arrows */}
+              {auctionData.images.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setActiveImage((prev) => (prev === 0 ? auctionData.images.length - 1 : prev - 1));
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#915331] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setActiveImage((prev) => (prev === auctionData.images.length - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#915331] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Thumbnails */}
@@ -118,9 +151,25 @@ export default function LiveAuctionPage() {
             <h1 className="text-[28px] sm:text-[32px] font-bold text-gray-900 dark:text-white mb-4 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
               {auctionData.title}
             </h1>
-            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-[15px] mb-8">
-              <MapPin className="w-5 h-5" />
-              <span>{auctionData.location}</span>
+            <div className="flex items-center gap-4 text-gray-500 dark:text-gray-400 text-[15px] mb-8">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span>{auctionData.location}</span>
+              </div>
+              <button 
+                onClick={() => {
+                  const shareUrl = window.location.href;
+                  if (navigator.share) {
+                    navigator.share({ title: auctionData.title, url: shareUrl }).catch(console.error);
+                  } else {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert("Link copied to clipboard!");
+                  }
+                }}
+                className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
+              >
+                <Share2 className="w-4 h-4" /> Share
+              </button>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-gray-100 dark:border-[#1A3626] mb-8">
@@ -176,7 +225,7 @@ export default function LiveAuctionPage() {
                 </div>
 
                 <form onSubmit={handlePlaceOffer} className="flex flex-col gap-4">
-                  <button type="submit" className="w-full bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold text-[16px] py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(92,210,132,0.3)] hover:shadow-[0_0_30px_rgba(92,210,132,0.5)]">
+                  <button type="submit" className="w-full bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold text-[16px] py-4 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(92,210,132,0.3)] hover:shadow-[0_0_30px_rgba(92,210,132,0.5)] cursor-pointer">
                     {content.offering.placeOfferBtn} (Ð {(currentBid + auctionData.minIncrement).toLocaleString()})
                   </button>
                   <p className="text-white/40 text-[11px] text-center">
@@ -226,6 +275,32 @@ export default function LiveAuctionPage() {
         </div>
 
       </div>
+
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 dark:border-[#1A3626] text-center">
+            <h3 className="text-[22px] font-bold text-gray-900 dark:text-white mb-2">Login Required</h3>
+            <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-8">
+              You need to be logged in to make an offer. Would you like to log in now?
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={() => setShowLoginModal(false)}
+                className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#1A3626]/50 transition-colors cursor-pointer"
+              >
+                Stay Logged Out
+              </button>
+              <Link 
+                href={`/${locale}/login`}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#915331] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
+              >
+                Go to Login
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

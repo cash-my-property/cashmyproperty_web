@@ -48,7 +48,7 @@ export default function AboutPage() {
           {/* Floating Stats Card */}
           <div className="absolute -bottom-10 -right-4 sm:-right-10 bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] flex items-center gap-5 w-64">
              <div className="w-14 h-14 bg-green-50 dark:bg-green-900/30 rounded-full flex items-center justify-center shrink-0">
-               <Building2 className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
+               <Building2 className="w-6 h-6 text-[#1A3626] dark:text-[#915331]" />
              </div>
              <div>
                <h4 className="text-[24px] font-bold text-gray-900 dark:text-white leading-none mb-1">500+</h4>
@@ -59,8 +59,8 @@ export default function AboutPage() {
 
         {/* Right Side: Text Content */}
         <div className="w-full lg:w-[55%] flex flex-col justify-center pt-8 sm:pt-0 pl-0 sm:pl-8">
-          <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase flex items-center gap-2">
-            <span className="w-8 h-px bg-[#1A3626] dark:bg-[#c9a14b]" /> {content.about.main.label}
+          <p className="text-[#1A3626] dark:text-[#915331] font-bold tracking-widest text-[12px] mb-4 uppercase flex items-center gap-2">
+            <span className="w-8 h-px bg-[#1A3626] dark:bg-[#915331]" /> {content.about.main.label}
           </p>
           <h2 className="text-[36px] sm:text-[46px] font-bold text-gray-900 dark:text-white mb-8 tracking-tight leading-[1.15]" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {content.about.main.heading}
@@ -76,7 +76,7 @@ export default function AboutPage() {
             {content.about.main.features.map((feature, i) => (
               <div key={i} className="flex gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#163321] shadow-sm flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
+                  <CheckCircle2 className="w-6 h-6 text-[#1A3626] dark:text-[#915331]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 dark:text-white mb-1.5 text-[17px]">{feature.title}</h3>
@@ -87,7 +87,7 @@ export default function AboutPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/signup" className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-4 rounded-xl font-bold hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-sm hover:shadow-md text-[15px]">
+            <Link href="/signup" className="bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] px-8 py-4 rounded-xl font-bold hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-sm hover:shadow-md text-[15px]">
               {content.about.main.joinButton}
             </Link>
             <Link href="#" className="bg-white dark:bg-[#102418] border-2 border-gray-200 dark:border-[#1A3626] text-gray-800 dark:text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-[#163321] hover:border-gray-300 dark:hover:border-slate-600 transition-all duration-300 text-[15px]">
@@ -115,7 +115,7 @@ export default function AboutPage() {
             {/* Card 1 */}
             <div className="flex flex-col items-center bg-white dark:bg-[#102418] p-10 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] hover:-translate-y-2 transition-all duration-300 group">
               <div className="w-20 h-20 bg-green-50 dark:bg-[#102418]/80 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#5CD284] group-hover:scale-110 transition-all duration-300">
-                <ShieldCheck className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
+                <ShieldCheck className="w-10 h-10 text-[#1A3626] dark:text-[#915331] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
               </div>
               <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">100% Secure</h3>
               <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">
@@ -126,7 +126,7 @@ export default function AboutPage() {
             {/* Card 2 */}
             <div className="flex flex-col items-center bg-white dark:bg-[#102418] p-10 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] hover:-translate-y-2 transition-all duration-300 group">
               <div className="w-20 h-20 bg-green-50 dark:bg-[#102418]/80 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#5CD284] group-hover:scale-110 transition-all duration-300">
-                <Building2 className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
+                <Building2 className="w-10 h-10 text-[#1A3626] dark:text-[#915331] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
               </div>
               <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">Verified Properties</h3>
               <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">
@@ -137,7 +137,7 @@ export default function AboutPage() {
             {/* Card 3 */}
             <div className="flex flex-col items-center bg-white dark:bg-[#102418] p-10 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] hover:-translate-y-2 transition-all duration-300 group">
               <div className="w-20 h-20 bg-green-50 dark:bg-[#102418]/80 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-[#5CD284] group-hover:scale-110 transition-all duration-300">
-                <Users className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
+                <Users className="w-10 h-10 text-[#1A3626] dark:text-[#915331] group-hover:text-white dark:group-hover:text-[#1A3626] transition-colors" />
               </div>
               <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">Expert Support</h3>
               <p className="text-gray-500 dark:text-gray-400 text-[15px] leading-relaxed">

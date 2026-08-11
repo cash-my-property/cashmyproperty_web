@@ -216,7 +216,7 @@ export default function PortalPage() {
                   </div>
                   <button
                     onClick={() => handleDownload(doc.title)}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 transition-colors"
+                    className="p-2 rounded-xl bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 transition-colors cursor-pointer"
                     title="Download File"
                   >
                     <Download className="w-4 h-4" />
@@ -263,7 +263,7 @@ export default function PortalPage() {
             />
             <button
               type="submit"
-              className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-white p-2.5 rounded-xl hover:opacity-95 transition-opacity"
+              className="bg-gradient-to-r from-cyan-500 to-indigo-600 text-white p-2.5 rounded-xl hover:opacity-95 transition-opacity cursor-pointer"
             >
               <Send className="w-4 h-4" />
             </button>
