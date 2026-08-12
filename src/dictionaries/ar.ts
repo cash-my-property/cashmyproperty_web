@@ -238,43 +238,7 @@ export const content = {
         }
       ]
     },
-    simpleListings: {
-      label: "عقارات قياسية",
-      heading: "قوائم بسيطة",
-      description: "عقارات معتمدة متاحة للشراء الفوري بسعر ثابت.",
-      viewAllText: "عرض جميع القوائم",
-      items: [
-        {
-          id: "s1",
-          title: "مساحة مكتبية بإطلالة على البحيرة في JLT",
-          location: "أبراج بحيرات جميرا",
-          price: "1,800,000 درهم",
-          image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          type: "تجاري",
-          area: "2,000 قدم مربع"
-        },
-        {
-          id: "s2",
-          title: "تاون هاوس في المرابع العربية",
-          location: "المرابع العربية",
-          price: "3,250,000 درهم",
-          image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          beds: 3,
-          baths: 4,
-          area: "2,400 قدم مربع"
-        },
-        {
-          id: "s3",
-          title: "قصر في دبي هيلز استيت",
-          location: "دبي هيلز استيت",
-          price: "12,000,000 درهم",
-          image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          beds: 5,
-          baths: 6,
-          area: "6,000 قدم مربع"
-        }
-      ]
-    },
+
     howItWorks: {
       label: "طريقة عمل المنصة",
       heading: "كيف تعمل",

@@ -238,43 +238,6 @@ export const content = {
         }
       ]
     },
-    simpleListings: {
-      label: "Standard Properties",
-      heading: "Simple Listings",
-      description: "Verified properties available for immediate purchase at a fixed asking price.",
-      viewAllText: "View All Listings",
-      items: [
-        {
-          id: "s1",
-          title: "JLT Lake View Office Space",
-          location: "Jumeirah Lake Towers",
-          price: "Ð 1,800,000",
-          image: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          type: "Commercial",
-          area: "2,000 sqft"
-        },
-        {
-          id: "s2",
-          title: "Arabian Ranches Townhouse",
-          location: "Arabian Ranches",
-          price: "Ð 3,250,000",
-          image: "https://images.unsplash.com/photo-1512918580421-b2feaf3cb582?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          beds: 3,
-          baths: 4,
-          area: "2,400 sqft"
-        },
-        {
-          id: "s3",
-          title: "Dubai Hills Estate Mansion",
-          location: "Dubai Hills Estate",
-          price: "Ð 12,000,000",
-          image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          beds: 5,
-          baths: 6,
-          area: "6,000 sqft"
-        }
-      ]
-    },
     howItWorks: {
       label: "The CMP Workflow",
       heading: "How It Works",
