@@ -42,7 +42,7 @@ export default function MyAuctionsPage() {
       ) : auctions.length === 0 ? (
         <div className="bg-white dark:bg-[#102418] rounded-3xl p-12 border border-gray-100 dark:border-[#1A3626] text-center flex flex-col items-center justify-center min-h-[400px]">
           <div className="w-20 h-20 bg-gray-50 dark:bg-[#1A3626]/30 rounded-full flex items-center justify-center mb-6">
-            <Gavel className="w-10 h-10 text-gray-400 dark:text-[#915331]" />
+            <Gavel className="w-10 h-10 text-gray-400 dark:text-[#c9a14b]" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Live Auctions</h3>
           <p className="text-gray-500 dark:text-gray-400 max-w-md">None of your properties are currently live for bidding. Once approved, they will appear here.</p>
@@ -93,7 +93,7 @@ export default function MyAuctionsPage() {
 
                 <Link 
                   href={`/${locale}/auctions/${auction._id}`}
-                  className="w-full py-3 bg-[#1A3626] dark:bg-[#915331] text-white font-bold rounded-xl hover:opacity-90 flex justify-center items-center gap-2 transition-opacity cursor-pointer"
+                  className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 flex justify-center items-center gap-2 transition-opacity cursor-pointer"
                 >
                   <Eye className="w-4 h-4" /> View Live Action
                 </Link>

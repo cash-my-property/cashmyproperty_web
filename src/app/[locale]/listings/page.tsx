@@ -60,7 +60,7 @@ export default function ListingsPage() {
                   {Object.entries(dict.home.hero.filters.types).map(([key, value]) => (
                     <div 
                       key={key} 
-                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#915331]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                       onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
                     >
                       {value as string}
@@ -75,7 +75,7 @@ export default function ListingsPage() {
               <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors" />
             </div>
 
-            <button className="bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] px-8 py-3 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer">
+            <button className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer">
               <Filter className="w-4 h-4" />
               {content.hero.searchButton}
             </button>
@@ -90,7 +90,7 @@ export default function ListingsPage() {
             <button 
               key={type}
               onClick={() => setActiveType(type)}
-              className={`whitespace-nowrap px-5 py-2 rounded-full text-[14px] font-bold transition-all duration-300 ${activeType === type ? 'bg-[#1A3626] text-white dark:bg-[#915331] dark:text-[#1A3626] shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#102418] dark:text-gray-300 dark:hover:bg-[#163321]'}`}
+              className={`whitespace-nowrap px-5 py-2 rounded-full text-[14px] font-bold transition-all duration-300 ${activeType === type ? 'bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#102418] dark:text-gray-300 dark:hover:bg-[#163321]'}`}
             >
               {type}
             </button>
@@ -102,7 +102,7 @@ export default function ListingsPage() {
       <section className="py-16 px-6 lg:px-12 w-full max-w-7xl mx-auto">
         <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-200 dark:border-[#1A3626] shadow-sm mt-8">
           <div className="w-20 h-20 bg-green-50 dark:bg-[#102418] rounded-full flex items-center justify-center mb-6">
-            <Building className="w-10 h-10 text-[#1A3626] dark:text-[#915331]" />
+            <Building className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b]" />
           </div>
           <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Coming Soon</h3>
           <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-[15px] leading-relaxed">

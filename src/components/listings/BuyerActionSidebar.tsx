@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { CheckCircle2, Clock, XCircle, FileText, Upload, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, FileText, Upload, AlertCircle, Loader2, ShieldAlert } from "lucide-react";
 import api from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 interface BuyerActionSidebarProps {
   auctionId: string;
@@ -11,6 +12,8 @@ interface BuyerActionSidebarProps {
 }
 
 export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, onBidSuccess, onContractSubmitted }: BuyerActionSidebarProps) {
+  const { user } = useAuth();
+  const [showVerificationError, setShowVerificationError] = useState(false);
   const [bidAmount, setBidAmount] = useState("");
   const [isBidding, setIsBidding] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,6 +66,10 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
 
   const placeBid = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (user && user.isVerified === false) {
+      setShowVerificationError(true);
+      return;
+    }
     setErrorMessage("");
     setSuccessMessage("");
     if (!bidAmount || isNaN(Number(bidAmount))) {
@@ -116,7 +123,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
               type="number" 
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1A3626] bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A3626] dark:focus:ring-[#915331] outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1A3626] bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A3626] dark:focus:ring-[#c9a14b] outline-none"
               placeholder="Enter amount..."
               required
             />
@@ -124,7 +131,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
           <button 
             type="submit" 
             disabled={isBidding}
-            className="w-full py-3 bg-[#1A3626] dark:bg-[#915331] text-white font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
           >
             {isBidding ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Make Offer'}
           </button>
@@ -191,7 +198,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full mt-6 py-3 bg-[#1A3626] dark:bg-[#915331] text-white font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+          className="w-full mt-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
         >
           {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit for Approval'}
         </button>

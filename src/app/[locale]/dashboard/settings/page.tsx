@@ -150,7 +150,7 @@ export default function SettingsPage() {
             onClick={() => setActiveTab('personal')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] ${
               activeTab === 'personal' 
-                ? 'bg-[#1A3626] dark:bg-[#915331]/10 text-white dark:text-[#915331]' 
+                ? 'bg-[#1A3626] dark:bg-[#c9a14b]/10 text-white dark:text-[#c9a14b]' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#102418]'
             }`}
           >
@@ -160,7 +160,7 @@ export default function SettingsPage() {
             onClick={() => setActiveTab('security')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] ${
               activeTab === 'security' 
-                ? 'bg-[#1A3626] dark:bg-[#915331]/10 text-white dark:text-[#915331]' 
+                ? 'bg-[#1A3626] dark:bg-[#c9a14b]/10 text-white dark:text-[#c9a14b]' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#102418]'
             }`}
           >
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                   <button 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingImage}
-                    className="absolute bottom-0 right-0 w-8 h-8 bg-[#1A3626] dark:bg-[#915331] rounded-full flex items-center justify-center text-white dark:text-[#091711] hover:scale-105 transition-transform shadow-md z-10 cursor-pointer"
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-[#1A3626] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#091711] hover:scale-105 transition-transform shadow-md z-10 cursor-pointer"
                   >
                     <Camera className="w-4 h-4" />
                   </button>
@@ -219,7 +219,7 @@ export default function SettingsPage() {
                     type="text" 
                     value={firstName} 
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#915331] transition-colors text-gray-900 dark:text-white" 
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -228,7 +228,7 @@ export default function SettingsPage() {
                     type="text" 
                     value={lastName} 
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#915331] transition-colors text-gray-900 dark:text-white" 
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
                   />
                 </div>
                 <div className="space-y-2">
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                     type="tel" 
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)} 
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#915331] transition-colors text-gray-900 dark:text-white" 
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
                   />
                 </div>
                 {brn && (
@@ -266,7 +266,7 @@ export default function SettingsPage() {
                 <button 
                   onClick={handleProfileUpdate}
                   disabled={isSavingProfile}
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#091711] font-bold text-[14px] tracking-wide hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#091711] font-bold text-[14px] tracking-wide hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingProfile && <Loader2 className="w-4 h-4 animate-spin" />}
                   {content.form.saveChanges}
@@ -290,7 +290,7 @@ export default function SettingsPage() {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder="••••••••" 
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#915331] transition-colors text-gray-900 dark:text-white" 
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
                 />
               </div>
               <div className="space-y-2">
@@ -300,7 +300,7 @@ export default function SettingsPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••" 
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#915331] transition-colors text-gray-900 dark:text-white" 
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
                 />
               </div>
               
@@ -308,7 +308,7 @@ export default function SettingsPage() {
                 <button 
                   onClick={handlePasswordUpdate}
                   disabled={isSavingSecurity}
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#091711] font-bold text-[14px] tracking-wide hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#091711] font-bold text-[14px] tracking-wide hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingSecurity && <Loader2 className="w-4 h-4 animate-spin" />}
                   {content.form.updatePassword}

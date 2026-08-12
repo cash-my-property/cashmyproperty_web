@@ -41,7 +41,7 @@ export default function ReceivedBidsPage() {
       ) : bids.length === 0 ? (
         <div className="bg-white dark:bg-[#102418] rounded-3xl p-12 border border-gray-100 dark:border-[#1A3626] text-center flex flex-col items-center justify-center min-h-[400px]">
           <div className="w-20 h-20 bg-gray-50 dark:bg-[#1A3626]/30 rounded-full flex items-center justify-center mb-6">
-            <ListOrdered className="w-10 h-10 text-gray-400 dark:text-[#915331]" />
+            <ListOrdered className="w-10 h-10 text-gray-400 dark:text-[#c9a14b]" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Bids Yet</h3>
           <p className="text-gray-500 dark:text-gray-400 max-w-md">You haven't received any bids on your properties yet. When buyers place offers, they will appear here.</p>
@@ -112,7 +112,7 @@ export default function ReceivedBidsPage() {
                     <td className="px-6 py-4 text-right">
                       {bid.status !== 'ACCEPTED' && bid.status !== 'REJECTED' ? (
                         <div className="flex justify-end gap-2">
-                          <button className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1A3626] dark:bg-[#915331] text-white hover:opacity-90 transition-opacity cursor-pointer">
+                          <button className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#1A3626] dark:bg-[#c9a14b] text-white hover:opacity-90 transition-opacity cursor-pointer">
                             Accept
                           </button>
                           <button className="px-4 py-1.5 rounded-lg text-xs font-bold border border-gray-200 dark:border-[#1A3626] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors cursor-pointer">

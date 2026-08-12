@@ -21,7 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isLoading) {
     return (
       <div className="flex w-full min-h-screen items-center justify-center bg-[#F8F9FA] dark:bg-[#091711]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </div>
     );
   }

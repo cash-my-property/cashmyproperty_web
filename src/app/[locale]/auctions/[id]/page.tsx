@@ -114,7 +114,7 @@ export default function LiveAuctionPage() {
                       e.stopPropagation();
                       setActiveImage((prev) => (prev === 0 ? auctionData.images.length - 1 : prev - 1));
                     }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#915331] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#c9a14b] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
@@ -124,7 +124,7 @@ export default function LiveAuctionPage() {
                       e.stopPropagation();
                       setActiveImage((prev) => (prev === auctionData.images.length - 1 ? 0 : prev + 1));
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#915331] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#c9a14b] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
                   >
                     <ChevronRight className="w-6 h-6" />
                   </button>
@@ -166,7 +166,7 @@ export default function LiveAuctionPage() {
                     alert("Link copied to clipboard!");
                   }
                 }}
-                className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
+                className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
               >
                 <Share2 className="w-4 h-4" /> Share
               </button>
@@ -292,7 +292,7 @@ export default function LiveAuctionPage() {
               </button>
               <Link 
                 href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#915331] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
               >
                 Go to Login
               </Link>

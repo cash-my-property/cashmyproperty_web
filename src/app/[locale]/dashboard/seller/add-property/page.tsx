@@ -404,7 +404,7 @@ export default function AddPropertyPage() {
                       type="file" 
                       accept=".pdf,image/*" 
                       onChange={(e) => handleDocumentChange(doc, e)}
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#915331]/20 dark:file:text-[#915331] hover:file:bg-[#1A3626]/20 cursor-pointer"
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer"
                     />
                   )}
                 </div>
@@ -417,7 +417,7 @@ export default function AddPropertyPage() {
           <button 
             type="submit"
             disabled={isSubmitting}
-            className="w-full md:w-auto px-10 py-4 bg-[#1A3626] dark:bg-[#915331] text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full md:w-auto px-10 py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

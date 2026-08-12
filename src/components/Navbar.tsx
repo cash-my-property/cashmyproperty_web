@@ -77,7 +77,7 @@ export default function Navbar() {
               <Link
                 key={index}
                 href={`/${locale}${item.href === "/" ? "" : item.href}`}
-                className="relative px-4 py-2 font-semibold text-[14.5px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#915331] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
+                className="relative px-4 py-2 font-semibold text-[14.5px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#c9a14b] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
                 style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
               >
                 {item.title}
@@ -100,8 +100,8 @@ export default function Navbar() {
                   <ChevronDown className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="absolute top-[120%] right-0 mt-2 w-36 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right group-hover:scale-100 scale-95 overflow-hidden p-1.5">
-                  <button onClick={() => switchLanguage('en')} className={`w-full text-left px-4 py-2.5 rounded-xl text-[13px] font-semibold tracking-wide transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#915331] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>English</button>
-                  <button onClick={() => switchLanguage('ar')} className={`w-full text-left px-4 py-2.5 rounded-xl text-[13px] font-semibold tracking-wide transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#915331] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>العربية</button>
+                  <button onClick={() => switchLanguage('en')} className={`w-full text-left px-4 py-2.5 rounded-xl text-[13px] font-semibold tracking-wide transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>English</button>
+                  <button onClick={() => switchLanguage('ar')} className={`w-full text-left px-4 py-2.5 rounded-xl text-[13px] font-semibold tracking-wide transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>العربية</button>
                 </div>
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <Link
                 href={`/${locale}/dashboard`}
-                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
+                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
               >
                 <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 group-hover:translate-x-full transition-transform duration-500 ease-out -translate-x-full skew-x-12"></div>
                 <span className="relative flex items-center gap-2"><User className="w-4 h-4" /> Dashboard</span>
@@ -117,7 +117,7 @@ export default function Navbar() {
             ) : isLoginPage ? (
               <Link
                 href={`/${locale}/signup`}
-                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
+                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
               >
                 <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 group-hover:translate-x-full transition-transform duration-500 ease-out -translate-x-full skew-x-12"></div>
                 <span className="relative flex items-center gap-2"><User className="w-4 h-4" /> Join Now</span>
@@ -125,7 +125,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href={`/${locale}/login`}
-                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
+                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
               >
                 <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 group-hover:translate-x-full transition-transform duration-500 ease-out -translate-x-full skew-x-12"></div>
                 <span className="relative flex items-center gap-2"><User className="w-4 h-4" /> Login</span>
@@ -154,7 +154,7 @@ export default function Navbar() {
               <Link
                 key={index}
                 href={`/${locale}${item.href === "/" ? "" : item.href}`}
-                className="hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors tracking-wide"
+                className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors tracking-wide"
                 style={{ fontFamily: "var(--font-inter), sans-serif" }}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -176,8 +176,8 @@ export default function Navbar() {
                 <Globe className="w-3.5 h-3.5" /> Language
               </span>
               <div className="flex gap-1 text-[12px] font-bold">
-                <button onClick={() => switchLanguage('en')} className={`px-2 py-1 rounded-full transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#915331] bg-green-50 dark:bg-[#102418]' : 'text-gray-400 dark:text-gray-500'}`}>EN</button>
-                <button onClick={() => switchLanguage('ar')} className={`px-2 py-1 rounded-full transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#915331] bg-green-50 dark:bg-[#102418]' : 'text-gray-400 dark:text-gray-500'}`}>عربي</button>
+                <button onClick={() => switchLanguage('en')} className={`px-2 py-1 rounded-full transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#102418]' : 'text-gray-400 dark:text-gray-500'}`}>EN</button>
+                <button onClick={() => switchLanguage('ar')} className={`px-2 py-1 rounded-full transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#102418]' : 'text-gray-400 dark:text-gray-500'}`}>عربي</button>
               </div>
             </div>
           </nav>
@@ -186,7 +186,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <Link
                 href={`/${locale}/dashboard`}
-                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
+                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <User className="w-4 h-4" /> Dashboard
@@ -194,7 +194,7 @@ export default function Navbar() {
             ) : isLoginPage ? (
               <Link
                 href={`/${locale}/signup`}
-                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
+                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <User className="w-4 h-4" /> Join Now
@@ -202,7 +202,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href={`/${locale}/login`}
-                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#915331] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
+                className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <User className="w-4 h-4" /> Login

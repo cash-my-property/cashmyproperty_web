@@ -65,7 +65,7 @@ export default function OffersPage() {
       <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden min-h-[400px]">
         {isLoading ? (
           <div className="flex items-center justify-center h-full min-h-[300px]">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
           </div>
         ) : bids.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-500 dark:text-gray-400">
@@ -102,7 +102,7 @@ export default function OffersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-bold uppercase ${
-                        offer.status === 'leading' ? 'bg-[#5CD284]/10 text-[#1A3626] dark:text-[#915331]' :
+                        offer.status === 'leading' ? 'bg-[#5CD284]/10 text-[#1A3626] dark:text-[#c9a14b]' :
                         offer.status === 'outbid' ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400' :
                         offer.status === 'won' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
                         offer.status === 'lost' ? 'bg-red-500/10 text-red-600 dark:text-red-400' :

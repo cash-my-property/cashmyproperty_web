@@ -54,7 +54,7 @@ export default function PropertyDetailPage() {
   if (isLoading) {
     return (
       <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-[#1A3626] dark:text-[#915331]" />
+        <Loader2 className="w-10 h-10 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </main>
     );
   }
@@ -63,7 +63,7 @@ export default function PropertyDetailPage() {
     return (
       <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Property not found</h1>
-        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#915331] underline">Back to listings</Link>
+        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">Back to listings</Link>
       </main>
     );
   }
@@ -96,15 +96,15 @@ export default function PropertyDetailPage() {
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors">Home</Link>
+            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors">Properties</Link>
+            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Properties</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold">{propertyInfo.PID || propertyInfo._id}</span>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-[#5CD284]/10 text-[#1A3626] dark:text-[#915331] px-4 py-1.5 rounded-full border border-[#5CD284]/20">
+            <div className="flex items-center gap-2 bg-[#5CD284]/10 text-[#1A3626] dark:text-[#c9a14b] px-4 py-1.5 rounded-full border border-[#5CD284]/20">
               <CheckCircle2 className="w-4 h-4" />
               <span className="text-[12px] font-bold tracking-widest uppercase">{propertyInfo.status || 'Available'}</span>
             </div>
@@ -135,7 +135,7 @@ export default function PropertyDetailPage() {
                       e.stopPropagation();
                       setActiveImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
                     }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#915331] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#c9a14b] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
@@ -145,7 +145,7 @@ export default function PropertyDetailPage() {
                       e.stopPropagation();
                       setActiveImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#915331] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#c9a14b] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
                   >
                     <ChevronRight className="w-6 h-6" />
                   </button>
@@ -159,7 +159,7 @@ export default function PropertyDetailPage() {
                 <button 
                   key={idx}
                   onClick={() => setActiveImage(idx)}
-                  className={`relative w-24 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 ${activeImage === idx ? 'border-[#1A3626] dark:border-[#915331] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  className={`relative w-24 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-300 ${activeImage === idx ? 'border-[#1A3626] dark:border-[#c9a14b] shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
                   <Image src={img} alt="Thumbnail" fill className="object-cover" />
                 </button>
@@ -189,7 +189,7 @@ export default function PropertyDetailPage() {
                         alert("Link copied to clipboard!");
                       }
                     }}
-                    className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
+                    className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
                   >
                     <Share2 className="w-4 h-4" /> Share
                   </button>
@@ -197,7 +197,7 @@ export default function PropertyDetailPage() {
               </div>
               <div className="shrink-0 bg-green-50 dark:bg-[#102418]/80 px-5 py-3 rounded-2xl border border-green-100 dark:border-[#1A3626]">
                 <p className="text-[13px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">{propertyInfo.currentHighestOffer ? 'Highest Offer' : 'Asking Price'}</p>
-                <p className="text-[24px] font-bold text-[#1A3626] dark:text-[#915331] tabular-nums">
+                <p className="text-[24px] font-bold text-[#1A3626] dark:text-[#c9a14b] tabular-nums">
                   {price}
                 </p>
               </div>
@@ -268,7 +268,7 @@ export default function PropertyDetailPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Log in to make an offer or place a bid on this property.</p>
                 <button 
                   onClick={() => setShowLoginModal(true)}
-                  className="w-full py-3 bg-[#1A3626] dark:bg-[#915331] text-white font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors cursor-pointer"
+                  className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors cursor-pointer"
                 >
                   Make Offer
                 </button>
@@ -296,7 +296,7 @@ export default function PropertyDetailPage() {
               </button>
               <Link 
                 href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#915331] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
               >
                 Go to Login
               </Link>

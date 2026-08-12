@@ -96,7 +96,7 @@ export default function DashboardOverviewPage() {
   if (isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function DashboardOverviewPage() {
       <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
         <div className="p-6 border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{content.recentActivity}</h2>
-          <Link href={`/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#915331] hover:underline flex items-center gap-1">
+          <Link href={`/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:underline flex items-center gap-1">
             {content.viewAll} <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

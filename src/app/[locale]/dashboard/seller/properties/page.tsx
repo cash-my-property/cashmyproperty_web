@@ -7,11 +7,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { ShieldAlert } from "lucide-react";
 
 export default function MyPropertiesPage() {
   const { locale } = useDictionary();
   const router = useRouter();
+  const { user } = useAuth();
   const [properties, setProperties] = useState<any[]>([]);
+  const [showVerificationError, setShowVerificationError] = useState(false);
   const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
   const [editModalProperty, setEditModalProperty] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,12 +50,18 @@ export default function MyPropertiesPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Properties</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">Manage all the properties you have added</p>
         </div>
-        <Link 
-          href={`/${locale}/dashboard/seller/add-property`}
-          className="bg-[#1A3626] dark:bg-[#915331] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#1A3626]/90 transition-colors"
+        <button 
+          onClick={() => {
+            if (user && user.isVerified === false) {
+              setShowVerificationError(true);
+            } else {
+              router.push(`/${locale}/dashboard/seller/add-property`);
+            }
+          }}
+          className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#1A3626]/90 transition-colors cursor-pointer"
         >
           Add New Property
-        </Link>
+        </button>
       </div>
 
       {isLoading ? (
@@ -61,16 +71,22 @@ export default function MyPropertiesPage() {
       ) : properties.length === 0 ? (
         <div className="bg-white dark:bg-[#102418] rounded-3xl p-12 border border-gray-100 dark:border-[#1A3626] text-center flex flex-col items-center justify-center min-h-[400px]">
           <div className="w-20 h-20 bg-gray-50 dark:bg-[#1A3626]/30 rounded-full flex items-center justify-center mb-6">
-            <Building className="w-10 h-10 text-gray-400 dark:text-[#915331]" />
+            <Building className="w-10 h-10 text-gray-400 dark:text-[#c9a14b]" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Properties Yet</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">You haven't added any properties to the platform yet. Add your first property to start receiving offers.</p>
-          <Link 
-            href={`/${locale}/dashboard/seller/add-property`}
-            className="bg-[#1A3626] dark:bg-[#915331] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity"
+          <button 
+            onClick={() => {
+              if (user && user.isVerified === false) {
+                setShowVerificationError(true);
+              } else {
+                router.push(`/${locale}/dashboard/seller/add-property`);
+              }
+            }}
+            className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity cursor-pointer"
           >
             Add Property
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -89,7 +105,7 @@ export default function MyPropertiesPage() {
                   </div>
                 )}
                 
-                <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-bold text-[#1A3626] dark:text-[#915331] uppercase tracking-wider shadow-md flex items-center gap-1.5">
+                <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-bold text-[#1A3626] dark:text-[#c9a14b] uppercase tracking-wider shadow-md flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full ${property.status === 'REJECTED' ? 'bg-red-500' : property.status === 'AWAITING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {property.status || "PENDING"}
                 </div>
               </div>
@@ -99,20 +115,20 @@ export default function MyPropertiesPage() {
                   <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">
                     {property.title}
                   </h3>
-                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#915331] leading-none whitespace-nowrap">
+                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
                     Ð {property.price?.amount?.toLocaleString() || 0}
                   </span>
                 </div>
                 
-                <p className="text-[#1A3626] dark:text-[#915331] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
                   <MapPin className="w-4 h-4" />
                   <span className="line-clamp-1">{property.location || "Dubai"}</span>
                 </p>
                 
                 <div className="flex items-center gap-4 mb-5">
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {property.specs?.beds || 0}</div>
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {property.specs?.washrooms || property.specs?.baths || 0}</div>
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#915331]" /> {property.area?.value || 0} {property.area?.unit || "sqft"}</div>
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs?.beds || 0}</div>
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs?.washrooms || property.specs?.baths || 0}</div>
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.area?.value || 0} {property.area?.unit || "sqft"}</div>
                 </div>
 
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
@@ -124,7 +140,7 @@ export default function MyPropertiesPage() {
                   </button>
                   <button 
                     onClick={() => setEditModalProperty(property)}
-                    className="flex-1 py-2 text-sm font-semibold text-[#1A3626] dark:text-[#915331] bg-green-50 dark:bg-[#915331]/10 hover:bg-green-100 dark:hover:bg-[#915331]/20 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-2 text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#c9a14b]/10 hover:bg-green-100 dark:hover:bg-[#c9a14b]/20 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Edit className="w-4 h-4" /> Edit
                   </button>
@@ -265,7 +281,7 @@ export default function MyPropertiesPage() {
             <div className="p-6 border-t border-gray-100 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] flex justify-end gap-3">
               <button 
                 onClick={() => setEditModalProperty(null)}
-                className="px-6 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
+                className="px-6 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -274,11 +290,32 @@ export default function MyPropertiesPage() {
                   alert("Property Edit action is mocked for this modal.");
                   setEditModalProperty(null);
                 }}
-                className="px-6 py-2.5 bg-[#1A3626] dark:bg-[#915331] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                className="px-6 py-2.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white rounded-xl font-medium hover:opacity-90 transition-opacity cursor-pointer"
               >
                 Save Changes
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Verification Error Modal */}
+      {showVerificationError && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 p-8 text-center border border-gray-100 dark:border-[#1A3626]">
+            <div className="w-20 h-20 bg-orange-50 dark:bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShieldAlert className="w-10 h-10 text-orange-500 dark:text-orange-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Verification Pending</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
+              Your account is currently under review. You will be able to add properties once an administrator verifies your account. Thank you for your patience!
+            </p>
+            <button 
+              onClick={() => setShowVerificationError(false)}
+              className="w-full py-3.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:bg-[#1A3626]/90 transition-colors cursor-pointer"
+            >
+              Understood
+            </button>
           </div>
         </div>
       )}

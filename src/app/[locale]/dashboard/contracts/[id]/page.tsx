@@ -34,7 +34,7 @@ export default function ContractDetailsPage() {
   if (isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#915331]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
       </div>
     );
   }
@@ -43,7 +43,7 @@ export default function ContractDetailsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">Contract Not Found</h2>
-        <Link href={`/${locale}/dashboard/contracts`} className="mt-4 text-[#1A3626] dark:text-[#915331] underline">
+        <Link href={`/${locale}/dashboard/contracts`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">
           Back to Contracts
         </Link>
       </div>
@@ -127,7 +127,7 @@ export default function ContractDetailsPage() {
                       <FileText className="w-5 h-5 text-gray-400" />
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{docKey.replace(/([A-Z])/g, ' $1').trim()}</span>
                     </div>
-                    <Download className="w-4 h-4 text-[#1A3626] dark:text-[#915331]" />
+                    <Download className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
                   </a>
                 );
               })}
@@ -144,7 +144,7 @@ export default function ContractDetailsPage() {
               <h3 className="font-bold text-gray-900 dark:text-white mb-2">{prop.propertyTitle}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{prop.propertyLocation}</p>
               
-              <Link href={`/${locale}/listings/${auc._id}`} className="block w-full py-3 px-4 bg-[#1A3626] dark:bg-[#915331] text-white text-center rounded-xl font-bold hover:bg-[#1A3626]/90 transition-colors">
+              <Link href={`/${locale}/listings/${auc._id}`} className="block w-full py-3 px-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white text-center rounded-xl font-bold hover:bg-[#1A3626]/90 transition-colors">
                 View Auction
               </Link>
             </div>

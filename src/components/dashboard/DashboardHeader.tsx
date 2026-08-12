@@ -84,21 +84,21 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
         
         {/* Actions */}
         <div className="flex items-center gap-4 border-e border-gray-200 dark:border-[#1A3626] pe-6">
-          <Link href={`/${locale}`} className="text-[13px] font-semibold text-gray-500 hover:text-[#1A3626] dark:hover:text-[#915331] transition-colors">
+          <Link href={`/${locale}`} className="text-[13px] font-semibold text-gray-500 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">
             {content.backToSite}
           </Link>
 
           {/* Language Selector */}
           <div className="relative group cursor-pointer ml-1">
-            <div className="flex items-center gap-1 px-1.5 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#102418] text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#915331] transition-all">
+            <div className="flex items-center gap-1 px-1.5 py-1 rounded-full hover:bg-gray-100 dark:hover:bg-[#102418] text-gray-600 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-all">
               <Globe className="w-3.5 h-3.5" />
               <span className="font-semibold text-[12px] tracking-wide uppercase">{locale}</span>
               <ChevronDown className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" />
             </div>
             <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-2 w-32 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden">
               <div className="p-1 flex flex-col gap-0.5">
-                <button onClick={() => switchLanguage('en')} className={`w-full text-start px-3 py-2 rounded-lg text-[12px] font-bold tracking-wide transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#915331] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>English</button>
-                <button onClick={() => switchLanguage('ar')} className={`w-full text-start px-3 py-2 rounded-lg text-[12px] font-bold tracking-wide transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#915331] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>العربية</button>
+                <button onClick={() => switchLanguage('en')} className={`w-full text-start px-3 py-2 rounded-lg text-[12px] font-bold tracking-wide transition-colors ${locale === 'en' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>English</button>
+                <button onClick={() => switchLanguage('ar')} className={`w-full text-start px-3 py-2 rounded-lg text-[12px] font-bold tracking-wide transition-colors ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50/80 dark:bg-[#163321]/80' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#163321]'}`}>العربية</button>
               </div>
             </div>
           </div>
@@ -116,28 +116,32 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
               <span className="text-[13px] font-bold text-gray-900 dark:text-white leading-none capitalize">
-                {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : "User"}
+                {user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User"}
               </span>
               <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 capitalize">
                 {typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "Buyer"}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[#1A3626]/10 dark:bg-[#915331]/20 border border-[#1A3626]/20 dark:border-[#915331]/30 flex items-center justify-center text-[#1A3626] dark:text-[#915331] group-hover:scale-105 transition-transform">
-              <User className="w-4 h-4" />
-            </div>
+            {user?.picture ? (
+              <img src={user.picture} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-[#1A3626]/20 dark:border-[#c9a14b]/30 group-hover:scale-105 transition-transform" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-[#1A3626]/10 dark:bg-[#c9a14b]/20 border border-[#1A3626]/20 dark:border-[#c9a14b]/30 flex items-center justify-center text-[#1A3626] dark:text-[#c9a14b] group-hover:scale-105 transition-transform">
+                <User className="w-4 h-4" />
+              </div>
+            )}
           </div>
           
           {/* Dropdown menu */}
           <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-2 w-48 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden">
             <div className="p-1 flex flex-col gap-0.5">
-              <Link href={`/${locale}/dashboard/settings`} className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#915331] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2">
+              <Link href={`/${locale}/dashboard/settings`} className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2">
                 <User className="w-4 h-4" /> Profile Settings
               </Link>
               
               <button 
                 onClick={handleSwitchRole}
                 disabled={isSwitching}
-                className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#915331] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} 
                 Switch to {(() => {
@@ -146,13 +150,6 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                 })()}
               </button>
 
-              <div className="h-px bg-gray-100 dark:bg-[#163321] my-1" />
-              <button 
-                onClick={() => logout()}
-                className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-2 cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" /> Logout
-              </button>
             </div>
           </div>
         </div>

@@ -98,7 +98,7 @@ export default function HomePage() {
                     className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <Building className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'type' || selectedType ? 'text-[#1A3626] dark:text-[#915331] opacity-100' : ''}`} />
+                      <Building className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'type' || selectedType ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
                       <span className="text-[13.5px] font-semibold">{selectedType || home.hero.filters.type}</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
@@ -108,7 +108,7 @@ export default function HomePage() {
                       {Object.entries(home.hero.filters.types).map(([key, value]) => (
                         <div 
                           key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#915331]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                           onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
                         >
                           {value as string}
@@ -125,7 +125,7 @@ export default function HomePage() {
                     className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <span className={`text-[14px] font-bold opacity-60 transition-colors ${activeDropdown === 'price' || selectedPrice ? 'text-[#1A3626] dark:text-[#915331] opacity-100' : ''}`}>د.إ</span>
+                      <span className={`text-[14px] font-bold opacity-60 transition-colors ${activeDropdown === 'price' || selectedPrice ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`}>د.إ</span>
                       <span className="text-[13.5px] font-semibold">{selectedPrice || home.hero.filters.price}</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'price' ? 'rotate-180' : ''}`} />
@@ -135,7 +135,7 @@ export default function HomePage() {
                       {Object.entries(home.hero.filters.prices).map(([key, value]) => (
                         <div 
                           key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedPrice === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#915331]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedPrice === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                           onClick={() => { setSelectedPrice(value as string); setActiveDropdown(null); }}
                         >
                           {value as string}
@@ -152,7 +152,7 @@ export default function HomePage() {
                     className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <ArrowDownUp className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'sort' || selectedSort ? 'text-[#1A3626] dark:text-[#915331] opacity-100' : ''}`} />
+                      <ArrowDownUp className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'sort' || selectedSort ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
                       <span className="text-[13.5px] font-semibold">{selectedSort || home.hero.filters.sort}</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'sort' ? 'rotate-180' : ''}`} />
@@ -162,7 +162,7 @@ export default function HomePage() {
                       {Object.entries(home.hero.filters.sortOptions).map(([key, value]) => (
                         <div 
                           key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedSort === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#915331]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedSort === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                           onClick={() => { setSelectedSort(value as string); setActiveDropdown(null); }}
                         >
                           {value as string}
@@ -198,7 +198,7 @@ export default function HomePage() {
               {home.realtimebids.description}
             </p>
           </div>
-          <Link href={`/${locale}/auctions`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#915331] hover:opacity-80 transition-opacity">
+          <Link href={`/${locale}/auctions`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:opacity-80 transition-opacity">
             {home.realtimebids.viewAllText} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -271,20 +271,20 @@ export default function HomePage() {
                   <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   
                   {/* Badges */}
-                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
                      <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {item.status || 'ACTIVE'}
                   </div>
                   
-                  <div className="absolute top-4 right-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
+                  <div className="absolute top-4 right-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
                      <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
                   </div>
 
-                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#915331] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
+                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
                      PID-{item.PID || item._id.substring(0,8).toUpperCase()}
                   </div>
 
                   <div 
-                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#915331] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors"
+                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors"
                     onClick={(e) => { 
                       e.preventDefault(); 
                       e.stopPropagation(); 
@@ -304,22 +304,22 @@ export default function HomePage() {
                 <div className="p-4 pt-5 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#915331] leading-none whitespace-nowrap">Ð {priceValue}</span>
+                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">Ð {priceValue}</span>
                   </div>
                   
-                  <p className="text-[#1A3626] dark:text-[#915331] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
                     <MapPin className="w-4 h-4" /> {location}
                   </p>
                   
                   <div className="flex items-center gap-4 mb-5">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#915331]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#915331]" /> {area}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
                   </div>
                   
                   <div className="flex items-center justify-between mb-5">
                     <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
-                    <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#915331] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
+                    <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
                       Make Offer
                     </div>
                   </div>
@@ -327,15 +327,15 @@ export default function HomePage() {
                   {/* Footer Grid */}
                   <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#915331] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
+                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#915331] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
+                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#915331] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
+                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export default function HomePage() {
       <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200/50 dark:border-[#1A3626]/50">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <p className="text-[#1A3626] dark:text-[#915331] font-bold tracking-widest text-[12px] mb-3 uppercase">
+            <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-3 uppercase">
               {home.simpleListings.label}
             </p>
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -364,14 +364,14 @@ export default function HomePage() {
               {home.simpleListings.description}
             </p>
           </div>
-          <Link href={`/${locale}/listings`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#915331] hover:opacity-80 transition-opacity">
+          <Link href={`/${locale}/listings`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:opacity-80 transition-opacity">
             {home.simpleListings.viewAllText} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-200 dark:border-[#1A3626] shadow-sm mt-8">
           <div className="w-20 h-20 bg-green-50 dark:bg-[#091711] rounded-full flex items-center justify-center mb-6">
-            <Building className="w-10 h-10 text-[#1A3626] dark:text-[#915331]" />
+            <Building className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b]" />
           </div>
           <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Coming Soon</h3>
           <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-[15px] leading-relaxed">
@@ -383,7 +383,7 @@ export default function HomePage() {
       {/* 4. HOW IT WORKS */}
       <section className="py-24 bg-white dark:bg-[#102418] border-y border-gray-200 dark:border-[#1A3626]/50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
-          <p className="text-[#1A3626] dark:text-[#915331] font-bold tracking-widest text-[12px] mb-4 uppercase">
+          <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
             {home.howItWorks.label}
           </p>
           <h2 className="text-[36px] sm:text-[44px] font-bold text-gray-900 dark:text-white mb-16 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -396,7 +396,7 @@ export default function HomePage() {
 
              {home.howItWorks.steps.map((step, idx) => (
                <div key={idx} className="relative flex flex-col items-center group">
-                 <div className="w-24 h-24 rounded-full bg-[#F4F5F7] dark:bg-[#091711] border-[8px] border-white dark:border-[#102418] shadow-xl flex items-center justify-center mb-8 text-[#1A3626] dark:text-[#915331] group-hover:scale-110 group-hover:bg-[#1A3626] group-hover:text-white dark:group-hover:bg-[#5CD284] dark:group-hover:text-[#091711] transition-all duration-300">
+                 <div className="w-24 h-24 rounded-full bg-[#F4F5F7] dark:bg-[#091711] border-[8px] border-white dark:border-[#102418] shadow-xl flex items-center justify-center mb-8 text-[#1A3626] dark:text-[#c9a14b] group-hover:scale-110 group-hover:bg-[#1A3626] group-hover:text-white dark:group-hover:bg-[#5CD284] dark:group-hover:text-[#091711] transition-all duration-300">
                     {idx === 0 && <ShieldCheck className="w-8 h-8" />}
                     {idx === 1 && <Home className="w-8 h-8" />}
                     {idx === 2 && <Key className="w-8 h-8" />}
@@ -466,7 +466,7 @@ export default function HomePage() {
       {/* 6. WHY CHOOSE US */}
       <section className="py-24 max-w-7xl mx-auto px-6 lg:px-12">
         <div className="text-center mb-16">
-          <p className="text-[#1A3626] dark:text-[#915331] font-bold tracking-widest text-[12px] mb-4 uppercase">
+          <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
             {home.whyChooseUs.label}
           </p>
           <h2 className="text-[36px] sm:text-[44px] font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -477,10 +477,10 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
            {home.whyChooseUs.features.map((feature, idx) => (
              <div key={idx} className="bg-white dark:bg-[#102418]/50 rounded-3xl p-8 lg:p-10 border border-gray-100 dark:border-[#1A3626] hover:shadow-lg transition-all duration-300">
-                <div className="w-14 h-14 rounded-2xl bg-[#1A3626]/5 dark:bg-[#915331]/10 flex items-center justify-center mb-8">
-                  {idx === 0 && <Zap className="w-6 h-6 text-[#1A3626] dark:text-[#915331]" />}
-                  {idx === 1 && <ShieldCheck className="w-6 h-6 text-[#1A3626] dark:text-[#915331]" />}
-                  {idx === 2 && <HeartHandshake className="w-6 h-6 text-[#1A3626] dark:text-[#915331]" />}
+                <div className="w-14 h-14 rounded-2xl bg-[#1A3626]/5 dark:bg-[#c9a14b]/10 flex items-center justify-center mb-8">
+                  {idx === 0 && <Zap className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />}
+                  {idx === 1 && <ShieldCheck className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />}
+                  {idx === 2 && <HeartHandshake className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />}
                 </div>
                 <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">{feature.title}</h3>
                 <p className="text-[15px] text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -496,8 +496,8 @@ export default function HomePage() {
         <div className="relative w-full bg-gradient-to-br from-[#1B3A2D] to-[#0A1C12] dark:from-[#102418] dark:to-[#091711] rounded-[40px] p-10 sm:p-16 lg:p-20 overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
           
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 dark:bg-[#915331]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/5 dark:bg-[#915331]/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 dark:bg-[#c9a14b]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/5 dark:bg-[#c9a14b]/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
           <div className="relative z-10 flex-1 max-w-2xl">
             <h2 className="text-white text-[32px] sm:text-[40px] lg:text-[48px] font-bold mb-6 tracking-tight leading-[1.1]" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -509,7 +509,7 @@ export default function HomePage() {
           </div>
           
           <div className="relative z-10">
-            <Link href="/signup" className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#915331] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
+            <Link href="/signup" className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#c9a14b] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
               {home.cta.buttonText} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

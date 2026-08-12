@@ -36,7 +36,7 @@ export default function BlogPage() {
       <section className="py-16 sm:py-24 px-6 lg:px-12 w-full max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6">
           <div>
-            <p className="text-[#1A3626] dark:text-[#915331] font-bold tracking-widest text-[12px] mb-3 uppercase">
+            <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-3 uppercase">
               {content.blog.main.label}
             </p>
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -58,7 +58,7 @@ export default function BlogPage() {
                   }}
                 />
                 <div className="absolute top-4 left-4">
-                  <span className="text-[11px] font-bold tracking-wider uppercase text-[#1A3626] dark:text-white bg-white/90 dark:bg-[#915331] backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm">
+                  <span className="text-[11px] font-bold tracking-wider uppercase text-[#1A3626] dark:text-white bg-white/90 dark:bg-[#c9a14b] backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm">
                     {post.category}
                   </span>
                 </div>
@@ -78,7 +78,7 @@ export default function BlogPage() {
                   {post.excerpt}
                 </p>
                 
-                <div className="flex items-center gap-2 text-[14px] font-bold text-[#1A3626] dark:text-[#915331] group-hover:gap-3 transition-all mt-auto pt-4 border-t border-gray-100 dark:border-[#1A3626]">
+                <div className="flex items-center gap-2 text-[14px] font-bold text-[#1A3626] dark:text-[#c9a14b] group-hover:gap-3 transition-all mt-auto pt-4 border-t border-gray-100 dark:border-[#1A3626]">
                   {content.blog.main.readMore} <ArrowRight className="w-4 h-4" />
                 </div>
               </div>

@@ -62,7 +62,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               href={link.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive 
-                  ? "bg-[#1A3626] dark:bg-[#915331]/10 text-white dark:text-[#915331] font-semibold" 
+                  ? "bg-[#1A3626] dark:bg-[#c9a14b]/10 text-white dark:text-[#c9a14b] font-semibold" 
                   : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#102418]/50 hover:text-gray-900 dark:hover:text-gray-200"
               }`}
             >

@@ -27,9 +27,9 @@
     --card-border: rgba(255, 255, 255, 0.05);
 
     /* Update brand colors for dark mode to match the gold accents */
-    --brand-primary: #915331;
+    --brand-primary: #c9a14b;
     --brand-primary-hover: #D6A733;
-    --brand-secondary: #915331;
+    --brand-secondary: #c9a14b;
     --brand-secondary-hover: #D6A733;
   }
 

@@ -128,7 +128,7 @@ export default function LoginPage() {
                 placeholder={content.auth.login.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#915331] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="w-full px-4 py-3.5 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 required
               />
             </div>
@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
                   {content.auth.login.passwordLabel} <span className="text-red-500">*</span>
                 </label>
-                <Link href="/forgot-password" className="text-[13px] font-semibold text-[#1A3626] dark:text-[#915331] hover:underline">
+                <Link href="/forgot-password" className="text-[13px] font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
                   {content.auth.login.forgotPasswordText}
                 </Link>
               </div>
@@ -148,7 +148,7 @@ export default function LoginPage() {
                   placeholder={content.auth.login.passwordPlaceholder}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#915331] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 pr-12"
+                  className="w-full px-4 py-3.5 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 pr-12"
                   required
                 />
                 <button
@@ -164,7 +164,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 mt-2 bg-[#1A3626] dark:bg-[#915331] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-lg font-semibold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-4 mt-2 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] disabled:opacity-70 disabled:cursor-not-allowed text-white dark:text-[#1A3626] rounded-lg font-semibold text-[15px] transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
               {content.auth.login.submitButton}
