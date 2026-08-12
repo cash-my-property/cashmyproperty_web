@@ -13,6 +13,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const content = dict.dashboard.sidebar;
   const pathname = usePathname();
   const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
+  const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
 
   const buyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
@@ -31,7 +32,15 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
-  const links = role === 'seller' ? sellerLinks : buyerLinks;
+  const simpleSellerLinks = [
+    { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
+    { name: "My Simple Listings", href: `/${locale}/dashboard/seller/simple-listings`, icon: Building },
+    { name: "Listing History", href: `/${locale}/dashboard/seller/simple-history`, icon: ListOrdered },
+    { name: "Add Simple Listing", href: `/${locale}/dashboard/seller/add-simple-property`, icon: PlusCircle },
+    { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
+  ];
+
+  const links = role === 'seller' ? (sellerType === 'SIMPLE' ? simpleSellerLinks : sellerLinks) : buyerLinks;
 
   return (
     <aside className="w-64 bg-white dark:bg-[#102418] border-e border-gray-200 dark:border-[#1A3626] flex flex-col min-h-screen transition-colors">

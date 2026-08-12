@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
+import axios from "axios";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
@@ -14,6 +15,25 @@ export default function ListingsPage() {
   const [activeType, setActiveType] = useState("All");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  const [properties, setProperties] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setIsLoading(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+        const res = await axios.get(`${API_URL}/public/simple-live-properties`);
+        setProperties(res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching properties", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -100,14 +120,70 @@ export default function ListingsPage() {
 
       {/* LISTINGS GRID */}
       <section className="py-16 px-6 lg:px-12 w-full max-w-7xl mx-auto">
-        <div className="flex flex-col items-center justify-center py-24 px-6 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-200 dark:border-[#1A3626] shadow-sm mt-8">
-          <div className="w-20 h-20 bg-green-50 dark:bg-[#102418] rounded-full flex items-center justify-center mb-6">
-            <Building className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b]" />
-          </div>
-          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Coming Soon</h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-[15px] leading-relaxed">
-            Our standard property listings are currently under development. Stay tuned for an exclusive selection of premium properties available for direct purchase.
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {isLoading ? (
+            Array(6).fill(0).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden border border-gray-100 dark:border-[#1A3626] flex flex-col p-2 animate-pulse shadow-sm">
+                <div className="relative h-[240px] rounded-[20px] bg-gray-200 dark:bg-[#163321] w-full" />
+                <div className="p-4 pt-5 flex flex-col flex-1 gap-4">
+                  <div className="flex justify-between items-center gap-4">
+                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-2/3" />
+                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-1/4" />
+                  </div>
+                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                </div>
+              </div>
+            ))
+          ) : properties.length > 0 ? (
+            properties.map((item) => {
+              const details = item.propertyDetails || item || {};
+              const title = item.title || details.propertyTitle || "Untitled Property";
+              const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
+              const image = item.image || details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+              const beds = item.specs?.beds || details.propertyBedrooms || 0;
+              const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
+              const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
+              const price = item.price?.amount || details.propertyPrice?.amount || details.propertyPrice || 0;
+              const type = details.propertyType || "Property";
+
+              return (
+              <Link href={`/${locale}/simple-listings/${item._id || item.id}`} key={item._id || item.id} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer">
+                <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711]">
+                  <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
+                     <span className="w-2 h-2 rounded-full bg-[#5CD284]"></span> ACTIVE
+                  </div>
+                </div>
+                
+                <div className="p-4 pt-5 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
+                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">Ð {price.toLocaleString()}</span>
+                  </div>
+                  
+                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                    <MapPin className="w-4 h-4" /> {location}
+                  </p>
+                  
+                  <div className="flex items-center gap-4 mb-5">
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Square className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="px-5 py-2.5 w-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
+                      View Details
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            )})
+          ) : (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
+              No properties available matching your criteria.
+            </div>
+          )}
         </div>
       </section>
 

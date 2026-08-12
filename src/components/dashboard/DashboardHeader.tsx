@@ -39,19 +39,37 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
       const currentRole = typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "buyer";
       const targetRole = currentRole.toLowerCase() === "buyer" ? "seller" : "buyer";
       
-      const baseUrl = api.defaults.baseURL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-      
-      await api.put('/switch/toggleRole', { newRole: targetRole }, {
-        baseURL: baseUrl
-      });
+      await api.put('/switch/toggleRole', { newRole: targetRole });
       
       if (fetchProfile) {
         await fetchProfile();
       }
       
       router.refresh();
+      window.location.reload();
     } catch (error) {
       console.error("Failed to switch role", error);
+    } finally {
+      setIsSwitching(false);
+    }
+  };
+
+  const handleSwitchSellerType = async () => {
+    try {
+      setIsSwitching(true);
+      const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+      const targetType = sellerType === 'REGULAR' ? 'SIMPLE' : 'REGULAR';
+      
+      await api.put('/switch/toggleRole', { type: targetType });
+      
+      if (fetchProfile) {
+        await fetchProfile();
+      }
+      
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to switch seller type", error);
     } finally {
       setIsSwitching(false);
     }
@@ -119,7 +137,14 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                 {user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User"}
               </span>
               <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 capitalize">
-                {typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "Buyer"}
+                {(() => {
+                  const currentRole = typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "Buyer";
+                  if (currentRole.toLowerCase() === 'seller') {
+                    const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+                    return `${sellerType.toLowerCase()} Seller`;
+                  }
+                  return currentRole;
+                })()}
               </span>
             </div>
             {user?.picture ? (
@@ -149,6 +174,24 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                   return currentRole.toLowerCase() === 'buyer' ? 'Seller' : 'Buyer';
                 })()}
               </button>
+
+              {(() => {
+                const currentRole = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
+                if (currentRole === 'seller') {
+                  const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+                  return (
+                    <button 
+                      onClick={handleSwitchSellerType}
+                      disabled={isSwitching}
+                      className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+                    >
+                      {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} 
+                      Switch to {sellerType === 'REGULAR' ? 'Simple Seller' : 'Regular Seller'}
+                    </button>
+                  );
+                }
+                return null;
+              })()}
 
             </div>
           </div>

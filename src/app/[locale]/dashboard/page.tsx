@@ -17,6 +17,7 @@ export default function DashboardOverviewPage() {
   const [wonAuctionsCount, setWonAuctionsCount] = useState("0");
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [quota, setQuota] = useState<any>(null);
 
   const { user } = useAuth();
 
@@ -25,9 +26,18 @@ export default function DashboardOverviewPage() {
       try {
         setIsLoading(true);
         const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
+        const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
         
         if (role === 'seller') {
-          // Temporarily set empty stats for seller until seller dashboard API is ready
+          if (sellerType === 'SIMPLE') {
+            try {
+              const quotaRes = await api.get('/seller/simpleListingQuota');
+              setQuota(quotaRes.data.data);
+            } catch (error) {
+              console.error("Failed to fetch simple listing quota");
+            }
+          }
+          // Temporarily set empty stats for regular seller until seller dashboard API is ready
           setActiveBidsCount("0");
           setWonAuctionsCount("0");
           setRecentActivity([]);
@@ -87,11 +97,22 @@ export default function DashboardOverviewPage() {
     }
   }, [user]);
 
-  const stats = [
+  const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
+  const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+
+  let stats = [
     { label: content.stats.activeBids, value: activeBidsCount, icon: Gavel, color: "text-blue-500", bg: "bg-blue-500/10" },
     { label: content.stats.wonAuctions, value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
     { label: content.stats.savedProperties, value: "0", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10" },
   ];
+
+  if (role === 'seller' && sellerType === 'SIMPLE' && quota) {
+    stats = [
+      { label: "Active Listings", value: `${quota.activeQuota?.used || 0} / ${quota.activeQuota?.limit || 0}`, icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10" },
+      { label: "Total Quota Used", value: `${quota.totalQuota?.used || 0} / ${quota.totalQuota?.limit || 0}`, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
+      { label: "Tier", value: quota.tier || "SIMPLE", icon: CheckCircle2, color: "text-rose-500", bg: "bg-rose-500/10" },
+    ];
+  }
 
   if (isLoading) {
     return (

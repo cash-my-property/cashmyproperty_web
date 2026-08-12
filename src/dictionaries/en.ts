@@ -191,8 +191,14 @@ export const content = {
         }
       }
     },
+    simpleListings: {
+      label: "Standard Properties",
+      heading: "Simple Listings",
+      description: "Explore our collection of standard properties available for immediate inquiry.",
+      viewAll: "View all listings"
+    },
     realtimebids: {
-      label: "Live Live Offers",
+      label: "Live Offers",
       heading: "Realtime Offers",
       description: "Distress listings currently in an active 7-Day Live Offer. Offer now before the timer runs out.",
       viewAllText: "View All Live Offers",

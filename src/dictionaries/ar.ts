@@ -191,6 +191,12 @@ export const content = {
         }
       }
     },
+    simpleListings: {
+      label: "عقارات عادية",
+      heading: "قوائم بسيطة",
+      description: "استكشف مجموعتنا من العقارات العادية المتاحة للاستفسار المباشر.",
+      viewAll: "عرض جميع القوائم"
+    },
     realtimebids: {
       label: "مزادات مباشرة",
       heading: "عروض في الوقت الفعلي",

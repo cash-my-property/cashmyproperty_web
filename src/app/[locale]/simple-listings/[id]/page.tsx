@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2, Share2 } from "lucide-react";
+import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2, Share2, MessageCircle } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
-import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
+
 import api from "@/lib/api";
 
 export default function PropertyDetailPage() {
@@ -20,7 +20,6 @@ export default function PropertyDetailPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [propertyInfo, setPropertyInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -29,12 +28,7 @@ export default function PropertyDetailPage() {
         if (!id) return;
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
         
-        let res;
-        if (isAuthenticated && user?.role === 'buyer') {
-          res = await api.get(`/buyer/auction-details/${id}`);
-        } else {
-          res = await axios.get(`${API_URL}/public/property-details/${id}`);
-        }
+        const res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
         
         setPropertyInfo(res.data.data || res.data);
       } catch (err) {
@@ -68,7 +62,7 @@ export default function PropertyDetailPage() {
     );
   }
 
-  const details = propertyInfo.propertyDetails || {};
+  const details = propertyInfo.propertyDetails || propertyInfo || {};
   const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url) : ["https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80"];
   const title = details.propertyTitle || "Untitled Property";
   const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
@@ -87,7 +81,7 @@ export default function PropertyDetailPage() {
   };
   const sqft = getAreaValue(details.propertyArea || details.propertyBuiltUpArea);
   const description = details.propertyDescription || "No description provided.";
-  const features = details.propertyFeatures || ["Central A/C", "Balcony", "Shared Pool", "Security"];
+  const features = details.propertyFeatures || details.propertyAmenities || ["Central A/C", "Balcony", "Shared Pool", "Security"];
 
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 transition-colors">
@@ -98,7 +92,7 @@ export default function PropertyDetailPage() {
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 font-medium">
             <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Properties</Link>
+            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Properties</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold">{propertyInfo.PID || propertyInfo._id}</span>
           </div>
@@ -225,22 +219,64 @@ export default function PropertyDetailPage() {
             <div className="mb-8">
               <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">Additional Details</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                {details.propertyCategory && (
+                {propertyInfo.listingPurpose && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Purpose</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.listingPurpose}</span>
+                  </div>
+                )}
+                {propertyInfo.propertyCategory && (
                   <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
                     <span className="text-gray-500 dark:text-gray-400 text-[14px]">Category</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{details.propertyCategory}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.propertyCategory}</span>
                   </div>
                 )}
-                {details.propertyPlan && (
+                {propertyInfo.propertyPlan && (
                   <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
                     <span className="text-gray-500 dark:text-gray-400 text-[14px]">Property Plan</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{details.propertyPlan}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.propertyPlan}</span>
                   </div>
                 )}
-                {details.trakheesiNumber && (
+                {propertyInfo.rentalPeriod && (
                   <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Trakheesi Number</span>
-                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{details.trakheesiNumber}</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Rental Period</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.rentalPeriod.replace('_', ' ')}</span>
+                  </div>
+                )}
+                {propertyInfo.permitNumber && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Permit Number</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.permitNumber}</span>
+                  </div>
+                )}
+                {propertyInfo.referenceNumber && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Reference No</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.referenceNumber}</span>
+                  </div>
+                )}
+                {propertyInfo.unitNumber && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Unit Number</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.unitNumber}</span>
+                  </div>
+                )}
+                {propertyInfo.parkingSpaces !== undefined && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Parking Spaces</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.parkingSpaces}</span>
+                  </div>
+                )}
+                {propertyInfo.furnishingStatus && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Furnished</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.furnishingStatus.replace('_', ' ')}</span>
+                  </div>
+                )}
+                {propertyInfo.availability && (
+                  <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Availability</span>
+                    <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{propertyInfo.availability}</span>
                   </div>
                 )}
               </div>
@@ -262,6 +298,12 @@ export default function PropertyDetailPage() {
                     <span>{feature}</span>
                   </div>
                 ))}
+                {details.trakheesiNumber && (
+                  <div className="flex items-center gap-3 text-gray-600 dark:text-gray-300 text-[15px]">
+                    <CheckCircle2 className="w-5 h-5 text-[#5CD284] shrink-0" />
+                    <span>Trakheesi No: {details.trakheesiNumber}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -272,57 +314,57 @@ export default function PropertyDetailPage() {
         <div className="lg:col-span-4">
           <div className="sticky top-24 flex flex-col gap-6">
             
-            {isAuthenticated ? (
-              <BuyerActionSidebar 
-                auctionId={params.id as string}
-                contractStatus={propertyInfo.userContractStatus?.status || 'NOT_SIGNED'}
-                canBid={propertyInfo.userContractStatus?.canBid || false}
-                onBidSuccess={() => window.location.reload()}
-                onContractSubmitted={() => window.location.reload()}
-              />
-            ) : (
-              <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#1A3626] flex flex-col items-center justify-center text-center">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Interested in this property?</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Log in to make an offer or place a bid on this property.</p>
-                <button 
-                  onClick={() => setShowLoginModal(true)}
-                  className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors cursor-pointer"
+            <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-[#1A3626]">
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-2">Interested in this property?</h3>
+              <p className="text-[14px] text-gray-500 dark:text-gray-400 mb-6">Contact the agent directly for more information or to arrange a viewing.</p>
+              {propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber ? (
+                <a 
+                  href={`https://wa.me/${(propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-4 bg-[#25D366] text-gray-900 rounded-xl font-bold text-[15px] hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
                 >
-                  Make Offer
+                  <MessageCircle className="w-4 h-4" /> WhatsApp Agent
+                </a>
+              ) : null}
+
+              {propertyInfo.sellerInfo?.phone ? (
+                <a 
+                  href={`tel:${propertyInfo.sellerInfo.phone}`}
+                  className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-[15px] hover:opacity-90 transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
+                >
+                  <Phone className="w-4 h-4" /> Call Agent
+                </a>
+              ) : (
+                <button 
+                  onClick={() => alert('Agent phone number not available')}
+                  className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-[15px] hover:opacity-90 transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
+                >
+                  <Phone className="w-4 h-4" /> Call Agent
                 </button>
-              </div>
-            )}
+              )}
+              
+              {propertyInfo.sellerInfo?.email ? (
+                <a 
+                  href={`mailto:${propertyInfo.sellerInfo.email}`}
+                  className="w-full py-4 bg-transparent border-2 border-[#1A3626] dark:border-[#c9a14b] text-[#1A3626] dark:text-[#c9a14b] rounded-xl font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#163321]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" /> Email Agent
+                </a>
+              ) : (
+                <button 
+                  onClick={() => alert('Agent email not available')}
+                  className="w-full py-4 bg-transparent border-2 border-[#1A3626] dark:border-[#c9a14b] text-[#1A3626] dark:text-[#c9a14b] rounded-xl font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#163321]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" /> Email Agent
+                </button>
+              )}
+            </div>
 
           </div>
         </div>
 
       </div>
-
-      {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 dark:border-[#1A3626] text-center">
-            <h3 className="text-[22px] font-bold text-gray-900 dark:text-white mb-2">Login Required</h3>
-            <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-8">
-              You need to be logged in to make an offer. Would you like to log in now?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={() => setShowLoginModal(false)}
-                className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#1A3626]/50 transition-colors cursor-pointer"
-              >
-                Stay Logged Out
-              </button>
-              <Link 
-                href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
-              >
-                Go to Login
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
     </main>
   );
 }
