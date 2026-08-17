@@ -35,7 +35,11 @@ const PROPERTY_DOC_CONFIG: any = {
 
 const AMENITIES = ["Balcony", "Central A/C", "Covered Parking", "Private Pool", "Shared Gym", "Security", "View of Water", "Children's Play Area"];
 
-export default function AddSimplePropertyPage() {
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
+
+export default function EditSimplePropertyPage() {
+  const params = useParams();
   const { locale } = useDictionary();
   const router = useRouter();
   
@@ -43,6 +47,7 @@ export default function AddSimplePropertyPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  
   const [formData, setFormData] = useState({
     propertyTitle: "",
     propertyCategory: "RESIDENTIAL",
@@ -68,11 +73,67 @@ export default function AddSimplePropertyPage() {
     availability: "Vacant"
   });
 
+  
   const [amenities, setAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
+  const [deletedImages, setDeletedImages] = useState<string[]>([]);
+  const [existingDocs, setExistingDocs] = useState<any[]>([]);
+  const [deletedDocs, setDeletedDocs] = useState<string[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
   const [documents, setDocuments] = useState<Record<string, File>>({});
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+useEffect(() => {
+    const fetchProperty = async () => {
+      if (!params.id) return;
+      try {
+        setIsFetching(true);
+        const res = await api.get(`/seller/getEditSimpleListingDetails/${params.id}`);
+        const data = res.data?.data || res.data;
+        
+        setFormData({
+          propertyTitle: data.propertyTitle || "",
+          propertyCategory: data.propertyCategory || "RESIDENTIAL",
+          propertyPlan: data.propertyPlan || "READY",
+          propertyType: data.propertyType || "APARTMENT",
+          propertyLocation: data.propertyLocation || "",
+          propertyPrice: data.propertyPrice?.amount?.toString() || data.propertyPrice?.toString() || "",
+          propertyArea: data.propertyArea?.value?.toString() || data.propertyArea?.toString() || "",
+          propertyBedrooms: data.propertyBedrooms?.toString() || "1",
+          propertyWashrooms: data.propertyWashrooms?.toString() || "1",
+          propertyBuiltUpArea: data.propertyBuiltUpArea?.toString() || "",
+          propertyDescription: data.propertyDescription || "",
+          trakheesiNumber: data.trakheesiNumber || data.permitNumber || "",
+          // New fields
+          listingPurpose: data.listingPurpose || "SALE",
+          rentalPeriod: data.rentalPeriod || "PER_YEAR",
+          whatsappNumber: data.whatsappNumber || "",
+          permitNumber: data.permitNumber || "",
+          referenceNumber: data.referenceNumber || "",
+          unitNumber: data.unitNumber || "",
+          parkingSpaces: data.parkingSpaces?.toString() || "0",
+          furnishingStatus: data.furnishingStatus || "NOT_FURNISHED",
+          availability: data.availability || "Vacant"
+        });
+        
+        if (data.propertyAmenities) setAmenities(data.propertyAmenities);
+        if (data.propertyImages) setExistingImages(data.propertyImages);
+        if (data.propertyDocuments) setExistingDocs(data.propertyDocuments);
+      } catch (err) {
+        console.error("Failed to fetch property details", err);
+        setError("Could not load property details. It might not exist or you don't have access.");
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchProperty();
+  }, [params.id]);
+
+  
+
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -113,7 +174,7 @@ export default function AddSimplePropertyPage() {
     setError(null);
 
     // Validation
-    if (images.length < minImages) {
+    if (images.length + existingImages.length < minImages) {
       setError(`Please upload at least ${minImages} images for this property type.`);
       setIsSubmitting(false);
       return;
@@ -124,7 +185,8 @@ export default function AddSimplePropertyPage() {
       return;
     }
     for (const doc of requiredDocs) {
-      if (!documents[doc]) {
+      const hasExistingDoc = existingDocs.some(d => d.type === doc || d.documentType === doc);
+      if (!documents[doc] && !hasExistingDoc) {
         setError(`Missing required document: ${doc}`);
         setIsSubmitting(false);
         return;
@@ -181,7 +243,9 @@ export default function AddSimplePropertyPage() {
         payload.append(docName, file);
       });
 
-      await api.post('/seller/addSimpleListing', payload, {
+      payload.append('deletedImages', JSON.stringify(deletedImages));
+      payload.append('deletedDocs', JSON.stringify(deletedDocs));
+      await api.patch(`/seller/editRejectedSimpleListing/${params.id}`, payload, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -204,9 +268,9 @@ export default function AddSimplePropertyPage() {
         <div className="w-20 h-20 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="w-10 h-10 text-green-500" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Property Added Successfully!</h2>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Property Re-submitted Successfully!</h2>
         <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-          Your property has been submitted and is currently under review. Our team will verify it shortly.
+          Your property has been re-submitted and is back under review.
         </p>
         <p className="text-sm font-semibold text-[#1A3626] dark:text-[#5CD284] animate-pulse">
           Redirecting you to your properties...
@@ -217,9 +281,13 @@ export default function AddSimplePropertyPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl mx-auto">
+      {isFetching ? (
+        <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-[#5CD284]" /></div>
+      ) : (
+      <>
       <div className="mb-6 sm:mb-10">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Add New Property</h1>
-        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Enter details, upload images, and provide necessary documents to list your property.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Edit Rejected Property</h1>
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Update your property details to resolve the rejection issues and re-submit.</p>
       </div>
 
       {error && (
@@ -507,6 +575,8 @@ export default function AddSimplePropertyPage() {
         </div>
 
       </form>
+      </>
+      )}
     </div>
   );
 }

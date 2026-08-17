@@ -8,34 +8,37 @@ import { useDictionary } from "@/components/DictionaryProvider";
 import Image from "next/image";
 
 // Recreated Document Config from backend
-// Recreated Document Config from backend simpleListingRule.js
 const PROPERTY_DOC_CONFIG: any = {
   RESIDENTIAL: {
     READY: {
-      APARTMENT: { images: { min: 8, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      VILLA: { images: { min: 10, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      LAND: { images: { min: 2, max: 10 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] }
+      APARTMENT: { images: { min: 8, max: 25 }, required: ["exclusiveContract", "propertyTitleDeed", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyFloorPlan", "propertyESignature"] },
+      VILLA: { images: { min: 10, max: 25 }, required: ["exclusiveContract", "propertyTitleDeed", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyFloorPlan", "propertyESignature"] },
+      LAND: { images: { min: 2, max: 10 }, required: ["exclusiveContract", "propertyTitleDeed", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyESignature"] }
     },
     OFF_PLAN: {
-      APARTMENT: { images: { min: 4, max: 10 }, required: ["contractA", "propertyTrakheesi", "passportDocument", "oqoodDocument"] },
-      VILLA: { images: { min: 4, max: 10 }, required: ["contractA", "propertyTrakheesi", "passportDocument", "oqoodDocument"] }
+      APARTMENT: { images: { min: 4, max: 10 }, required: ["exclusiveContract", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "OqoodDocument", "spaDocument", "statementOfAccount", "propertyFloorPlan"] },
+      VILLA: { images: { min: 4, max: 10 }, required: ["exclusiveContract", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "OqoodDocument", "spaDocument", "statementOfAccount", "propertyFloorPlan"] }
     }
   },
   COMMERCIAL: {
     READY: {
-      RETAIL: { images: { min: 5, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      OFFICES: { images: { min: 5, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      BUILDING: { images: { min: 10, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] }
+      RETAIL: { images: { min: 5, max: 25 }, required: ["exclusiveContract", "propertyTitleDeed", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyESignature"] },
+      OFFICES: { images: { min: 5, max: 25 }, required: ["exclusiveContract", "propertyTitleDeed", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyESignature"] },
+      BUILDING: { images: { min: 10, max: 25 }, required: ["exclusiveContract", "propertyTitleDeed", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyESignature"] }
     },
     OFF_PLAN: {
-      RETAIL: { images: { min: 4, max: 10 }, required: ["contractA", "oqoodDocument", "propertyTrakheesi", "passportDocument"] }
+      RETAIL: { images: { min: 4, max: 10 }, required: ["exclusiveContract", "OqoodDocument", "propertyCheque", "propertyTrakheesi", "passportDocument", "propertyUndertakingLetter", "propertyESignature"] }
     }
   }
 };
 
 const AMENITIES = ["Balcony", "Central A/C", "Covered Parking", "Private Pool", "Shared Gym", "Security", "View of Water", "Children's Play Area"];
 
-export default function AddSimplePropertyPage() {
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
+
+export default function EditPropertyPage() {
+  const params = useParams();
   const { locale } = useDictionary();
   const router = useRouter();
   
@@ -43,6 +46,7 @@ export default function AddSimplePropertyPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  
   const [formData, setFormData] = useState({
     propertyTitle: "",
     propertyCategory: "RESIDENTIAL",
@@ -55,24 +59,63 @@ export default function AddSimplePropertyPage() {
     propertyWashrooms: "1",
     propertyBuiltUpArea: "",
     propertyDescription: "",
-    trakheesiNumber: "",
-    // New fields for simple listing
-    listingPurpose: "SALE",
-    rentalPeriod: "PER_YEAR",
-    whatsappNumber: "",
-    permitNumber: "",
-    referenceNumber: "",
-    unitNumber: "",
-    parkingSpaces: "0",
-    furnishingStatus: "NOT_FURNISHED",
-    availability: "Vacant"
+    trakheesiNumber: ""
   });
 
+  
   const [amenities, setAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<any[]>([]);
+  const [deletedImages, setDeletedImages] = useState<string[]>([]);
+  const [existingDocs, setExistingDocs] = useState<any[]>([]);
+  const [deletedDocs, setDeletedDocs] = useState<string[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
   const [documents, setDocuments] = useState<Record<string, File>>({});
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+useEffect(() => {
+    const fetchProperty = async () => {
+      if (!params.id) return;
+      try {
+        setIsFetching(true);
+        const res = await api.get(`/seller/rejectedPropertydetails/${params.id}`);
+        const data = res.data?.data || res.data;
+        
+        console.log('DEBUG: API Response:', res);
+        console.log('DEBUG: Extracted Data:', data);
+        
+        setFormData({
+          propertyTitle: data.title || data.propertyTitle || '',
+          propertyCategory: data.propertyCategory || 'RESIDENTIAL',
+          propertyPlan: data.propertyPlan || 'READY',
+          propertyType: data.propertyType || 'APARTMENT',
+          propertyLocation: data.location || data.propertyLocation || '',
+          propertyPrice: data.pricing?.price?.amount?.toString() || data.propertyPrice?.amount?.toString() || data.propertyPrice?.toString() || '',
+          propertyArea: data.details?.area?.value?.toString() || data.propertyArea?.value?.toString() || data.propertyArea?.toString() || '',
+          propertyBedrooms: data.details?.bedrooms?.toString() || data.propertyBedrooms?.toString() || '1',
+          propertyWashrooms: data.details?.washrooms?.toString() || data.propertyWashrooms?.toString() || '1',
+          propertyBuiltUpArea: data.builtUpArea?.toString() || data.propertyBuiltUpArea?.toString() || '',
+          propertyDescription: data.description || data.propertyDescription || '',
+          trakheesiNumber: data.trakheesiNumber || data.permitNumber || ''
+        });
+        
+        if (data.propertyAmenities) setAmenities(data.propertyAmenities);
+        if (data.images) setExistingImages(Array.isArray(data.images) ? data.images : [data.images]); else if (data.propertyImages) setExistingImages(data.propertyImages);
+        if (data.documents) setExistingDocs(data.documents); else if (data.propertyDocuments) setExistingDocs(data.propertyDocuments);
+      } catch (err) {
+        console.error('Failed to fetch property details', err);
+        setError('Could not load property details. It might not exist or you don\'t have access.');
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchProperty();
+  }, [params.id]);
+
+  
+
+  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -113,7 +156,7 @@ export default function AddSimplePropertyPage() {
     setError(null);
 
     // Validation
-    if (images.length < minImages) {
+    if (images.length + existingImages.length < minImages) {
       setError(`Please upload at least ${minImages} images for this property type.`);
       setIsSubmitting(false);
       return;
@@ -124,7 +167,8 @@ export default function AddSimplePropertyPage() {
       return;
     }
     for (const doc of requiredDocs) {
-      if (!documents[doc]) {
+      const hasExistingDoc = existingDocs.some(d => d.type === doc || d.documentType === doc);
+      if (!documents[doc] && !hasExistingDoc) {
         setError(`Missing required document: ${doc}`);
         setIsSubmitting(false);
         return;
@@ -135,12 +179,7 @@ export default function AddSimplePropertyPage() {
       const payload = new FormData();
       
       // Basic text fields
-      const allowedFields = [
-        'propertyTitle', 'propertyCategory', 'propertyPlan', 'propertyType', 
-        'propertyLocation', 'propertyDescription', 'trakheesiNumber',
-        'listingPurpose', 'whatsappNumber', 'permitNumber', 'referenceNumber', 
-        'unitNumber', 'furnishingStatus', 'availability'
-      ];
+      const allowedFields = ['propertyTitle', 'propertyCategory', 'propertyPlan', 'propertyType', 'propertyLocation', 'propertyDescription', 'trakheesiNumber'];
       
       allowedFields.forEach(key => {
         if (formData[key as keyof typeof formData]) {
@@ -150,12 +189,6 @@ export default function AddSimplePropertyPage() {
 
       payload.set('propertyPrice', formData.propertyPrice);
       payload.set('propertyArea', formData.propertyArea);
-      payload.set('parkingSpaces', formData.parkingSpaces);
-
-      // rentalPeriod is required only when listingPurpose is RENT
-      if (formData.listingPurpose === 'RENT') {
-        payload.set('rentalPeriod', formData.rentalPeriod);
-      }
 
       // propertyBedrooms and propertyWashrooms: only allowed for APARTMENT or VILLA
       if (['APARTMENT', 'VILLA'].includes(formData.propertyType)) {
@@ -181,13 +214,15 @@ export default function AddSimplePropertyPage() {
         payload.append(docName, file);
       });
 
-      await api.post('/seller/addSimpleListing', payload, {
+      payload.append('deletedImages', JSON.stringify(deletedImages));
+      payload.append('deletedDocs', JSON.stringify(deletedDocs));
+      await api.patch(`/seller/editRejectedProperty/${params.id}`, payload, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
       setIsSuccess(true);
       setTimeout(() => {
-        router.push(`/${locale}/dashboard/seller/simple-listings`);
+        router.push(`/${locale}/dashboard/seller/properties`);
       }, 2000);
       
     } catch (err: any) {
@@ -204,9 +239,9 @@ export default function AddSimplePropertyPage() {
         <div className="w-20 h-20 bg-green-50 dark:bg-green-500/10 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="w-10 h-10 text-green-500" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Property Added Successfully!</h2>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Property Re-submitted Successfully!</h2>
         <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-          Your property has been submitted and is currently under review. Our team will verify it shortly.
+          Your property has been re-submitted and is back under review.
         </p>
         <p className="text-sm font-semibold text-[#1A3626] dark:text-[#5CD284] animate-pulse">
           Redirecting you to your properties...
@@ -217,9 +252,13 @@ export default function AddSimplePropertyPage() {
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl mx-auto">
+      {isFetching ? (
+        <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="w-8 h-8 animate-spin text-[#5CD284]" /></div>
+      ) : (
+      <>
       <div className="mb-6 sm:mb-10">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Add New Property</h1>
-        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Enter details, upload images, and provide necessary documents to list your property.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Edit Rejected Property</h1>
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Update your property details to resolve the rejection issues and re-submit.</p>
       </div>
 
       {error && (
@@ -241,24 +280,6 @@ export default function AddSimplePropertyPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Listing Purpose *</label>
-              <select name="listingPurpose" value={formData.listingPurpose} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                <option value="SALE">For Sale</option>
-                <option value="RENT">For Rent</option>
-              </select>
-            </div>
-            {formData.listingPurpose === "RENT" && (
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Rental Period *</label>
-                <select name="rentalPeriod" value={formData.rentalPeriod} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                  <option value="PER_YEAR">Per Year</option>
-                  <option value="PER_MONTH">Per Month</option>
-                  <option value="PER_WEEK">Per Week</option>
-                  <option value="PER_DAY">Per Day</option>
-                </select>
-              </div>
-            )}
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Category</label>
               <select name="propertyCategory" value={formData.propertyCategory} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
@@ -353,41 +374,6 @@ export default function AddSimplePropertyPage() {
                 </div>
               </>
             )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">WhatsApp Number *</label>
-              <input required name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="e.g. +971501234567" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Permit Number *</label>
-              <input required name="permitNumber" value={formData.permitNumber} onChange={handleChange} placeholder="e.g. 7123456789" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Reference Number *</label>
-              <input required name="referenceNumber" value={formData.referenceNumber} onChange={handleChange} placeholder="e.g. CPM-1029" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Unit Number *</label>
-              <input required name="unitNumber" value={formData.unitNumber} onChange={handleChange} placeholder="e.g. Apartment 1402" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Parking Spaces *</label>
-              <input required type="number" name="parkingSpaces" value={formData.parkingSpaces} onChange={handleChange} placeholder="e.g. 1" min={0} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Furnishing Status *</label>
-              <select name="furnishingStatus" value={formData.furnishingStatus} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                <option value="NOT_FURNISHED">Unfurnished</option>
-                <option value="SEMI">Semi-Furnished</option>
-                <option value="FULL">Fully Furnished</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Availability *</label>
-              <input required name="availability" value={formData.availability} onChange={handleChange} placeholder="e.g. Vacant, or Date" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
           </div>
 
           <div>
@@ -507,6 +493,8 @@ export default function AddSimplePropertyPage() {
         </div>
 
       </form>
+    </>
+      )}
     </div>
   );
 }

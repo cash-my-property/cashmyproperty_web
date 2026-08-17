@@ -6,9 +6,12 @@ import Link from "next/link";
 import { Search, MapPin, Clock, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Share2, Maximize } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 export default function AuctionsListingPage() {
   const { dict, locale } = useDictionary();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
   const content = dict.home;
   const realtimeOffers = dict.home.realtimebids.items;
 
@@ -23,15 +26,27 @@ export default function AuctionsListingPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     const fetchAuctions = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-        const [liveRes, upcomingRes] = await Promise.all([
-          axios.get(`${API_URL}/public/live-properties`),
-          axios.get(`${API_URL}/public/upcoming-properties`)
-        ]);
-        setLiveAuctions(liveRes.data.data || []);
-        setUpcomingAuctions(upcomingRes.data.data || []);
+        let liveRes, upcomingRes;
+        const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+        if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
+          [liveRes, upcomingRes] = await Promise.all([
+            api.get('/buyer/live-listings'),
+            api.get('/buyer/upcoming-listings')
+          ]);
+        } else {
+          [liveRes, upcomingRes] = await Promise.all([
+            axios.get(`${API_URL}/public/live-properties`),
+            axios.get(`${API_URL}/public/upcoming-properties`)
+          ]);
+        }
+        const liveData = liveRes.data.data;
+        const upcomingData = upcomingRes.data.data;
+        setLiveAuctions(Array.isArray(liveData) ? liveData : (liveData?.data || []));
+        setUpcomingAuctions(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
       } catch (err) {
         console.error("Error fetching live bids:", err);
       } finally {
@@ -39,7 +54,7 @@ export default function AuctionsListingPage() {
       }
     };
     fetchAuctions();
-  }, []);
+  }, [authLoading, isAuthenticated, user]);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -192,10 +207,10 @@ export default function AuctionsListingPage() {
               return combinedAuctions.map((item: any) => {
               const details = item.propertyDetails || {};
               const title = details.propertyTitle || "Untitled Property";
-              const location = details.propertyLocation?.city || "Dubai";
+              const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
               const image = details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
               const beds = details.propertyBedrooms || 0;
-              const baths = details.propertyBathrooms || 0;
+              const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
               const type = details.propertyType || "Property";
               const highestBid = item.currentHighestBid || (typeof item.currentHighestOffer === 'object' ? item.currentHighestOffer?.amount : item.currentHighestOffer);
               const fallbackPrice = details.propertyPrice?.amount || details.propertyPrice || 0;

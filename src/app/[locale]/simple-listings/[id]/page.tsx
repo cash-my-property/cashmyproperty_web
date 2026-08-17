@@ -14,7 +14,7 @@ import api from "@/lib/api";
 export default function PropertyDetailPage() {
   const { dict, locale } = useDictionary();
   const params = useParams();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
   const contactForm = dict.contact.main.form;
 
   const [activeImage, setActiveImage] = useState(0);
@@ -22,13 +22,20 @@ export default function PropertyDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     const fetchDetails = async () => {
       try {
         const id = params.id as string;
         if (!id) return;
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
         
-        const res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+        let res;
+        const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+        if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
+          res = await api.get(`/buyer/simpleListingDetails/${id}`);
+        } else {
+          res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+        }
         
         setPropertyInfo(res.data.data || res.data);
       } catch (err) {
@@ -322,7 +329,7 @@ export default function PropertyDetailPage() {
                   href={`https://wa.me/${(propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-4 bg-[#25D366] text-gray-900 rounded-xl font-bold text-[15px] hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
+                  className="w-full py-4 bg-[#25D366] text-white rounded-xl font-bold text-[15px] hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" /> WhatsApp Agent
                 </a>

@@ -10,11 +10,12 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
+import { useSocket } from "@/context/SocketContext";
 
 export default function PropertyDetailPage() {
   const { dict, locale } = useDictionary();
   const params = useParams();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
   const contactForm = dict.contact.main.form;
 
   const [activeImage, setActiveImage] = useState(0);
@@ -22,7 +23,52 @@ export default function PropertyDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const { socket, joinRoom, leaveRoom } = useSocket();
+
   useEffect(() => {
+    const id = params.id as string;
+    if (!id || !socket) return;
+
+    // Join room for this auction
+    joinRoom(`auction_${id}`);
+
+    // Handle real-time bid updates
+    const handleUpdateBid = (data: any) => {
+      console.log("📡 Real-time bid update received:", data);
+      setPropertyInfo((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          currentHighestBid: data.bidAmount,
+          bidCounter: data.bidCounter || prev.bidCounter
+        };
+      });
+    };
+
+    // Handle auction end
+    const handleAuctionEnded = (data: any) => {
+      console.log("📡 Auction ended event received:", data);
+      setPropertyInfo((prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: "ENDED"
+        };
+      });
+    };
+
+    socket.on("update_bid", handleUpdateBid);
+    socket.on("auction_ended", handleAuctionEnded);
+
+    return () => {
+      leaveRoom(`auction_${id}`);
+      socket.off("update_bid", handleUpdateBid);
+      socket.off("auction_ended", handleAuctionEnded);
+    };
+  }, [params.id, socket]);
+
+  useEffect(() => {
+    if (authLoading) return;
     const fetchDetails = async () => {
       try {
         const id = params.id as string;
@@ -30,7 +76,8 @@ export default function PropertyDetailPage() {
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
         
         let res;
-        if (isAuthenticated && user?.role === 'buyer') {
+        const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+        if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
           res = await api.get(`/buyer/auction-details/${id}`);
         } else {
           res = await axios.get(`${API_URL}/public/property-details/${id}`);
@@ -44,7 +91,7 @@ export default function PropertyDetailPage() {
       }
     };
     fetchDetails();
-  }, [params.id, isAuthenticated, user]);
+  }, [params.id, authLoading, isAuthenticated, user]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,11 +106,13 @@ export default function PropertyDetailPage() {
     );
   }
 
+  const detailDict = dict.listings?.detail || {};
+
   if (!propertyInfo) {
     return (
       <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Property not found</h1>
-        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">Back to listings</Link>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{detailDict.propertyNotFound || "Property not found"}</h1>
+        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">{detailDict.backToProperties || "Back to listings"}</Link>
       </main>
     );
   }
@@ -96,9 +145,9 @@ export default function PropertyDetailPage() {
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Home</Link>
+            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Properties</Link>
+            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{detailDict.backToProperties || "Properties"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold">{propertyInfo.PID || propertyInfo._id}</span>
           </div>
@@ -123,7 +172,7 @@ export default function PropertyDetailPage() {
               <Image src={images[activeImage] || images[0]} alt="Property" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-[#1A3626] flex items-center gap-2 z-10">
                 <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
-                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">Verified by DLD</span>
+                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">{detailDict.verifiedDld || "Verified by DLD"}</span>
               </div>
               
               {/* Carousel Arrows */}
@@ -205,41 +254,41 @@ export default function PropertyDetailPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-gray-100 dark:border-[#1A3626] mb-8 bg-gray-50 dark:bg-[#102418]/30 rounded-2xl px-6">
               <div className="flex flex-col gap-1">
-                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Building2 className="w-4 h-4"/> Type</span>
+                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Building2 className="w-4 h-4"/> {detailDict.category || "Type"}</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{type}</span>
               </div>
               <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-[#1A3626] pl-4">
-                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Bed className="w-4 h-4"/> Bedrooms</span>
+                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Bed className="w-4 h-4"/> {dict.listings?.filters?.bedsLabel || "Bedrooms"}</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{beds}</span>
               </div>
               <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-[#1A3626] pl-4">
-                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Bath className="w-4 h-4"/> Bathrooms</span>
+                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Bath className="w-4 h-4"/> {dict.listings?.cards?.baths || "Bathrooms"}</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{baths}</span>
               </div>
               <div className="flex flex-col gap-1 border-l border-gray-200 dark:border-[#1A3626] pl-4">
-                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Square className="w-4 h-4"/> Area (Sqft)</span>
+                <span className="text-[13px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5"><Square className="w-4 h-4"/> {dict.listings?.cards?.sqft || "Area (Sqft)"}</span>
                 <span className="text-[16px] font-bold text-gray-900 dark:text-white">{sqft}</span>
               </div>
             </div>
 
             <div className="mb-8">
-              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">Additional Details</h3>
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">{detailDict.additionalDetails || "Additional Details"}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                 {details.propertyCategory && (
                   <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Category</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">{detailDict.category || "Category"}</span>
                     <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{details.propertyCategory}</span>
                   </div>
                 )}
                 {details.propertyPlan && (
                   <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Property Plan</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">{detailDict.plan || "Property Plan"}</span>
                     <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{details.propertyPlan}</span>
                   </div>
                 )}
                 {details.trakheesiNumber && (
                   <div className="flex justify-between items-center pb-2 border-b border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">Trakheesi Number</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-[14px]">{detailDict.trakheesi || "Trakheesi Number"}</span>
                     <span className="font-semibold text-gray-900 dark:text-white text-[14px]">{details.trakheesiNumber}</span>
                   </div>
                 )}
@@ -247,14 +296,14 @@ export default function PropertyDetailPage() {
             </div>
 
             <div className="mb-10">
-              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">Description</h3>
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">{detailDict.description || "Description"}</h3>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-[15px] whitespace-pre-wrap">
                 {description}
               </p>
             </div>
 
             <div>
-              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">Features</h3>
+              <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-4">{detailDict.features || "Features"}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                 {features.map((feature: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-3 text-gray-600 dark:text-gray-300 text-[15px]">
@@ -264,7 +313,6 @@ export default function PropertyDetailPage() {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
 
@@ -277,18 +325,19 @@ export default function PropertyDetailPage() {
                 auctionId={params.id as string}
                 contractStatus={propertyInfo.userContractStatus?.status || 'NOT_SIGNED'}
                 canBid={propertyInfo.userContractStatus?.canBid || false}
+                currentValue={highestBid || priceAmount}
                 onBidSuccess={() => window.location.reload()}
                 onContractSubmitted={() => window.location.reload()}
               />
             ) : (
               <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#1A3626] flex flex-col items-center justify-center text-center">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Interested in this property?</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Log in to make an offer or place a bid on this property.</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{detailDict.interestedTitle || "Interested in this property?"}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{detailDict.interestedDesc || "Log in to make an offer or place a bid on this property."}</p>
                 <button 
                   onClick={() => setShowLoginModal(true)}
                   className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors cursor-pointer"
                 >
-                  Make Offer
+                  {detailDict.makeOffer || "Make Offer"}
                 </button>
               </div>
             )}
@@ -301,22 +350,22 @@ export default function PropertyDetailPage() {
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 dark:border-[#1A3626] text-center">
-            <h3 className="text-[22px] font-bold text-gray-900 dark:text-white mb-2">Login Required</h3>
+            <h3 className="text-[22px] font-bold text-gray-900 dark:text-white mb-2">{detailDict.loginRequired || "Login Required"}</h3>
             <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-8">
-              You need to be logged in to make an offer. Would you like to log in now?
+              {detailDict.loginRequiredDesc || "You need to be logged in to make an offer. Would you like to log in now?"}
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={() => setShowLoginModal(false)}
                 className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#1A3626]/50 transition-colors cursor-pointer"
               >
-                Stay Logged Out
+                {detailDict.stayLoggedOut || "Stay Logged Out"}
               </button>
               <Link 
                 href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
               >
-                Go to Login
+                {detailDict.goToLogin || "Go to Login"}
               </Link>
             </div>
           </div>

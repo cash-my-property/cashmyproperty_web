@@ -303,6 +303,24 @@ export const content = {
       bedsLabel: "غرف النوم",
       searchButton: "بحث"
     },
+    detail: {
+      additionalDetails: "تفاصيل إضافية",
+      description: "الوصف",
+      features: "الميزات",
+      category: "الفئة",
+      plan: "مخطط العقار",
+      trakheesi: "رقم تراخيص",
+      interestedTitle: "هل أنت مهتم بهذا العقار؟",
+      interestedDesc: "سجل الدخول لتقديم عرض أو المزايدة على هذا العقار.",
+      makeOffer: "تقديم عرض",
+      loginRequired: "تسجيل الدخول مطلوب",
+      loginRequiredDesc: "يجب عليك تسجيل الدخول لتقديم عرض. هل ترغب في تسجيل الدخول الآن؟",
+      stayLoggedOut: "البقاء دون تسجيل دخول",
+      goToLogin: "الذهاب إلى صفحة تسجيل الدخول",
+      verifiedDld: "موثق من دائرة الأراضي والأملاك",
+      backToProperties: "العودة إلى القوائم",
+      propertyNotFound: "العقار غير موجود"
+    },
     cards: {
       baths: "حمامات",
       beds: "غرف",

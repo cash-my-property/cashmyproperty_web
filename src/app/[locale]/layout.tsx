@@ -4,6 +4,7 @@ import "../globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { DictionaryProvider } from "@/components/DictionaryProvider";
 import { AuthProvider } from "@/context/AuthContext";
+import { SocketProvider } from "@/context/SocketContext";
 import RouteLayout from "@/components/RouteLayout";
 import { Locale } from "@/dictionaries";
 
@@ -30,8 +31,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NexusClients | Modern Client Portal & Agency Engine",
-  description: "Enterprise web client portal, real-time project dashboards, cloud architecture, and quote estimator built on Next.js 15.",
+  title: "CMP - CashMyProperty",
+  description: "Cash My Property - Real Estate Auctions & Listings Portal in UAE",
+  icons: {
+    icon: "/cmpfavicon-removebg-preview.png",
+  },
 };
 
 export default async function RootLayout({
@@ -54,11 +58,13 @@ export default async function RootLayout({
       <body suppressHydrationWarning className="min-h-screen flex flex-col bg-[#F4F5F7] dark:bg-[#091711] text-gray-900 dark:text-gray-100 font-sans selection:bg-green-500/20 selection:text-green-900 transition-colors">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
-            <DictionaryProvider locale={locale as Locale}>
-              <RouteLayout>
-                {children}
-              </RouteLayout>
-            </DictionaryProvider>
+            <SocketProvider>
+              <DictionaryProvider locale={locale as Locale}>
+                <RouteLayout>
+                  {children}
+                </RouteLayout>
+              </DictionaryProvider>
+            </SocketProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

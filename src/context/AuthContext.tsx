@@ -9,7 +9,7 @@ interface User {
   first_name: string;
   last_name: string;
   email: string;
-  role: string;
+  role: string | any;
   [key: string]: any;
 }
 
@@ -17,6 +17,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isBuyer: boolean;
+  isSeller: boolean;
   login: (token: string, userData: User) => void;
   logout: () => void;
   fetchProfile: () => Promise<void>;
@@ -24,9 +26,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to extract the main role string regardless of format
+function getUserMainRole(user: User | null): string {
+  if (!user) return '';
+  const role = user.role;
+  if (typeof role === 'string') return role.toLowerCase();
+  if (typeof role === 'object' && role !== null && role.main) return role.main.toLowerCase();
+  return '';
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const mainRole = getUserMainRole(user);
+  const isBuyer = mainRole === 'buyer';
+  const isSeller = mainRole === 'seller';
 
   const fetchProfile = async () => {
     try {
@@ -80,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, fetchProfile }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, isBuyer, isSeller, login, logout, fetchProfile }}>
       {children}
     </AuthContext.Provider>
   );

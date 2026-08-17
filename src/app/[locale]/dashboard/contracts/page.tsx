@@ -94,7 +94,7 @@ export default function ContractsPage() {
                       {new Date(contract.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link href={`/${locale}/listings/${contract.property?.propertyId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
+                      <Link href={`/${locale}/listings/${contract.auction?.auctionId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
                         View Auction <ArrowRight className="w-4 h-4" />
                       </Link>
                     </td>

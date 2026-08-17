@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Gavel, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X } from "lucide-react";
+import { LayoutDashboard, Gavel, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle } from "lucide-react";
 import Image from "next/image";
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -13,13 +13,17 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const content = dict.dashboard.sidebar;
   const pathname = usePathname();
   const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
-  const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+  const userType = (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
 
   const buyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: content.myBids || "My Bids", href: `/${locale}/dashboard/bids`, icon: Gavel },
     { name: "My Contracts", href: `/${locale}/dashboard/contracts`, icon: FileText },
-    { name: content.favorites, href: `/${locale}/dashboard/favorites`, icon: Heart },
+    { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
+  ];
+
+  const simpleBuyerLinks = [
+    { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
@@ -28,6 +32,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: "My Properties", href: `/${locale}/dashboard/seller/properties`, icon: Building },
     { name: "My Auctions", href: `/${locale}/dashboard/seller/auctions`, icon: Gavel },
     { name: "Received Bids", href: `/${locale}/dashboard/seller/bids`, icon: ListOrdered },
+    { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-properties`, icon: AlertTriangle },
     { name: "Add Property", href: `/${locale}/dashboard/seller/add-property`, icon: PlusCircle },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
@@ -36,11 +41,20 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: "My Simple Listings", href: `/${locale}/dashboard/seller/simple-listings`, icon: Building },
     { name: "Listing History", href: `/${locale}/dashboard/seller/simple-history`, icon: ListOrdered },
+    { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-simple-properties`, icon: AlertTriangle },
     { name: "Add Simple Listing", href: `/${locale}/dashboard/seller/add-simple-property`, icon: PlusCircle },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
-  const links = role === 'seller' ? (sellerType === 'SIMPLE' ? simpleSellerLinks : sellerLinks) : buyerLinks;
+  const getLinks = () => {
+    if (role === 'seller') {
+      return userType === 'SIMPLE' ? simpleSellerLinks : sellerLinks;
+    }
+    // buyer
+    return userType === 'SIMPLE' ? simpleBuyerLinks : buyerLinks;
+  };
+
+  const links = getLinks();
 
   return (
     <aside className="w-64 bg-white dark:bg-[#102418] border-e border-gray-200 dark:border-[#1A3626] flex flex-col min-h-screen transition-colors">

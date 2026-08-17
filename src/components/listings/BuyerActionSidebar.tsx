@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2, Clock, XCircle, FileText, Upload, AlertCircle, Loader2, ShieldAlert } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -7,11 +7,12 @@ interface BuyerActionSidebarProps {
   auctionId: string;
   contractStatus: string;
   canBid: boolean;
+  currentValue: number;
   onBidSuccess: () => void;
   onContractSubmitted: () => void;
 }
 
-export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, onBidSuccess, onContractSubmitted }: BuyerActionSidebarProps) {
+export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, currentValue, onBidSuccess, onContractSubmitted }: BuyerActionSidebarProps) {
   const { user } = useAuth();
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [bidAmount, setBidAmount] = useState("");
@@ -64,6 +65,12 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
     }
   };
 
+  useEffect(() => {
+    if (currentValue) {
+      setBidAmount(currentValue.toString());
+    }
+  }, [currentValue]);
+
   const placeBid = async (e: React.FormEvent) => {
     e.preventDefault();
     if (user && user.isVerified === false) {
@@ -72,16 +79,28 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
     }
     setErrorMessage("");
     setSuccessMessage("");
-    if (!bidAmount || isNaN(Number(bidAmount))) {
+    
+    const bidValue = Number(bidAmount);
+    if (!bidAmount || isNaN(bidValue)) {
       setErrorMessage("Please enter a valid bid amount");
+      return;
+    }
+
+    if (bidValue < currentValue) {
+      setErrorMessage(`Bid cannot be lower than the current value of AED ${currentValue.toLocaleString()}`);
+      return;
+    }
+    
+    const maxAllowed = currentValue * 1.10;
+    if (bidValue > maxAllowed) {
+      setErrorMessage(`Bid cannot exceed 10% of the current value (Max: AED ${Math.floor(maxAllowed).toLocaleString()})`);
       return;
     }
 
     try {
       setIsBidding(true);
-      await api.post('/buyer/place-bid', { auctionId, bidAmount: Number(bidAmount) });
+      await api.post('/buyer/place-bid', { auctionId, bidAmount: bidValue });
       setSuccessMessage("Bid placed successfully!");
-      setBidAmount("");
       setTimeout(() => onBidSuccess(), 1500);
     } catch (error: any) {
       setErrorMessage(error.response?.data?.message || "Failed to place bid");
@@ -103,6 +122,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
   }
 
   if (canBid) {
+    const maxAllowed = currentValue * 1.10;
     return (
       <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#1A3626]">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Place a Bid</h3>
@@ -123,11 +143,18 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
               type="number" 
               value={bidAmount}
               onChange={(e) => setBidAmount(e.target.value)}
+              min={currentValue}
+              max={Math.floor(maxAllowed)}
+              step="1"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1A3626] bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A3626] dark:focus:ring-[#c9a14b] outline-none"
               placeholder="Enter amount..."
               required
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Max allowable bid: AED {Math.floor(maxAllowed).toLocaleString()} (+10%)
+            </p>
           </div>
+
           <button 
             type="submit" 
             disabled={isBidding}

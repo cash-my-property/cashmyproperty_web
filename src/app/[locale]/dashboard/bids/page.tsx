@@ -19,13 +19,13 @@ export default function OffersPage() {
         setIsLoading(true);
         const res = await api.get('/buyer/my-bids');
         const formattedBids = (res.data.data || []).map((bid: any) => ({
-          id: bid.bidId,
-          propertyTitle: bid.property?.propertyTitle || 'Property',
-          image: bid.property?.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          myOffer: bid.bidAmount ? `Ð ${bid.bidAmount.toLocaleString()}` : "N/A",
+          id: bid._id,
+          propertyTitle: bid.auctionId?.propertyId?.propertyTitle || 'Property',
+          image: bid.auctionId?.propertyId?.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          myOffer: bid.bidAmount != null ? `Ð ${bid.bidAmount.toLocaleString()}` : "N/A",
           highestOffer: "N/A", // This might need another call or be omitted if not in response
-          status: bid.bidStatus ? bid.bidStatus.toLowerCase() : 'unknown',
-          date: new Date(bid.bidDate).toLocaleDateString(),
+          status: bid.status ? bid.status.toLowerCase() : 'unknown',
+          date: new Date(bid.createdAt || bid.bidTime).toLocaleDateString(),
         }));
         setBids(formattedBids);
       } catch (error) {

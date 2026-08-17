@@ -320,6 +320,45 @@ export const content = {
       buttonText: "Create an Account"
     }
   },
+  listings: {
+    hero: {
+      tagline: "Property Listings",
+      title: "Discover Your\nNext Property",
+      description: "Explore our exclusive DLD-verified properties available for immediate purchase or active live offers."
+    },
+    filters: {
+      searchPlaceholder: "Search properties by name or location...",
+      priceLabel: "Price Range",
+      typeLabel: "Property Type",
+      bedsLabel: "Bedrooms",
+      searchButton: "Search"
+    },
+    cards: {
+      baths: "Baths",
+      beds: "Beds",
+      sqft: "Sqft",
+      viewDetails: "View Details",
+      startingOffer: "Starting Offer"
+    },
+    detail: {
+      additionalDetails: "Additional Details",
+      description: "Description",
+      features: "Features",
+      category: "Category",
+      plan: "Property Plan",
+      trakheesi: "Trakheesi Number",
+      interestedTitle: "Interested in this property?",
+      interestedDesc: "Log in to make an offer or place a bid on this property.",
+      makeOffer: "Make Offer",
+      loginRequired: "Login Required",
+      loginRequiredDesc: "You need to be logged in to make an offer. Would you like to log in now?",
+      stayLoggedOut: "Stay Logged Out",
+      goToLogin: "Go to Login",
+      verifiedDld: "Verified by DLD",
+      backToProperties: "Back to listings",
+      propertyNotFound: "Property not found"
+    }
+  },
   dashboard: {
     sidebar: {
       overview: "Overview",
