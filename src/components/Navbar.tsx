@@ -14,7 +14,54 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { locale, dict } = useDictionary();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
+  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const userType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+
+  const getNavLinks = () => {
+    if (!isAuthenticated || !user) {
+      return dict.navbar.links;
+    }
+
+    if (isSeller) {
+      if (userType === 'SIMPLE') {
+        return [
+          { title: "Home", href: "/" },
+          { title: "Add Simple Listing", href: "/dashboard/seller/add-simple-property" },
+          { title: "Verification Status", href: "/dashboard/seller/simple-listings" },
+          { title: "Analytics", href: "/dashboard" }
+        ];
+      } else {
+        return [
+          { title: "Home", href: "/" },
+          { title: "Add Property", href: "/dashboard/seller/add-property" },
+          { title: "Verification Status", href: "/dashboard/seller/properties" },
+          { title: "Analytics", href: "/dashboard" }
+        ];
+      }
+    }
+
+    if (isBuyer) {
+      if (buyerType === 'SIMPLE') {
+        return [
+          { title: "Home", href: "/" },
+          { title: "Simple Listings", href: "/listings" },
+          { title: "Bids", href: "/dashboard/bids" }
+        ];
+      } else {
+        return [
+          { title: "Home", href: "/" },
+          { title: "Auctions", href: "/auctions" },
+          { title: "Distress Deals", href: "/auctions" },
+          { title: "Contracts", href: "/dashboard/contracts" }
+        ];
+      }
+    }
+
+    return dict.navbar.links;
+  };
+
+  const navLinks = getNavLinks();
 
   const isLoginPage = pathname === `/${locale}/login` || pathname === "/login";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -73,7 +120,7 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center gap-8 mr-2">
           {/* Desktop Navigation */}
           <nav className="flex items-center gap-1">
-            {dict.navbar.links.map((item, index) => (
+            {navLinks.map((item, index) => (
               <Link
                 key={index}
                 href={`/${locale}${item.href === "/" ? "" : item.href}`}
@@ -150,7 +197,7 @@ export default function Navbar() {
       >
         <div className="flex flex-col px-6 py-6 gap-4">
           <nav className="flex flex-col gap-4 font-semibold text-[16px] text-gray-800 dark:text-gray-200">
-            {dict.navbar.links.map((item, index) => (
+            {navLinks.map((item, index) => (
               <Link
                 key={index}
                 href={`/${locale}${item.href === "/" ? "" : item.href}`}

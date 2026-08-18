@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
@@ -18,14 +20,25 @@ export default function ListingsPage() {
 
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
+  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   useEffect(() => {
+    if (authLoading) return;
     const fetchProperties = async () => {
       try {
         setIsLoading(true);
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-        const res = await axios.get(`${API_URL}/public/simple-live-properties`);
-        setProperties(res.data.data || []);
+        
+        let res;
+        if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
+          res = await api.get('/buyer/simpleLiveListings');
+        } else {
+          res = await axios.get(`${API_URL}/public/simple-live-properties`);
+        }
+        
+        const data = res.data.data;
+        setProperties(Array.isArray(data) ? data : (data?.data || []));
       } catch (err) {
         console.error("Error fetching properties", err);
       } finally {
@@ -33,7 +46,7 @@ export default function ListingsPage() {
       }
     };
     fetchProperties();
-  }, []);
+  }, [authLoading, isAuthenticated, user]);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">

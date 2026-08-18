@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, ArrowDownUp, ChevronDown, Loader2, Share2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
-import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
+import api from "@/lib/api";
 
 export default function HomePage() {
   const { dict, locale } = useDictionary();
@@ -20,18 +22,127 @@ export default function HomePage() {
   const [simpleLiveProperties, setSimpleLiveProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { isAuthenticated, user, isBuyer } = useAuth();
+  const { socket } = useSocket();
+  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+
+  // Listen to socket events for real-time price and auction updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePriceUpdate = (data: any) => {
+      console.log("📡 [Homepage Socket] Received listing_price_update:", data);
+      const { auctionId, newPrice, newEndTime, bidCounter } = data;
+
+      setLiveProperties(prev => prev.map(p => {
+        if (p._id === auctionId) {
+          return {
+            ...p,
+            currentHighestBid: newPrice,
+            currentHighestOffer: newPrice, // fallback
+            endTime: newEndTime || p.endTime,
+            bidCounter: bidCounter || p.bidCounter,
+            totalOffers: (p.totalOffers || 0) + 1
+          };
+        }
+        return p;
+      }));
+    };
+
+    const handleNewAuction = (fullCard: any) => {
+      console.log("📡 [Homepage Socket] Received new_auction_live:", fullCard);
+      if (!fullCard || !fullCard._id) return;
+
+      setLiveProperties(prev => {
+        if (prev.some(p => p._id === fullCard._id)) return prev;
+        return [fullCard, ...prev].slice(0, 6);
+      });
+    };
+
+    const handleAuctionEnded = (data: any) => {
+      console.log("📡 [Homepage Socket] Received auction_ended_global:", data);
+      const { auctionId, status } = data;
+
+      setLiveProperties(prev => prev.map(p => {
+        if (p._id === auctionId) {
+          return {
+            ...p,
+            status: status || 'ENDED'
+          };
+        }
+        return p;
+      }));
+    };
+
+    socket.on("listing_price_update", handlePriceUpdate);
+    socket.on("new_auction_live", handleNewAuction);
+    socket.on("auction_ended_global", handleAuctionEnded);
+
+    return () => {
+      socket.off("listing_price_update", handlePriceUpdate);
+      socket.off("new_auction_live", handleNewAuction);
+      socket.off("auction_ended_global", handleAuctionEnded);
+    };
+  }, [socket]);
+
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-        const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
-          axios.get(`${API_URL}/public/live-properties?limit=6`),
-          axios.get(`${API_URL}/public/upcoming-properties?limit=6`),
-          axios.get(`${API_URL}/public/simple-live-properties?limit=6`)
-        ]);
-        setLiveProperties(liveRes.data.data || []);
-        setUpcomingProperties(upcomingRes.data.data || []);
-        setSimpleLiveProperties(simpleLiveRes.data.data || []);
+        
+        if (isAuthenticated && isBuyer) {
+          if (buyerType === 'REGULAR') {
+            // Logged in Regular Buyer: Only hit regular buyer private routes
+            const [liveRes, upcomingRes] = await Promise.all([
+              api.get('/buyer/live-listings?limit=6'),
+              api.get('/buyer/upcoming-listings?limit=6')
+            ]);
+            
+            const liveData = liveRes.data.data;
+            const upcomingData = upcomingRes.data.data;
+            
+            setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
+            setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
+            setSimpleLiveProperties([]); // Do not hit public simple listings route
+          } else if (buyerType === 'SIMPLE') {
+            // Logged in Simple Buyer: Only hit simple buyer private routes
+            const simpleLiveRes = await api.get('/buyer/simpleLiveListings?limit=6');
+            const simpleLiveData = simpleLiveRes.data.data;
+            
+            setLiveProperties([]); // Do not hit public auctions route
+            setUpcomingProperties([]); // Do not hit public upcoming route
+            setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
+          } else {
+            // Fallback for other logged in roles (e.g. Seller)
+            const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
+              api.get('/public/live-properties?limit=6'),
+              api.get('/public/upcoming-properties?limit=6'),
+              api.get('/public/simple-live-properties?limit=6')
+            ]);
+            
+            const liveData = liveRes.data.data;
+            const upcomingData = upcomingRes.data.data;
+            const simpleLiveData = simpleLiveRes.data.data;
+            
+            setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
+            setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
+            setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
+          }
+        } else {
+          // Guest User: Fetch public routes only
+          const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
+            api.get('/public/live-properties?limit=6'),
+            api.get('/public/upcoming-properties?limit=6'),
+            api.get('/public/simple-live-properties?limit=6')
+          ]);
+
+          const liveData = liveRes.data.data;
+          const upcomingData = upcomingRes.data.data;
+          const simpleLiveData = simpleLiveRes.data.data;
+
+          setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
+          setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
+          setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
+        }
       } catch (err) {
         console.error("Error fetching properties", err);
       } finally {
@@ -39,7 +150,7 @@ export default function HomePage() {
       }
     };
     fetchProperties();
-  }, []);
+  }, [isAuthenticated, user, isBuyer]);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">
@@ -184,7 +295,8 @@ export default function HomePage() {
       </section>
 
       {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) */}
-      <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+      {!(isAuthenticated && isBuyer && buyerType === 'SIMPLE') && (
+        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
@@ -352,9 +464,11 @@ export default function HomePage() {
           )}
         </div>
       </section>
+      )}
 
       {/* 3. SIMPLE LISTINGS */}
-      <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200/50 dark:border-[#1A3626]/50">
+      {!(isAuthenticated && isBuyer && buyerType === 'REGULAR') && (
+        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200/50 dark:border-[#1A3626]/50">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-3 uppercase">
@@ -438,6 +552,7 @@ export default function HomePage() {
           )}
         </div>
       </section>
+      )}
 
       {/* 4. HOW IT WORKS */}
       <section className="py-24 bg-white dark:bg-[#102418] border-y border-gray-200 dark:border-[#1A3626]/50">

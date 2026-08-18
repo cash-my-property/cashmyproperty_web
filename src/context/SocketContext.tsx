@@ -39,7 +39,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const { isAuthenticated, user, isSeller } = useAuth();
+  const { isAuthenticated, user, isSeller, isLoading: authLoading, fetchProfile } = useAuth();
   const socketRef = useRef<Socket | null>(null);
 
   // Load notifications from localStorage on client-side mount
@@ -104,7 +104,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (!isAuthenticated || !user) {
+    if (authLoading || !isAuthenticated || !user) {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
@@ -123,7 +123,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     console.log("📡 Initializing Socket.io connection to:", socketUrl);
     const socketInstance = io(socketUrl, {
       auth: {
-        token
+        token: (token && token !== 'dummy-token-because-httponly') ? token : undefined
       },
       transports: ['websocket', 'polling'],
       withCredentials: true
@@ -142,14 +142,25 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       if (isSeller) {
         socketInstance.emit('join_room', `seller_live_auctions_${user._id}`);
       }
+
+      // 3. Join global room for real-time listings/bids updates
+      socketInstance.emit('join_room', 'global_auctions');
     });
 
     socketInstance.on('connect_error', (err) => {
       console.warn('📡 Socket connection error:', err.message);
+      if (err.message.includes('token') || err.message.includes('expired') || err.message.includes('Authentication error')) {
+        // Trigger profile fetch to refresh HttpOnly cookie, then reconnect
+        fetchProfile().then(() => {
+          console.log("📡 Retrying socket connection after token refresh...");
+          socketInstance.connect();
+        }).catch((e) => console.error("Socket reconnect profile refresh failed", e));
+      }
     });
 
     // Setup listeners for push notifications
     socketInstance.on('outbid_notification', (data: any) => {
+      console.log("📡 [Socket Event] Received outbid_notification:", data);
       const msg = `You have been outbid on "${data.propertyTitle || 'Property'}". New highest bid is Ð ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
       addToast(
         "Outbid Alert!", 
@@ -161,6 +172,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     socketInstance.on('new_bid_on_property', (data: any) => {
+      console.log("📡 [Socket Event] Received new_bid_on_property:", data);
       const msg = `A new bid of Ð ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
       addToast(
         "New Bid Received!", 
@@ -172,6 +184,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     socketInstance.on('property_approved', (data: any) => {
+      console.log("📡 [Socket Event] Received property_approved:", data);
       const msg = `Your property "${data.propertyTitle || 'Property'}" has been approved by admin.`;
       addToast(
         "Property Approved!", 
@@ -182,7 +195,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       addNotification("Property Approved!", msg, 'success');
     });
 
-    socketInstance.on('account_verified', () => {
+    socketInstance.on('account_verified', (data: any) => {
+      console.log("📡 [Socket Event] Received account_verified:", data);
       const msg = "Your broker/agency profile has been successfully verified by admin.";
       addToast(
         "Account Verified!", 
@@ -195,6 +209,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // ── BUYER SPECIFIC EVENTS ──
     socketInstance.on('contract_approved', (data: any) => {
+      console.log("📡 [Socket Event] Received contract_approved:", data);
       const msg = `Your signed contract for auction has been approved by admin! You can now place bids!`;
       addToast(
         "Contract Approved!", 
@@ -206,6 +221,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     socketInstance.on('contract_rejected', (data: any) => {
+      console.log("📡 [Socket Event] Received contract_rejected:", data);
       const msg = `Your signed contract has been rejected by admin. Please review the reasons on your dashboard.`;
       addToast(
         "Contract Rejected!", 
@@ -222,7 +238,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socketRef.current = null;
       setSocket(null);
     };
-  }, [isAuthenticated, user, isSeller]);
+  }, [isAuthenticated, user, isSeller, authLoading]);
 
   const joinRoom = (roomId: string) => {
     if (socketRef.current && socketRef.current.connected) {

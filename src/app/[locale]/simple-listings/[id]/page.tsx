@@ -54,8 +54,43 @@ export default function PropertyDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-[#1A3626] dark:text-[#c9a14b]" />
+      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 w-full max-w-7xl mx-auto px-6 lg:px-12 animate-pulse transition-colors">
+        <div className="flex flex-col lg:flex-row gap-8 w-full mt-6">
+          {/* Main content area skeleton */}
+          <div className="flex-1 flex flex-col gap-6">
+            {/* Gallery placeholder */}
+            <div className="h-[450px] bg-gray-200 dark:bg-[#163321] rounded-[32px] w-full" />
+            
+            {/* Info header skeleton */}
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex flex-col gap-3 w-2/3">
+                <div className="h-8 bg-gray-200 dark:bg-[#163321] rounded-md w-full" />
+                <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/3" />
+              </div>
+              <div className="h-8 bg-gray-200 dark:bg-[#163321] rounded-md w-1/4" />
+            </div>
+            
+            {/* Specs row skeleton */}
+            <div className="flex gap-6 py-4 border-y border-gray-200 dark:border-[#1A3626]">
+              <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-20" />
+              <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-20" />
+              <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-24" />
+            </div>
+
+            {/* Description placeholder */}
+            <div className="flex flex-col gap-2">
+              <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-full" />
+              <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-full" />
+              <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+            </div>
+          </div>
+
+          {/* Sidebar action placeholder */}
+          <div className="w-full lg:w-[380px] h-[300px] bg-white dark:bg-[#102418] border border-gray-100 dark:border-[#1A3626] rounded-3xl p-6 flex flex-col gap-4">
+            <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2" />
+            <div className="h-12 bg-gray-200 dark:bg-[#163321] rounded-md w-full mt-4" />
+          </div>
+        </div>
       </main>
     );
   }

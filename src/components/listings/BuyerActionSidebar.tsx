@@ -10,9 +10,10 @@ interface BuyerActionSidebarProps {
   currentValue: number;
   onBidSuccess: () => void;
   onContractSubmitted: () => void;
+  onBidOptimistic?: (amount: number) => void;
 }
 
-export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, currentValue, onBidSuccess, onContractSubmitted }: BuyerActionSidebarProps) {
+export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, currentValue, onBidSuccess, onContractSubmitted, onBidOptimistic }: BuyerActionSidebarProps) {
   const { user } = useAuth();
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [bidAmount, setBidAmount] = useState("");
@@ -99,10 +100,16 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
 
     try {
       setIsBidding(true);
+      if (onBidOptimistic) {
+        onBidOptimistic(bidValue);
+      }
       await api.post('/buyer/place-bid', { auctionId, bidAmount: bidValue });
       setSuccessMessage("Bid placed successfully!");
       setTimeout(() => onBidSuccess(), 1500);
     } catch (error: any) {
+      if (onBidOptimistic) {
+        onBidOptimistic(currentValue);
+      }
       setErrorMessage(error.response?.data?.message || "Failed to place bid");
     } finally {
       setIsBidding(false);

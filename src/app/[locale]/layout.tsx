@@ -7,6 +7,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SocketProvider } from "@/context/SocketContext";
 import RouteLayout from "@/components/RouteLayout";
 import { Locale } from "@/dictionaries";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,6 +65,8 @@ export default async function RootLayout({
                 <RouteLayout>
                   {children}
                 </RouteLayout>
+                <Analytics />
+                <SpeedInsights />
               </DictionaryProvider>
             </SocketProvider>
           </AuthProvider>

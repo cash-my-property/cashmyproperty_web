@@ -7,6 +7,7 @@ import { Search, MapPin, Clock, Filter, Bed, Bath, Square, ChevronDown, ArrowRig
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 
 export default function AuctionsListingPage() {
@@ -24,6 +25,66 @@ export default function AuctionsListingPage() {
   const [liveAuctions, setLiveAuctions] = useState<any[]>([]);
   const [upcomingAuctions, setUpcomingAuctions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { socket } = useSocket();
+
+  // Listen to socket events for real-time price and auction updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePriceUpdate = (data: any) => {
+      console.log("📡 [Auctions Socket] Received listing_price_update:", data);
+      const { auctionId, newPrice, newEndTime, bidCounter } = data;
+
+      setLiveAuctions(prev => prev.map(p => {
+        if (p._id === auctionId) {
+          return {
+            ...p,
+            currentHighestBid: newPrice,
+            currentHighestOffer: newPrice, // fallback
+            endTime: newEndTime || p.endTime,
+            bidCounter: bidCounter || p.bidCounter,
+            totalOffers: (p.totalOffers || 0) + 1
+          };
+        }
+        return p;
+      }));
+    };
+
+    const handleNewAuction = (fullCard: any) => {
+      console.log("📡 [Auctions Socket] Received new_auction_live:", fullCard);
+      if (!fullCard || !fullCard._id) return;
+
+      setLiveAuctions(prev => {
+        if (prev.some(p => p._id === fullCard._id)) return prev;
+        return [fullCard, ...prev];
+      });
+    };
+
+    const handleAuctionEnded = (data: any) => {
+      console.log("📡 [Auctions Socket] Received auction_ended_global:", data);
+      const { auctionId, status } = data;
+
+      setLiveAuctions(prev => prev.map(p => {
+        if (p._id === auctionId) {
+          return {
+            ...p,
+            status: status || 'ENDED'
+          };
+        }
+        return p;
+      }));
+    };
+
+    socket.on("listing_price_update", handlePriceUpdate);
+    socket.on("new_auction_live", handleNewAuction);
+    socket.on("auction_ended_global", handleAuctionEnded);
+
+    return () => {
+      socket.off("listing_price_update", handlePriceUpdate);
+      socket.off("new_auction_live", handleNewAuction);
+      socket.off("auction_ended_global", handleAuctionEnded);
+    };
+  }, [socket]);
 
   useEffect(() => {
     if (authLoading) return;

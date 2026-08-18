@@ -17,32 +17,32 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const buyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: content.myBids || "My Bids", href: `/${locale}/dashboard/bids`, icon: Gavel },
+    { name: "Auctions", href: `/${locale}/auctions`, icon: Gavel },
+    { name: "Distress Deals", href: `/${locale}/auctions`, icon: Heart },
     { name: "My Contracts", href: `/${locale}/dashboard/contracts`, icon: FileText },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
   const simpleBuyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
+    { name: "Simple Listings", href: `/${locale}/listings`, icon: Building },
+    { name: "My Bids", href: `/${locale}/dashboard/bids`, icon: Gavel },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
   const sellerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: "My Properties", href: `/${locale}/dashboard/seller/properties`, icon: Building },
-    { name: "My Auctions", href: `/${locale}/dashboard/seller/auctions`, icon: Gavel },
-    { name: "Received Bids", href: `/${locale}/dashboard/seller/bids`, icon: ListOrdered },
-    { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-properties`, icon: AlertTriangle },
     { name: "Add Property", href: `/${locale}/dashboard/seller/add-property`, icon: PlusCircle },
+    { name: "My Properties", href: `/${locale}/dashboard/seller/properties`, icon: Building },
+    { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-properties`, icon: AlertTriangle },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
   const simpleSellerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: "My Simple Listings", href: `/${locale}/dashboard/seller/simple-listings`, icon: Building },
-    { name: "Listing History", href: `/${locale}/dashboard/seller/simple-history`, icon: ListOrdered },
-    { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-simple-properties`, icon: AlertTriangle },
     { name: "Add Simple Listing", href: `/${locale}/dashboard/seller/add-simple-property`, icon: PlusCircle },
+    { name: "My Simple Listings", href: `/${locale}/dashboard/seller/simple-listings`, icon: Building },
+    { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-simple-properties`, icon: AlertTriangle },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
 
