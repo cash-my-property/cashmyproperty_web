@@ -137,16 +137,22 @@ export default function ContractDetailsPage() {
 
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden sticky top-24">
-            <div className="aspect-[4/3] relative">
+            <div className="aspect-[4/3] relative bg-gray-100 dark:bg-[#163321]">
               <Image src={prop.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"} alt="Property" fill className="object-cover" />
             </div>
             <div className="p-6">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-2">{prop.propertyTitle}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{prop.propertyLocation}</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">{prop.propertyTitle || 'Property'}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{prop.propertyLocation || ''}</p>
               
-              <Link href={`/${locale}/listings/${auc._id}`} className="block w-full py-3 px-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white text-center rounded-xl font-bold hover:bg-[#1A3626]/90 transition-colors">
-                View Auction
-              </Link>
+              {auc._id ? (
+                <Link href={`/${locale}/auctions/${auc._id}`} className="block w-full py-3 px-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white text-center rounded-xl font-bold hover:bg-[#1A3626]/90 transition-colors">
+                  View Auction
+                </Link>
+              ) : (
+                <Link href={`/${locale}/dashboard/contracts`} className="block w-full py-3 px-4 bg-gray-200 dark:bg-[#1A3626] text-gray-700 dark:text-white text-center rounded-xl font-bold hover:opacity-90 transition-colors">
+                  Back to Contracts
+                </Link>
+              )}
             </div>
           </div>
         </div>

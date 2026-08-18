@@ -53,7 +53,7 @@ export default function ContractsPage() {
                 <tr className="bg-gray-50/50 dark:bg-[#102418]/50 border-b border-gray-100 dark:border-[#1A3626]">
                   <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property</th>
                   <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Submitted On</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Highest Bid</th>
                   <th className="px-6 py-4 text-right"></th>
                 </tr>
               </thead>
@@ -62,14 +62,23 @@ export default function ContractsPage() {
                   <tr key={contract.contractId} className="hover:bg-gray-50/50 dark:hover:bg-[#102418]/30 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden relative flex-shrink-0">
-                          <Image src={contract.property?.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"} alt={contract.property?.title || 'Property'} fill className="object-cover" />
+                        <div className="w-12 h-12 rounded-lg overflow-hidden relative flex-shrink-0 bg-gray-100 dark:bg-[#163321]">
+                          <Image
+                            src={contract.property?.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
+                            alt={contract.property?.title || 'Property'}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
                         <div>
-                          <p className="text-[14px] font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors line-clamp-1">
-                            {contract.property?.title || 'Unknown Property'}
+                          <Link href={`/${locale}/dashboard/contracts/${contract.contractId}`}>
+                            <p className="text-[14px] font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors line-clamp-1 cursor-pointer">
+                              {contract.property?.title || 'Unknown Property'}
+                            </p>
+                          </Link>
+                          <p className="text-[12px] text-gray-500 dark:text-gray-400">
+                            {contract.property?.location || ''} {contract.property?.propertyType ? `· ${contract.property.propertyType}` : ''}
                           </p>
-                          <p className="text-[12px] text-gray-500 dark:text-gray-400">Submission #{contract.submissionNumber}</p>
                         </div>
                       </div>
                     </td>
@@ -90,13 +99,26 @@ export default function ContractsPage() {
                         </p>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-400">
-                      {new Date(contract.createdAt).toLocaleDateString()}
+                    <td className="px-6 py-4">
+                      <p className="text-[13px] text-gray-700 dark:text-gray-200 font-semibold">
+                        {contract.auction?.currentHighestBid
+                          ? `AED ${contract.auction.currentHighestBid.toLocaleString()}`
+                          : '—'}
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {new Date(contract.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link href={`/${locale}/listings/${contract.auction?.auctionId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
-                        View Auction <ArrowRight className="w-4 h-4" />
-                      </Link>
+                      {contract.auction?.auctionId ? (
+                        <Link href={`/${locale}/auctions/${contract.auction.auctionId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
+                          View Auction <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      ) : contract.property?.propertyId ? (
+                        <Link href={`/${locale}/simple-listings/${contract.property.propertyId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
+                          View Listing <ArrowRight className="w-4 h-4" />
+                        </Link>
+                      ) : null}
                     </td>
                   </tr>
                 ))}

@@ -1,13 +1,14 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { Search, Filter, MoreHorizontal, ArrowUpRight, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Search, Filter, ArrowUpRight, CheckCircle2, XCircle, Loader2, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 
 export default function OffersPage() {
-  const { dict } = useDictionary();
+  const { dict, locale } = useDictionary();
   const content = dict.dashboard.bids;
 
   const [bids, setBids] = useState<any[]>([]);
@@ -19,13 +20,13 @@ export default function OffersPage() {
         setIsLoading(true);
         const res = await api.get('/buyer/my-bids');
         const formattedBids = (res.data.data || []).map((bid: any) => ({
-          id: bid._id,
-          propertyTitle: bid.auctionId?.propertyId?.propertyTitle || 'Property',
-          image: bid.auctionId?.propertyId?.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          myOffer: bid.bidAmount != null ? `Ð ${bid.bidAmount.toLocaleString()}` : "N/A",
-          highestOffer: "N/A", // This might need another call or be omitted if not in response
-          status: bid.status ? bid.status.toLowerCase() : 'unknown',
-          date: new Date(bid.createdAt || bid.bidTime).toLocaleDateString(),
+          id: bid.bidId?.toString() || '',
+          auctionId: bid.auction?.auctionId?.toString() || '',
+          propertyTitle: bid.property?.propertyTitle || 'Property',
+          image: bid.property?.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          myOffer: bid.bidAmount != null ? `AED ${bid.bidAmount.toLocaleString()}` : "N/A",
+          status: bid.bidStatus ? bid.bidStatus.toLowerCase() : 'unknown',
+          date: bid.bidDate ? new Date(bid.bidDate).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
         }));
         setBids(formattedBids);
       } catch (error) {
@@ -93,7 +94,7 @@ export default function OffersPage() {
                         </div>
                         <div>
                           <p className="text-[14px] font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors line-clamp-1">{offer.propertyTitle}</p>
-                          <p className="text-[12px] text-gray-500 dark:text-gray-400">{offer.id.slice(-6).toUpperCase()}</p>
+                          <p className="text-[12px] text-gray-500 dark:text-gray-400">{offer.id ? offer.id.slice(-6).toUpperCase() : '——'}</p>
                         </div>
                       </div>
                     </td>
@@ -119,9 +120,11 @@ export default function OffersPage() {
                       {offer.date}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-lg transition-colors cursor-pointer">
-                        <MoreHorizontal className="w-5 h-5" />
-                      </button>
+                      {offer.auctionId ? (
+                        <Link href={`/${locale}/auctions/${offer.auctionId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
+                          View <ExternalLink className="w-3.5 h-3.5" />
+                        </Link>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
