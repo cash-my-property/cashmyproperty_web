@@ -23,7 +23,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { isAuthenticated, user, isBuyer } = useAuth();
-  const { socket } = useSocket();
+  const { socket, addToast } = useSocket();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   // Listen to socket events for real-time price and auction updates
@@ -52,6 +52,17 @@ export default function HomePage() {
     const handleNewAuction = (fullCard: any) => {
       console.log("📡 [Homepage Socket] Received new_auction_live:", fullCard);
       if (!fullCard || !fullCard._id) return;
+
+      const title = fullCard.propertyId?.propertyTitle || fullCard.propertyDetails?.propertyTitle || "New Property";
+      const price = fullCard.currentHighestBid ? fullCard.currentHighestBid.toLocaleString() : (fullCard.propertyDetails?.propertyPrice?.amount || "N/A");
+
+      // Show dynamic notification toast!
+      addToast(
+        "New Auction Live!",
+        `"${title}" is now active with a starting bid of Ð ${price}!`,
+        'success',
+        <Building className="w-5 h-5 text-green-500 animate-bounce" />
+      );
 
       setLiveProperties(prev => {
         if (prev.some(p => p._id === fullCard._id)) return prev;
