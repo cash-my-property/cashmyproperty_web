@@ -17,6 +17,8 @@ export default function ListingsPage() {
   const [activeType, setActiveType] = useState("All");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
 
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,6 +74,8 @@ export default function ListingsPage() {
               <input 
                 type="text" 
                 placeholder={content.hero.searchPlaceholder}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-transparent border-none outline-none text-[15px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
               />
             </div>
@@ -103,9 +107,39 @@ export default function ListingsPage() {
               )}
             </div>
 
-            <div className="hidden md:flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#102418]/50 rounded-xl cursor-pointer group">
-              <span className="text-[14px] text-gray-600 dark:text-gray-300 font-medium">{content.hero.filters.price}</span>
-              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors" />
+            <div className="relative hidden md:block">
+              <div 
+                onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
+                className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#102418]/50 rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
+              >
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors" />
+                <span className="text-[14px] text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap min-w-[100px]">
+                  {priceSort === 'asc' ? "Price: Low to High" : priceSort === 'desc' ? "Price: High to Low" : "Sort By Price"}
+                </span>
+              </div>
+              
+              {activeDropdown === 'price' && (
+                <div className="absolute top-full mt-2 w-[180px] right-0 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
+                  <div 
+                    className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
+                    onClick={() => { setPriceSort(null); setActiveDropdown(null); }}
+                  >
+                    Default
+                  </div>
+                  <div 
+                    className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
+                    onClick={() => { setPriceSort("asc"); setActiveDropdown(null); }}
+                  >
+                    Price: Low to High
+                  </div>
+                  <div 
+                    className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
+                    onClick={() => { setPriceSort("desc"); setActiveDropdown(null); }}
+                  >
+                    Price: High to Low
+                  </div>
+                </div>
+              )}
             </div>
 
             <button className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer">
@@ -147,8 +181,54 @@ export default function ListingsPage() {
                 </div>
               </div>
             ))
-          ) : properties.length > 0 ? (
-            properties.map((item) => {
+          ) : (() => {
+            const filteredProperties = properties
+              .filter(item => {
+                const details = item.propertyDetails || item || {};
+                const title = item.title || details.propertyTitle || "";
+                const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
+
+                if (searchQuery) {
+                  const query = searchQuery.toLowerCase();
+                  const matchTitle = title.toLowerCase().includes(query);
+                  const matchLocation = location.toLowerCase().includes(query);
+                  return matchTitle || matchLocation;
+                }
+                return true;
+              })
+              .filter(item => {
+                const details = item.propertyDetails || item || {};
+                const type = details.propertyType || "";
+
+                if (activeType !== "All") {
+                  return type.toUpperCase() === activeType.toUpperCase();
+                }
+                return true;
+              })
+              .filter(item => {
+                const details = item.propertyDetails || item || {};
+                const type = details.propertyType || "";
+
+                if (selectedType && selectedType !== "All Type" && selectedType !== "All") {
+                  return type.toUpperCase() === selectedType.toUpperCase();
+                }
+                return true;
+              })
+              .sort((a, b) => {
+                if (!priceSort) return 0;
+                const detailsA = a.propertyDetails || a || {};
+                const detailsB = b.propertyDetails || b || {};
+                const priceA = a.price?.amount || detailsA.propertyPrice?.amount || detailsA.propertyPrice || 0;
+                const priceB = b.price?.amount || detailsB.propertyPrice?.amount || detailsB.propertyPrice || 0;
+
+                return priceSort === "asc" ? priceA - priceB : priceB - priceA;
+              });
+
+            if (filteredProperties.length === 0) {
+              return <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">No properties match the selected filters.</div>;
+            }
+
+            return filteredProperties.map((item) => {
               const details = item.propertyDetails || item || {};
               const title = item.title || details.propertyTitle || "Untitled Property";
               const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
@@ -191,12 +271,9 @@ export default function ListingsPage() {
                   </div>
                 </div>
               </Link>
-            )})
-          ) : (
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
-              No properties available matching your criteria.
-            </div>
-          )}
+            );
+          });
+        })()}
         </div>
       </section>
 
