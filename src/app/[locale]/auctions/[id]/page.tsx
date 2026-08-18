@@ -6,10 +6,12 @@ import Link from "next/link";
 import { Clock, ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, TrendingUp, Users, Share2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 
 export default function LiveAuctionPage() {
   const { dict, locale } = useDictionary();
   const { isAuthenticated } = useAuth();
+  const { addToast } = useSocket();
   const content = dict.auctions;
   const auctionData = content.auctionData;
 
@@ -163,7 +165,7 @@ export default function LiveAuctionPage() {
                     navigator.share({ title: auctionData.title, url: shareUrl }).catch(console.error);
                   } else {
                     navigator.clipboard.writeText(shareUrl);
-                    alert("Link copied to clipboard!");
+                    addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
                   }
                 }}
                 className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"

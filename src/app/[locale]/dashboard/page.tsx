@@ -15,6 +15,7 @@ export default function DashboardOverviewPage() {
 
   const [activeBidsCount, setActiveBidsCount] = useState("0");
   const [wonAuctionsCount, setWonAuctionsCount] = useState("0");
+  const [propertiesCount, setPropertiesCount] = useState("0");
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [quota, setQuota] = useState<any>(null);
@@ -36,8 +37,31 @@ export default function DashboardOverviewPage() {
             } catch (error) {
               console.error("Failed to fetch simple listing quota");
             }
+          } else {
+            try {
+              const [propsRes, auctionsRes, bidsRes] = await Promise.all([
+                api.get('/seller/my-properties'),
+                api.get('/seller/myAuction'),
+                api.get('/seller/myBids')
+              ]);
+              
+              const propsList = propsRes.data.result?.data || propsRes.data.data || [];
+              const auctionsList = auctionsRes.data.data || [];
+              const bidsList = bidsRes.data.data || [];
+              
+              setPropertiesCount(propsList.length.toString());
+              setWonAuctionsCount(auctionsList.length.toString());
+              setActiveBidsCount(bidsList.length.toString());
+            } catch (error) {
+              console.error("Failed to fetch regular seller stats", error);
+            }
           }
-          // Temporarily set empty stats for regular seller until seller dashboard API is ready
+          setRecentActivity([]);
+          return;
+        }
+
+        const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+        if (role === 'buyer' && buyerType === 'SIMPLE') {
           setActiveBidsCount("0");
           setWonAuctionsCount("0");
           setRecentActivity([]);
@@ -111,6 +135,12 @@ export default function DashboardOverviewPage() {
       { label: "Active Listings", value: `${quota.activeQuota?.used || 0} / ${quota.activeQuota?.limit || 0}`, icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10" },
       { label: "Total Quota Used", value: `${quota.totalQuota?.used || 0} / ${quota.totalQuota?.limit || 0}`, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
       { label: "Tier", value: quota.tier || "SIMPLE", icon: CheckCircle2, color: "text-rose-500", bg: "bg-rose-500/10" },
+    ];
+  } else if (role === 'seller' && sellerType === 'REGULAR') {
+    stats = [
+      { label: "Received Bids", value: activeBidsCount, icon: Gavel, color: "text-blue-500", bg: "bg-blue-500/10" },
+      { label: "Active Auctions", value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
+      { label: "Total Properties", value: propertiesCount, icon: Building2, color: "text-rose-500", bg: "bg-rose-500/10" },
     ];
   }
 

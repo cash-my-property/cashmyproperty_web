@@ -23,7 +23,7 @@ export default function PropertyDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const { socket, joinRoom, leaveRoom } = useSocket();
+  const { socket, joinRoom, leaveRoom, addToast } = useSocket();
 
   useEffect(() => {
     const id = params.id as string;
@@ -96,7 +96,7 @@ export default function PropertyDetailPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Inquiry Sent Successfully!");
+    addToast("Inquiry Sent", "Your inquiry has been sent to the agent successfully!", "success");
   };
 
   if (isLoading) {
@@ -271,7 +271,7 @@ export default function PropertyDetailPage() {
                         navigator.share({ title: title, url: shareUrl }).catch(console.error);
                       } else {
                         navigator.clipboard.writeText(shareUrl);
-                        alert("Link copied to clipboard!");
+                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
                       }
                     }}
                     className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"

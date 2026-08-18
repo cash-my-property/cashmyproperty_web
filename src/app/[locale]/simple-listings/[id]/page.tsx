@@ -8,13 +8,14 @@ import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
-
+import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 
 export default function PropertyDetailPage() {
   const { dict, locale } = useDictionary();
   const params = useParams();
   const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
+  const { addToast } = useSocket();
   const contactForm = dict.contact.main.form;
 
   const [activeImage, setActiveImage] = useState(0);
@@ -49,7 +50,7 @@ export default function PropertyDetailPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Inquiry Sent Successfully!");
+    addToast("Inquiry Sent", "Your inquiry has been sent to the agent successfully!", "success");
   };
 
   if (isLoading) {
@@ -222,7 +223,7 @@ export default function PropertyDetailPage() {
                         navigator.share({ title: title, url: shareUrl }).catch(console.error);
                       } else {
                         navigator.clipboard.writeText(shareUrl);
-                        alert("Link copied to clipboard!");
+                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
                       }
                     }}
                     className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
@@ -379,7 +380,7 @@ export default function PropertyDetailPage() {
                 </a>
               ) : (
                 <button 
-                  onClick={() => alert('Agent phone number not available')}
+                  onClick={() => addToast("Unavailable", "Agent phone number not available", "warning")}
                   className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-[15px] hover:opacity-90 transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
                 >
                   <Phone className="w-4 h-4" /> Call Agent
@@ -395,7 +396,7 @@ export default function PropertyDetailPage() {
                 </a>
               ) : (
                 <button 
-                  onClick={() => alert('Agent email not available')}
+                  onClick={() => addToast("Unavailable", "Agent email not available", "warning")}
                   className="w-full py-4 bg-transparent border-2 border-[#1A3626] dark:border-[#c9a14b] text-[#1A3626] dark:text-[#c9a14b] rounded-xl font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#163321]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Mail className="w-4 h-4" /> Email Agent

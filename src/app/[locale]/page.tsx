@@ -419,7 +419,7 @@ export default function HomePage() {
                         navigator.share({ title: title, url: shareUrl }).catch(console.error);
                       } else {
                         navigator.clipboard.writeText(shareUrl);
-                        alert("Link copied to clipboard!");
+                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
                       }
                     }}
                   >
@@ -684,20 +684,62 @@ export default function HomePage() {
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 dark:bg-[#c9a14b]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/5 dark:bg-[#c9a14b]/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
-          <div className="relative z-10 flex-1 max-w-2xl">
-            <h2 className="text-white text-[32px] sm:text-[40px] lg:text-[48px] font-bold mb-6 tracking-tight leading-[1.1]" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              {home.cta.heading}
-            </h2>
-            <p className="text-green-100/70 dark:text-gray-400 text-[16px] sm:text-[18px] max-w-xl leading-relaxed">
-              {home.cta.description}
-            </p>
-          </div>
-          
-          <div className="relative z-10">
-            <Link href="/signup" className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#c9a14b] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
-              {home.cta.buttonText} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+          {!isAuthenticated ? (
+            <>
+              <div className="relative z-10 flex-1 max-w-2xl">
+                <h2 className="text-white text-[32px] sm:text-[40px] lg:text-[48px] font-bold mb-6 tracking-tight leading-[1.1]" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                  {home.cta.heading}
+                </h2>
+                <p className="text-green-100/70 dark:text-gray-400 text-[16px] sm:text-[18px] max-w-xl leading-relaxed">
+                  {home.cta.description}
+                </p>
+              </div>
+              
+              <div className="relative z-10">
+                <Link href={`/${locale}/signup`} className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#c9a14b] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
+                  {home.cta.buttonText} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </>
+          ) : (() => {
+            const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
+            const isSeller = role === 'seller';
+            
+            const headingText = isSeller 
+              ? "Manage Your Real Estate Portfolio"
+              : "Ready to discover your next home?";
+            
+            const descText = isSeller
+              ? "Access your seller command center to add verified properties, inspect real-time bidding logs, and accept offers."
+              : "Go to your buyer dashboard to track your live bids, view favorite properties, and explore direct simple deals.";
+            
+            const btnLink = isSeller
+              ? `/${locale}/dashboard/seller/properties`
+              : `/${locale}/dashboard`;
+            
+            const btnText = isSeller
+              ? "Manage Properties"
+              : "Go to Dashboard";
+            
+            return (
+              <>
+                <div className="relative z-10 flex-1 max-w-2xl">
+                  <h2 className="text-white text-[32px] sm:text-[40px] lg:text-[48px] font-bold mb-6 tracking-tight leading-[1.1]" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                    {headingText}
+                  </h2>
+                  <p className="text-green-100/70 dark:text-gray-400 text-[16px] sm:text-[18px] max-w-xl leading-relaxed">
+                    {descText}
+                  </p>
+                </div>
+                
+                <div className="relative z-10">
+                  <Link href={btnLink} className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#c9a14b] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
+                    {btnText} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </section>
 

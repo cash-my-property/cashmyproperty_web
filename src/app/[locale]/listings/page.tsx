@@ -54,10 +54,12 @@ export default function ListingsPage() {
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* HERO BANNER */}
-      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center overflow-hidden bg-[#1B3A2D] dark:bg-[#0A1612]">
-        {/* Background elements */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5CD284]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#5CD284]/5 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3" />
+      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center bg-[#1B3A2D] dark:bg-[#0A1612]">
+        {/* Background elements wrapped to prevent overflow clipping dropdown */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5CD284]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#5CD284]/5 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3" />
+        </div>
         
         <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center mt-8">
             {/* placeholder for tagline */}
@@ -68,84 +70,98 @@ export default function ListingsPage() {
           </p>
 
           {/* Search Bar - Inline Filters */}
-          <div className="w-full max-w-4xl bg-white dark:bg-[#102418] p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 border border-gray-100 dark:border-[#1A3626]">
-            <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#102418]/50 rounded-xl">
-              <Search className="w-5 h-5 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder={content.hero.searchPlaceholder}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-[15px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
-              />
-            </div>
-            
-            <div className="relative hidden md:block">
-              <div 
-                onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
-                className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#102418]/50 rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
-              >
-                <Building className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors" />
-                <span className="text-[14px] text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap min-w-[80px]">
-                  {selectedType || content.hero.filters.type}
-                </span>
-                <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
+          {/* Search Bar & Filters Container */}
+          <div className="w-full max-w-4xl flex flex-col gap-4">
+            {/* Row 1: Search Input & Search Button */}
+            <div className="w-full bg-white dark:bg-[#102418] p-2 rounded-2xl shadow-2xl flex flex-row gap-2 border border-gray-100 dark:border-[#1A3626] items-center">
+              <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#102418]/50 rounded-xl">
+                <Search className="w-5 h-5 text-gray-400 shrink-0" />
+                <input 
+                  type="text" 
+                  placeholder={content.hero.searchPlaceholder}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none text-[15px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
+                />
               </div>
               
-              {activeDropdown === 'type' && (
-                <div className="absolute top-full mt-2 w-[200px] right-0 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
-                  {Object.entries(dict.home.hero.filters.types).map(([key, value]) => (
+              <button className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3.5 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap">
+                <Filter className="w-4 h-4 shrink-0" />
+                {content.hero.searchButton}
+              </button>
+            </div>
+
+            {/* Row 2: Filter Dropdowns Grouped Together */}
+            <div className="flex flex-wrap items-center justify-center gap-3 bg-white/5 dark:bg-[#102418]/20 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
+              {/* Type Dropdown */}
+              <div className="relative w-[160px] shrink-0">
+                <div 
+                  onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
+                  className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#1A3626] transition-colors border border-gray-100 dark:border-[#1A3626] min-w-0"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Building className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors shrink-0" />
+                    <span className="text-[13.5px] text-gray-600 dark:text-gray-300 font-semibold truncate">
+                      {selectedType || content.hero.filters.type}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all shrink-0 ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
+                </div>
+                
+                {activeDropdown === 'type' && (
+                  <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
+                    {Object.entries(dict.home.hero.filters.types).map(([key, value]) => (
+                      <div 
+                        key={key} 
+                        className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                        onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
+                      >
+                        {value as string}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Price Sort Dropdown */}
+              <div className="relative w-[160px] shrink-0">
+                <div 
+                  onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
+                  className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#1A3626] transition-colors border border-gray-100 dark:border-[#1A3626] min-w-0"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors shrink-0" />
+                    <span className="text-[13.5px] text-gray-600 dark:text-gray-300 font-semibold truncate">
+                      {priceSort === 'asc' ? "Low to High" : priceSort === 'desc' ? "High to Low" : "Sort Price"}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all shrink-0 ${activeDropdown === 'price' ? 'rotate-180' : ''}`} />
+                </div>
+                
+                {activeDropdown === 'price' && (
+                  <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
                     <div 
-                      key={key} 
-                      className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                      onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
+                      className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
+                      onClick={() => { setPriceSort(null); setActiveDropdown(null); }}
                     >
-                      {value as string}
+                      Default
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="relative hidden md:block">
-              <div 
-                onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
-                className="flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#102418]/50 rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
-              >
-                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors" />
-                <span className="text-[14px] text-gray-600 dark:text-gray-300 font-medium whitespace-nowrap min-w-[100px]">
-                  {priceSort === 'asc' ? "Price: Low to High" : priceSort === 'desc' ? "Price: High to Low" : "Sort By Price"}
-                </span>
+                    <div 
+                      className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
+                      onClick={() => { setPriceSort("asc"); setActiveDropdown(null); }}
+                    >
+                      Price: Low to High
+                    </div>
+                    <div 
+                      className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
+                      onClick={() => { setPriceSort("desc"); setActiveDropdown(null); }}
+                    >
+                      Price: High to Low
+                    </div>
+                  </div>
+                )}
               </div>
-              
-              {activeDropdown === 'price' && (
-                <div className="absolute top-full mt-2 w-[180px] right-0 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
-                  <div 
-                    className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
-                    onClick={() => { setPriceSort(null); setActiveDropdown(null); }}
-                  >
-                    Default
-                  </div>
-                  <div 
-                    className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
-                    onClick={() => { setPriceSort("asc"); setActiveDropdown(null); }}
-                  >
-                    Price: Low to High
-                  </div>
-                  <div 
-                    className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
-                    onClick={() => { setPriceSort("desc"); setActiveDropdown(null); }}
-                  >
-                    Price: High to Low
-                  </div>
-                </div>
-              )}
             </div>
-
-            <button className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer">
-              <Filter className="w-4 h-4" />
-              {content.hero.searchButton}
-            </button>
           </div>
         </div>
       </section>

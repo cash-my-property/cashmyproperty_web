@@ -1,12 +1,40 @@
 "use client";
 
-import { MapPin, Phone, Mail, Clock, Send, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { MapPin, Phone, Mail, Clock, Send, MessageSquare, Loader2 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useSocket } from "@/context/SocketContext";
 
 export default function ContactPage() {
   const { dict } = useDictionary();
+  const { addToast } = useSocket();
   const content = dict;
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      addToast("Message Sent", "Thank you! Your message has been received. We will get back to you shortly.", "success");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        message: ""
+      });
+    }, 1200);
+  };
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -50,7 +78,7 @@ export default function ContactPage() {
             {content.contact.main.description}
           </p>
           
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -59,8 +87,11 @@ export default function ContactPage() {
                 <input
                   type="text"
                   placeholder={content.contact.main.form.firstNamePlaceholder}
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -70,7 +101,10 @@ export default function ContactPage() {
                 <input
                   type="text"
                   placeholder={content.contact.main.form.lastNamePlaceholder}
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -83,8 +117,11 @@ export default function ContactPage() {
                 <input
                   type="email"
                   placeholder={content.contact.main.form.emailPlaceholder}
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -94,7 +131,10 @@ export default function ContactPage() {
                 <input
                   type="tel"
                   placeholder={content.contact.main.form.phonePlaceholder}
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -106,16 +146,27 @@ export default function ContactPage() {
               <textarea
                 placeholder={content.contact.main.form.messagePlaceholder}
                 rows={4}
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1A3626]/20 dark:focus:ring-[#5CD284]/20 focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
                 required
+                disabled={isSubmitting}
               ></textarea>
             </div>
 
             <button
               type="submit"
-              className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-all duration-300 shadow-sm hover:shadow-md mt-4 cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] text-white dark:text-[#1A3626] rounded-xl font-bold text-[15px] transition-all duration-300 shadow-sm hover:shadow-md mt-4 cursor-pointer flex items-center justify-center gap-2"
             >
-              {content.contact.main.form.submitButton}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                content.contact.main.form.submitButton
+              )}
             </button>
           </form>
         </div>
