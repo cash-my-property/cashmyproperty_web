@@ -7,11 +7,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
+import { useSocket } from "@/context/SocketContext";
 
 export default function ContractDetailsPage() {
   const { locale } = useDictionary();
   const params = useParams();
   const id = params.id as string;
+  const { addToast } = useSocket();
   
   const [contract, setContract] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,8 +24,8 @@ export default function ContractDetailsPage() {
         setIsLoading(true);
         const res = await api.get(`/buyer/my-contracts/${id}`);
         setContract(res.data.data);
-      } catch (error) {
-        console.error("Failed to fetch contract", error);
+      } catch {
+        addToast("Error", "Failed to load contract details. Please try again.", "warning");
       } finally {
         setIsLoading(false);
       }
@@ -102,15 +104,15 @@ export default function ContractDetailsPage() {
             <div className="space-y-3">
               <div className="flex justify-between py-3 border-b border-gray-100 dark:border-[#1A3626]">
                 <span className="text-gray-500 dark:text-gray-400">Submitted On</span>
-                <span className="font-medium text-gray-900 dark:text-white">{new Date(contract.createdAt).toLocaleString()}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{contract.createdAt ? new Date(contract.createdAt).toLocaleString('en-AE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
               </div>
               <div className="flex justify-between py-3 border-b border-gray-100 dark:border-[#1A3626]">
                 <span className="text-gray-500 dark:text-gray-400">Property Title</span>
-                <span className="font-medium text-gray-900 dark:text-white">{prop.propertyTitle}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{prop.propertyTitle || (auc._id ? `Auction Offer #${auc._id.slice(-6).toUpperCase()}` : 'Purchase Contract')}</span>
               </div>
               <div className="flex justify-between py-3">
                 <span className="text-gray-500 dark:text-gray-400">Location</span>
-                <span className="font-medium text-gray-900 dark:text-white">{prop.propertyLocation}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{prop.propertyLocation || (auc.status ? `Auction Status: ${auc.status}` : 'N/A')}</span>
               </div>
             </div>
           </div>
@@ -141,8 +143,8 @@ export default function ContractDetailsPage() {
               <Image src={prop.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"} alt="Property" fill className="object-cover" />
             </div>
             <div className="p-6">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">{prop.propertyTitle || 'Property'}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{prop.propertyLocation || ''}</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">{prop.propertyTitle || (auc._id ? `Auction Offer #${auc._id.slice(-6).toUpperCase()}` : 'Property')}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{prop.propertyLocation || (auc.status ? `Auction Status: ${auc.status}` : '')}</p>
               
               {auc._id ? (
                 <Link href={`/${locale}/auctions/${auc._id}`} className="block w-full py-3 px-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white text-center rounded-xl font-bold hover:bg-[#1A3626]/90 transition-colors">

@@ -9,11 +9,13 @@ import { useDictionary } from "@/components/DictionaryProvider";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { ShieldAlert } from "lucide-react";
+import { useSocket } from "@/context/SocketContext";
 
 export default function SimpleListingHistoryPage() {
   const { locale } = useDictionary();
   const router = useRouter();
   const { user } = useAuth();
+  const { addToast } = useSocket();
   const [properties, setProperties] = useState<any[]>([]);
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
@@ -34,8 +36,8 @@ export default function SimpleListingHistoryPage() {
         }
         const response = await api.get(url);
         setProperties(response.data?.result?.data || response.data?.data || []);
-      } catch (error) {
-        console.error("Failed to fetch my properties", error);
+      } catch {
+        addToast("Error", "Failed to load listing history. Please try refreshing.", "warning");
       } finally {
         setIsLoading(false);
       }

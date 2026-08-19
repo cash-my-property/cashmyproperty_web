@@ -6,9 +6,11 @@ import { Loader2, Gavel, MapPin, Eye, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useSocket } from "@/context/SocketContext";
 
 export default function MyAuctionsPage() {
   const { locale } = useDictionary();
+  const { addToast } = useSocket();
   const [auctions, setAuctions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,8 +19,8 @@ export default function MyAuctionsPage() {
       try {
         const response = await api.get('/seller/myAuction');
         setAuctions(response.data?.data || []);
-      } catch (error) {
-        console.error("Failed to fetch my auctions", error);
+      } catch {
+        addToast("Error", "Failed to load your auctions. Please try refreshing.", "warning");
       } finally {
         setIsLoading(false);
       }

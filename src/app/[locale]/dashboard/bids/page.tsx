@@ -6,10 +6,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
+import { useSocket } from "@/context/SocketContext";
 
 export default function OffersPage() {
   const { dict, locale } = useDictionary();
   const content = dict.dashboard.bids;
+  const { addToast } = useSocket();
 
   const [bids, setBids] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +31,8 @@ export default function OffersPage() {
           date: bid.bidDate ? new Date(bid.bidDate).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
         }));
         setBids(formattedBids);
-      } catch (error) {
-        console.error("Failed to fetch bids", error);
+      } catch {
+        addToast("Error", "Failed to load your bids. Please try refreshing.", "warning");
       } finally {
         setIsLoading(false);
       }

@@ -5,9 +5,11 @@ import api from "@/lib/api";
 import { Loader2, ListOrdered, User, Clock, ShieldCheck, FileText } from "lucide-react";
 import Image from "next/image";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useSocket } from "@/context/SocketContext";
 
 export default function ReceivedBidsPage() {
   const { locale } = useDictionary();
+  const { addToast } = useSocket();
   const [bids, setBids] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,8 +18,8 @@ export default function ReceivedBidsPage() {
       try {
         const response = await api.get('/seller/myBids');
         setBids(response.data?.data || []);
-      } catch (error) {
-        console.error("Failed to fetch received bids", error);
+      } catch {
+        addToast("Error", "Failed to load received bids. Please try refreshing.", "warning");
       } finally {
         setIsLoading(false);
       }

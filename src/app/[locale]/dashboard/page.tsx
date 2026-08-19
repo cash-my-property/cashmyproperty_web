@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 
 export default function DashboardOverviewPage() {
   const { dict, locale } = useDictionary();
@@ -21,6 +22,7 @@ export default function DashboardOverviewPage() {
   const [quota, setQuota] = useState<any>(null);
 
   const { user } = useAuth();
+  const { addToast } = useSocket();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -34,8 +36,8 @@ export default function DashboardOverviewPage() {
             try {
               const quotaRes = await api.get('/seller/simpleListingQuota');
               setQuota(quotaRes.data.data);
-            } catch (error) {
-              console.error("Failed to fetch simple listing quota");
+            } catch {
+              addToast("Error", "Failed to load quota information.", "warning");
             }
           } else {
             try {
@@ -52,8 +54,8 @@ export default function DashboardOverviewPage() {
               setPropertiesCount(propsList.length.toString());
               setWonAuctionsCount(auctionsList.length.toString());
               setActiveBidsCount(bidsList.length.toString());
-            } catch (error) {
-              console.error("Failed to fetch regular seller stats", error);
+            } catch {
+              addToast("Error", "Failed to load seller statistics.", "warning");
             }
           }
           setRecentActivity([]);
@@ -82,35 +84,40 @@ export default function DashboardOverviewPage() {
         setWonAuctionsCount(wonCount.toString());
 
         // Process recent activity by merging both lists and sorting by date
-        const formattedBids = activeBids.map((bid: any) => ({
-          id: bid.bidId,
-          type: bid.bidStatus === 'LEADING' ? 'offer' : 'outbid',
-          text: bid.bidStatus === 'LEADING' 
-            ? `You placed a bid of ${bid.bidAmount.toLocaleString()} AED on ${bid.property.propertyTitle}` 
-            : `You were outbid on ${bid.property.propertyTitle}`,
-          date: new Date(bid.bidDate)
-        }));
+        const formattedBids = activeBids
+          .filter((bid: any) => bid.bidId && bid.bidDate)
+          .map((bid: any) => ({
+            id: bid.bidId?.toString() || '',
+            type: bid.bidStatus === 'LEADING' ? 'offer' : 'outbid',
+            text: bid.bidStatus === 'LEADING'
+              ? `You placed a bid of AED ${(bid.bidAmount ?? 0).toLocaleString()} on ${bid.property?.propertyTitle || 'a property'}`
+              : `You were outbid on ${bid.property?.propertyTitle || 'a property'}`,
+            date: new Date(bid.bidDate)
+          }));
 
-        const formattedHistory = history.map((item: any) => ({
-          id: item._id,
-          type: item.status === 'WON' ? 'won' : 'lost',
-          text: item.status === 'WON' 
-            ? `You won the auction for ${item.property.title}`
-            : `You lost the auction for ${item.property.title}`,
-          date: new Date(item.bidInfo.date)
-        }));
+        const formattedHistory = history
+          .filter((item: any) => item._id && item.bidInfo?.date)
+          .map((item: any) => ({
+            id: item._id?.toString() || '',
+            type: item.status === 'WON' ? 'won' : 'lost',
+            text: item.status === 'WON'
+              ? `You won the auction for ${item.property?.title || 'a property'}`
+              : `You lost the auction for ${item.property?.title || 'a property'}`,
+            date: new Date(item.bidInfo.date)
+          }));
 
         const combinedActivity = [...formattedBids, ...formattedHistory]
+          .filter(a => !isNaN(a.date.getTime()))
           .sort((a, b) => b.date.getTime() - a.date.getTime())
           .slice(0, 5)
           .map(activity => ({
             ...activity,
-            time: activity.date.toLocaleDateString()
+            time: activity.date.toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })
           }));
 
         setRecentActivity(combinedActivity);
-      } catch (error) {
-        console.error("Error fetching dashboard overview", error);
+      } catch {
+        addToast("Error", "Failed to load dashboard data. Please refresh the page.", "warning");
       } finally {
         setIsLoading(false);
       }

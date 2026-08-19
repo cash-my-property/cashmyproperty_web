@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
 const API_URL = (envApiUrl ? envApiUrl.replace(/\/auth\/?$/, '') : 'https://testapi.cmpdubai.com/api');
@@ -9,22 +8,9 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: true, // authToken + refreshToken cookies automatically sent by browser
 });
 
-// Request interceptor to add token to every request
-api.interceptors.request.use(
-  (config) => {
-    const token = Cookies.get('token');
-    // Only set Authorization header if we have a real token (e.g. from a different auth flow)
-    // The dummy token is just a flag for the frontend context
-    if (token && token !== 'dummy-token-because-httponly') {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -50,7 +36,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       // Avoid looping if the refresh request itself fails with 401/403
       if (originalRequest.url?.includes('/auth/refresh')) {
-        Cookies.remove('token');
         if (typeof window !== 'undefined') {
           const locale = window.location.pathname.split('/')[1] || 'en';
           window.location.href = `/${locale}/login`;
@@ -82,7 +67,6 @@ api.interceptors.response.use(
         isRefreshing = false;
         processQueue(refreshError);
         
-        Cookies.remove('token');
         if (typeof window !== 'undefined' && originalRequest.url !== '/logout') {
           const locale = window.location.pathname.split('/')[1] || 'en';
           window.location.href = `/${locale}/login`;

@@ -6,9 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
+import { useSocket } from "@/context/SocketContext";
 
 export default function ContractsPage() {
   const { dict, locale } = useDictionary();
+  const { addToast } = useSocket();
   const [contracts, setContracts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -18,8 +20,8 @@ export default function ContractsPage() {
         setIsLoading(true);
         const res = await api.get('/buyer/my-contracts');
         setContracts(res.data.data || []);
-      } catch (error) {
-        console.error("Failed to fetch contracts", error);
+      } catch {
+        addToast("Error", "Failed to load your contracts. Please try refreshing.", "warning");
       } finally {
         setIsLoading(false);
       }
@@ -73,11 +75,11 @@ export default function ContractsPage() {
                         <div>
                           <Link href={`/${locale}/dashboard/contracts/${contract.contractId}`}>
                             <p className="text-[14px] font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors line-clamp-1 cursor-pointer">
-                              {contract.property?.title || 'Unknown Property'}
+                              {contract.property?.title || (contract.auction?.auctionId ? `Auction Offer #${contract.auction.auctionId.slice(-6).toUpperCase()}` : 'Purchase Contract')}
                             </p>
                           </Link>
                           <p className="text-[12px] text-gray-500 dark:text-gray-400">
-                            {contract.property?.location || ''} {contract.property?.propertyType ? `· ${contract.property.propertyType}` : ''}
+                            {contract.property?.location || (contract.auction?.status ? `Auction Status: ${contract.auction.status}` : 'Contract Reference')}
                           </p>
                         </div>
                       </div>
