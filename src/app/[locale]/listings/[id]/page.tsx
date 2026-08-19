@@ -205,7 +205,14 @@ export default function PropertyDetailPage() {
           {/* Gallery */}
           <div className="bg-white dark:bg-[#102418] p-2 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-[#1A3626]">
             <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] rounded-2xl overflow-hidden mb-2 bg-gray-100 dark:bg-[#091711] group">
-              <Image src={images[activeImage] || images[0]} alt="Property" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+              <Image
+                src={images[activeImage] || images[0]}
+                alt="Property"
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 50vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-700"
+              />
               <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-[#1A3626] flex items-center gap-2 z-10">
                 <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
                 <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider">{detailDict.verifiedDld || "Verified by DLD"}</span>

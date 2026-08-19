@@ -7,6 +7,7 @@ import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
+import Image from "next/image";
 
 export default function HomePage() {
   const { dict, locale } = useDictionary();
@@ -170,16 +171,17 @@ export default function HomePage() {
       <section className="relative w-full min-h-[650px] lg:min-h-[700px] flex items-center justify-center pt-24 pb-16">
         {/* Background Image / Overlay */}
         <div className="absolute inset-0 overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat w-full h-full"
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")',
-            backgroundPosition: 'center 40%'
-          }}
-        />
-        {/* Dark Green Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1A3626]/90 via-[#0A1C12]/80 to-[#0A1C12]/95 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-black/30" />
+          <Image
+            src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            alt="Hero Background"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[center_40%] pointer-events-none"
+          />
+          {/* Dark Green Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1A3626]/90 via-[#0A1C12]/80 to-[#0A1C12]/95 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-black/30" />
         </div>
         
         <div className="relative z-10 w-full max-w-6xl mx-auto px-6 flex flex-col items-center text-center mt-6">
@@ -394,7 +396,13 @@ export default function HomePage() {
               return (
               <Link href={`/${locale}/listings/${item._id}`} key={item._id} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer">
                 <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711]">
-                  <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image
+                    src={image}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
                   
                   {/* Badges */}
                   <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
@@ -526,7 +534,13 @@ export default function HomePage() {
               return (
               <Link href={`/${locale}/simple-listings/${item._id || item.id}`} key={item._id || item.id} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer">
                 <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711]">
-                  <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <Image
+                    src={image}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
                   <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
                      <span className="w-2 h-2 rounded-full bg-[#5CD284]"></span> ACTIVE
                   </div>
@@ -618,29 +632,41 @@ export default function HomePage() {
             
             {/* Download Buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-              <Link href="#" className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg">
+              <a 
+                href="https://apps.apple.com/pk/app/cmp-cashmyproperty/id6762503025" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg"
+              >
                 <Smartphone className="w-8 h-8" />
                 <div className="flex flex-col items-start">
                   <span className="text-[10px] uppercase tracking-wider text-gray-300 font-medium">{home.appDownload.appStoreText}</span>
                   <span className="text-[18px] font-bold leading-none">{home.appDownload.appStore}</span>
                 </div>
-              </Link>
-              <Link href="#" className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg">
+              </a>
+              <a 
+                href="https://play.google.com/store/apps/details?id=com.cashmyproperty&pcampaignid=web_share" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg"
+              >
                 <Download className="w-8 h-8" />
                 <div className="flex flex-col items-start">
                   <span className="text-[10px] uppercase tracking-wider text-gray-300 font-medium">{home.appDownload.playStoreText}</span>
                   <span className="text-[18px] font-bold leading-none">{home.appDownload.playStore}</span>
                 </div>
-              </Link>
+              </a>
             </div>
           </div>
 
           {/* Phone Mockup Graphic */}
           <div className="relative z-10 w-full md:w-2/5 flex justify-center md:justify-end pr-0 md:pr-12 lg:pr-20 pt-10 md:pt-0 overflow-hidden">
              <div className="relative w-[280px] h-[350px] md:h-[450px]">
-               <img 
+               <Image 
                  src="https://images.unsplash.com/photo-1601784551446-20c9e07cd56e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
                  alt="CMP App" 
+                 fill
+                 sizes="(max-width: 768px) 280px, 450px"
                  className="absolute bottom-[-20%] md:bottom-[-10%] right-0 w-full h-[120%] object-cover object-top rounded-t-[40px] border-4 border-b-0 border-gray-900 shadow-[0_-20px_60px_rgba(0,0,0,0.5)] transform -rotate-12 translate-x-10"
                />
              </div>
