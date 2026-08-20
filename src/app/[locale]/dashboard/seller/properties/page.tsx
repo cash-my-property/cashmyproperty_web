@@ -12,7 +12,7 @@ import { ShieldAlert } from "lucide-react";
 import { useSocket } from "@/context/SocketContext";
 
 export default function MyPropertiesPage() {
-  const { locale } = useDictionary();
+  const { dict, locale } = useDictionary();
   const router = useRouter();
   const { user } = useAuth();
   const { addToast } = useSocket();
@@ -96,10 +96,12 @@ export default function MyPropertiesPage() {
             <div key={property._id || property.propertyId} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group">
               <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711] w-full">
                 {property.image ? (
-                  <img 
+                  <Image 
                     src={property.image} 
                     alt={property.title || "Property"}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -177,10 +179,12 @@ export default function MyPropertiesPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 {viewModalProperty.image ? (
                   <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden shadow-sm">
-                    <img 
+                    <Image 
                       src={viewModalProperty.image} 
                       alt={viewModalProperty.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover"
                     />
                   </div>
                 ) : (
@@ -255,7 +259,7 @@ export default function MyPropertiesPage() {
             <div className="w-20 h-20 bg-gray-50 dark:bg-[#163321] rounded-full flex items-center justify-center mx-auto mb-6">
               <Lock className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Cannot Edit This Property</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{dict.dashboard.seller.cannotEditTitle}</h2>
             <p className="text-gray-500 dark:text-gray-400 mb-2 leading-relaxed">
               <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold uppercase mb-3 ${
                 editModalProperty.status === 'ACTIVE' ? 'bg-green-500/10 text-green-600' :
@@ -265,10 +269,10 @@ export default function MyPropertiesPage() {
             </p>
             <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed text-sm">
               {editModalProperty.status === 'ACTIVE'
-                ? 'This property is currently active and live. Editing is not permitted on active listings.'
+                ? dict.dashboard.seller.activeLockDesc
                 : editModalProperty.status === 'PENDING' || editModalProperty.status === 'AWAITING'
-                ? 'This property is awaiting admin review. You can edit it once the review is complete and if it is rejected.'
-                : 'Only properties with a REJECTED status can be edited. Check your Rejected Properties tab.'}
+                ? dict.dashboard.seller.pendingLockDesc
+                : dict.dashboard.seller.rejectedLockDesc}
             </p>
             <div className="flex flex-col gap-3">
               <Link
@@ -276,13 +280,13 @@ export default function MyPropertiesPage() {
                 className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 onClick={() => setEditModalProperty(null)}
               >
-                View Rejected Properties <ArrowRight className="w-4 h-4" />
+                {dict.dashboard.seller.viewRejectedProperties} <ArrowRight className="w-4 h-4" />
               </Link>
               <button
                 onClick={() => setEditModalProperty(null)}
                 className="w-full py-3 bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
               >
-                Close
+                {dict.dashboard.seller.close}
               </button>
             </div>
           </div>

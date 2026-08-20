@@ -572,6 +572,16 @@ export const content = {
         newPassword: "كلمة المرور الجديدة",
         updatePassword: "تحديث كلمة المرور"
       }
+    },
+    seller: {
+      cannotEditTitle: "لا يمكن تعديل هذا العقار",
+      cannotEditListingTitle: "لا يمكن تعديل هذا الإعلان",
+      activeLockDesc: "هذا العقار نشط حالياً. التعديل غير مسموح به للعقارات النشطة.",
+      pendingLockDesc: "هذا العقار قيد المراجعة حالياً. يمكنك تعديله في حال تم رفضه.",
+      rejectedLockDesc: "يمكن فقط تعديل العقارات المرفوضة. تحقق من تبويب العقارات المرفوضة.",
+      viewRejectedSimple: "عرض الإعلانات المرفوضة",
+      viewRejectedProperties: "عرض العقارات المرفوضة",
+      close: "إغلاق"
     }
   }
 }; 

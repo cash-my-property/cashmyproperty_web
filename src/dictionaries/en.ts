@@ -468,6 +468,16 @@ export const content = {
         newPassword: "New Password",
         updatePassword: "Update Password"
       }
+    },
+    seller: {
+      cannotEditTitle: "Cannot Edit This Property",
+      cannotEditListingTitle: "Cannot Edit This Listing",
+      activeLockDesc: "This listing is currently active and live. Editing is not permitted on active listings.",
+      pendingLockDesc: "This listing is awaiting admin review. You can edit it if it gets rejected.",
+      rejectedLockDesc: "Only listings with a REJECTED status can be edited. Check your Rejected Listings tab.",
+      viewRejectedSimple: "View Rejected Listings",
+      viewRejectedProperties: "View Rejected Properties",
+      close: "Close"
     }
   }
 };
