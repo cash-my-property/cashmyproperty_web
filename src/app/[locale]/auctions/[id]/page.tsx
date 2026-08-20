@@ -16,7 +16,8 @@ async function getPropertyData(id: string) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string; locale: string } }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ id: string; locale: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const propertyInfo = await getPropertyData(params.id);
   if (!propertyInfo) {
     return {
@@ -47,7 +48,8 @@ export async function generateMetadata({ params }: { params: { id: string; local
   };
 }
 
-export default async function AuctionDetailPage({ params }: { params: { id: string; locale: string } }) {
+export default async function AuctionDetailPage(props: { params: Promise<{ id: string; locale: string }> }) {
+  const params = await props.params;
   const initialData = await getPropertyData(params.id);
 
   return (
