@@ -385,8 +385,8 @@ export const content = {
     quickLinksTitle: "Quick Links",
     quickLinks: [
       { title: "Home", href: "/" },
-      { title: "Live Offers", href: "#" },
-      { title: "Property Listings", href: "#" },
+      { title: "Live Offers", href: "/auctions" },
+      { title: "Property Listings", href: "/listings" },
       { title: "FAQs", href: "#" }
     ],
     legalLinksTitle: "Legal",
@@ -444,8 +444,10 @@ export const content = {
     favorites: {
       title: "Saved Properties",
       description: "Properties you have saved as favorites.",
-      noFavorites: "You haven't saved any properties yet.",
-      browse: "Browse Properties"
+      noFavorites: "No Saved Properties Yet",
+      noFavoritesSub: "Browse our live auctions and direct listings, then save your favorite properties here to keep track of them.",
+      browseAuctions: "Browse Auctions",
+      browseDirectListings: "Browse Direct Listings"
     },
     settings: {
       title: "Account Settings",

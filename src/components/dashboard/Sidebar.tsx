@@ -78,7 +78,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
       <nav className="flex-1 px-4 py-8 space-y-2">
         {links.map((link) => {
-          const isActive = pathname === link.href;
+          const isActive = pathname === link.href || (link.href !== `/${locale}/dashboard` && pathname.startsWith(link.href));
           return (
             <Link
               key={link.name}

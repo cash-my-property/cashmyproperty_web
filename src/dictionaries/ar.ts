@@ -548,8 +548,10 @@ export const content = {
     favorites: {
       title: "العقارات المحفوظة",
       description: "العقارات التي قمت بحفظها كمفضلة.",
-      noFavorites: "لم تقم بحفظ أي عقارات بعد.",
-      browse: "تصفح العقارات"
+      noFavorites: "لا توجد عقارات محفوظة بعد",
+      noFavoritesSub: "تصفح المزادات الحية والقوائم المباشرة، ثم قم بحفظ عقاراتك المفضلة هنا لمتابعتها.",
+      browseAuctions: "تصفح المزادات",
+      browseDirectListings: "تصفح القوائم المباشرة"
     },
     settings: {
       title: "إعدادات الحساب",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 import Cookies from 'js-cookie';
 import { useAuth } from './AuthContext';
 import { Bell, ShieldCheck, CheckCircle2, Gavel, X, FileText, AlertTriangle } from 'lucide-react';
@@ -25,6 +25,7 @@ export interface NotificationItem {
 
 interface SocketContextType {
   socket: Socket | null;
+  isConnected: boolean;
   joinRoom: (roomId: string) => void;
   leaveRoom: (roomId: string) => void;
   addToast: (title: string, message: string, type?: 'success' | 'warning' | 'info', icon?: React.ReactNode) => void;
@@ -37,6 +38,7 @@ const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const { isAuthenticated, user, isSeller, isLoading: authLoading, fetchProfile } = useAuth();
@@ -113,128 +115,149 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-    // Derive Socket URL from API URL (replace /api with empty string to get server root URL)
-    const socketUrl = API_URL.replace(/\/api\/?$/, '');
+    let socketInstance: any = null;
+    let isSubscribed = true;
 
-    // Get current access token (could be the dummy token or the actual token if logged in via OAuth/Google)
-    const token = Cookies.get('token');
+    const initSocket = async () => {
+      try {
+        const { io } = await import('socket.io-client');
+        if (!isSubscribed) return;
 
-    console.log("📡 Initializing Socket.io connection to:", socketUrl);
-    const socketInstance = io(socketUrl, {
-      auth: {
-        token: (token && token !== 'dummy-token-because-httponly') ? token : undefined
-      },
-      transports: ['websocket', 'polling'],
-      withCredentials: true
-    });
+        const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+        const socketUrl = API_URL.replace(/\/api\/?$/, '');
+        const token = Cookies.get('token');
 
-    socketRef.current = socketInstance;
-    setSocket(socketInstance);
+        console.log("📡 Initializing Socket.io connection dynamically to:", socketUrl);
+        socketInstance = io(socketUrl, {
+          auth: {
+            token: (token && token !== 'dummy-token-because-httponly') ? token : undefined
+          },
+          transports: ['websocket', 'polling'],
+          withCredentials: true
+        });
 
-    socketInstance.on('connect', () => {
-      console.log('📡 Socket connected successfully! ID:', socketInstance.id);
-      
-      // 1. Join user-specific room
-      socketInstance.emit('join_room', `user_${user._id}`);
+        socketRef.current = socketInstance;
+        setSocket(socketInstance);
 
-      // 2. Join seller specific rooms if seller
-      if (isSeller) {
-        socketInstance.emit('join_room', `seller_live_auctions_${user._id}`);
+        socketInstance.on('connect', () => {
+          console.log('📡 Socket connected successfully! ID:', socketInstance.id);
+          setIsConnected(true);
+          
+          // 1. Join user-specific room
+          socketInstance.emit('join_room', `user_${user._id}`);
+
+          // 2. Join seller specific rooms if seller
+          if (isSeller) {
+            socketInstance.emit('join_room', `seller_live_auctions_${user._id}`);
+          }
+
+          // 3. Join global room for real-time listings/bids updates
+          socketInstance.emit('join_room', 'global_auctions');
+        });
+
+        socketInstance.on('disconnect', () => {
+          console.log('📡 Socket disconnected.');
+          setIsConnected(false);
+        });
+
+        socketInstance.on('connect_error', (err: any) => {
+          console.warn('📡 Socket connection error:', err.message);
+          setIsConnected(false);
+          if (err.message.includes('token') || err.message.includes('expired') || err.message.includes('Authentication error')) {
+            // Trigger profile fetch to refresh HttpOnly cookie, then reconnect
+            fetchProfile().then(() => {
+              console.log("📡 Retrying socket connection after token refresh...");
+              socketInstance?.connect();
+            }).catch((e) => console.error("Socket reconnect profile refresh failed", e));
+          }
+        });
+
+        // Setup listeners for push notifications
+        socketInstance.on('outbid_notification', (data: any) => {
+          console.log("📡 [Socket Event] Received outbid_notification:", data);
+          const msg = `You have been outbid on "${data.propertyTitle || 'Property'}". New highest bid is Ð ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
+          addToast(
+            "Outbid Alert!", 
+            msg,
+            'warning',
+            <Gavel className="w-5 h-5 text-rose-500 animate-bounce" />
+          );
+          addNotification("Outbid Alert!", msg, 'warning');
+        });
+
+        socketInstance.on('new_bid_on_property', (data: any) => {
+          console.log("📡 [Socket Event] Received new_bid_on_property:", data);
+          const msg = `A new bid of Ð ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
+          addToast(
+            "New Bid Received!", 
+            msg,
+            'success',
+            <CheckCircle2 className="w-5 h-5 text-green-500" />
+          );
+          addNotification("New Bid Received!", msg, 'success');
+        });
+
+        socketInstance.on('property_approved', (data: any) => {
+          console.log("📡 [Socket Event] Received property_approved:", data);
+          const msg = `Your property "${data.propertyTitle || 'Property'}" has been approved by admin.`;
+          addToast(
+            "Property Approved!", 
+            msg,
+            'success',
+            <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
+          );
+          addNotification("Property Approved!", msg, 'success');
+        });
+
+        socketInstance.on('account_verified', (data: any) => {
+          console.log("📡 [Socket Event] Received account_verified:", data);
+          const msg = "Your broker/agency profile has been successfully verified by admin.";
+          addToast(
+            "Account Verified!", 
+            msg,
+            'success',
+            <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
+          );
+          addNotification("Account Verified!", msg, 'success');
+        });
+
+        // ── BUYER SPECIFIC EVENTS ──
+        socketInstance.on('contract_approved', (data: any) => {
+          console.log("📡 [Socket Event] Received contract_approved:", data);
+          const msg = `Your signed contract for auction has been approved by admin! You can now place bids!`;
+          addToast(
+            "Contract Approved!", 
+            msg,
+            'success',
+            <FileText className="w-5 h-5 text-green-500" />
+          );
+          addNotification("Contract Approved!", msg, 'success');
+        });
+
+        socketInstance.on('contract_rejected', (data: any) => {
+          console.log("📡 [Socket Event] Received contract_rejected:", data);
+          const msg = `Your signed contract has been rejected by admin. Please review the reasons on your dashboard.`;
+          addToast(
+            "Contract Rejected!", 
+            msg,
+            'warning',
+            <AlertTriangle className="w-5 h-5 text-rose-500" />
+          );
+          addNotification("Contract Rejected!", msg, 'warning');
+        });
+      } catch (err) {
+        console.error("Failed to dynamically initialize Socket.io client:", err);
       }
+    };
 
-      // 3. Join global room for real-time listings/bids updates
-      socketInstance.emit('join_room', 'global_auctions');
-    });
-
-    socketInstance.on('connect_error', (err) => {
-      console.warn('📡 Socket connection error:', err.message);
-      if (err.message.includes('token') || err.message.includes('expired') || err.message.includes('Authentication error')) {
-        // Trigger profile fetch to refresh HttpOnly cookie, then reconnect
-        fetchProfile().then(() => {
-          console.log("📡 Retrying socket connection after token refresh...");
-          socketInstance.connect();
-        }).catch((e) => console.error("Socket reconnect profile refresh failed", e));
-      }
-    });
-
-    // Setup listeners for push notifications
-    socketInstance.on('outbid_notification', (data: any) => {
-      console.log("📡 [Socket Event] Received outbid_notification:", data);
-      const msg = `You have been outbid on "${data.propertyTitle || 'Property'}". New highest bid is Ð ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
-      addToast(
-        "Outbid Alert!", 
-        msg,
-        'warning',
-        <Gavel className="w-5 h-5 text-rose-500 animate-bounce" />
-      );
-      addNotification("Outbid Alert!", msg, 'warning');
-    });
-
-    socketInstance.on('new_bid_on_property', (data: any) => {
-      console.log("📡 [Socket Event] Received new_bid_on_property:", data);
-      const msg = `A new bid of Ð ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
-      addToast(
-        "New Bid Received!", 
-        msg,
-        'success',
-        <CheckCircle2 className="w-5 h-5 text-green-500" />
-      );
-      addNotification("New Bid Received!", msg, 'success');
-    });
-
-    socketInstance.on('property_approved', (data: any) => {
-      console.log("📡 [Socket Event] Received property_approved:", data);
-      const msg = `Your property "${data.propertyTitle || 'Property'}" has been approved by admin.`;
-      addToast(
-        "Property Approved!", 
-        msg,
-        'success',
-        <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
-      );
-      addNotification("Property Approved!", msg, 'success');
-    });
-
-    socketInstance.on('account_verified', (data: any) => {
-      console.log("📡 [Socket Event] Received account_verified:", data);
-      const msg = "Your broker/agency profile has been successfully verified by admin.";
-      addToast(
-        "Account Verified!", 
-        msg,
-        'success',
-        <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
-      );
-      addNotification("Account Verified!", msg, 'success');
-    });
-
-    // ── BUYER SPECIFIC EVENTS ──
-    socketInstance.on('contract_approved', (data: any) => {
-      console.log("📡 [Socket Event] Received contract_approved:", data);
-      const msg = `Your signed contract for auction has been approved by admin! You can now place bids!`;
-      addToast(
-        "Contract Approved!", 
-        msg,
-        'success',
-        <FileText className="w-5 h-5 text-green-500" />
-      );
-      addNotification("Contract Approved!", msg, 'success');
-    });
-
-    socketInstance.on('contract_rejected', (data: any) => {
-      console.log("📡 [Socket Event] Received contract_rejected:", data);
-      const msg = `Your signed contract has been rejected by admin. Please review the reasons on your dashboard.`;
-      addToast(
-        "Contract Rejected!", 
-        msg,
-        'warning',
-        <AlertTriangle className="w-5 h-5 text-rose-500" />
-      );
-      addNotification("Contract Rejected!", msg, 'warning');
-    });
+    initSocket();
 
     return () => {
-      console.log("📡 Disconnecting Socket...");
-      socketInstance.disconnect();
+      isSubscribed = false;
+      if (socketInstance) {
+        console.log("📡 Disconnecting Socket...");
+        socketInstance.disconnect();
+      }
       socketRef.current = null;
       setSocket(null);
     };
@@ -270,7 +293,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SocketContext.Provider value={{ socket, joinRoom, leaveRoom, addToast, notifications, markAllAsRead, clearAllNotifications }}>
+    <SocketContext.Provider value={{ socket, isConnected, joinRoom, leaveRoom, addToast, notifications, markAllAsRead, clearAllNotifications }}>
       {children}
       
       {/* Toast Notifications Overlay Container */}

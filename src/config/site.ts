@@ -11,8 +11,8 @@ export const siteConfig = {
   footer: {
     quickLinks: [
       { title: "Home", href: "/" },
-      { title: "Live Offers", href: "#" },
-      { title: "Property Listings", href: "#" },
+      { title: "Live Offers", href: "/auctions" },
+      { title: "Property Listings", href: "/listings" },
       { title: "FAQs", href: "#" },
     ],
     legalLinks: [
