@@ -26,18 +26,29 @@ export default function LoginPage() {
     setError("");
 
     try {
+      let webDeviceId = "web_default_device_id";
+      if (typeof window !== "undefined") {
+        const ua = window.navigator.userAgent || '';
+        const platform = window.navigator.platform || '';
+        const screenWidth = window.screen?.width || 0;
+        const screenHeight = window.screen?.height || 0;
+        const rawFingerprint = `${platform}_${screenWidth}x${screenHeight}_${ua}`;
+        
+        let hash = 0;
+        for (let i = 0; i < rawFingerprint.length; i++) {
+          const char = rawFingerprint.charCodeAt(i);
+          hash = (hash << 5) - hash + char;
+          hash |= 0;
+        }
+        webDeviceId = `web_${Math.abs(hash)}`;
+      }
+
       const response = await api.post("/auth/login", { 
         email, 
         password,
-        deviceInfo: {
-          deviceId: "DEVICE_ID_1234",
-          uniqueId: "UNIQUE_ID_456",
-          model: "iPhone 15 Pro",
-          platform: "ios",
-          systemVersion: "17.4",
-          appVersion: "1.0.0",
-          fcmToken: "FCM_TOKEN_ABC_XYZ",
-          ipAddress: "192.168.1.1"
+        deviceInformation: {
+          deviceId: webDeviceId,
+          platform: "web"
         }
       });
       

@@ -72,10 +72,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      let webDeviceId = "web_default_device_id";
+      if (typeof window !== "undefined") {
+        const ua = window.navigator.userAgent || '';
+        const platform = window.navigator.platform || '';
+        const screenWidth = window.screen?.width || 0;
+        const screenHeight = window.screen?.height || 0;
+        const rawFingerprint = `${platform}_${screenWidth}x${screenHeight}_${ua}`;
+        
+        let hash = 0;
+        for (let i = 0; i < rawFingerprint.length; i++) {
+          const char = rawFingerprint.charCodeAt(i);
+          hash = (hash << 5) - hash + char;
+          hash |= 0;
+        }
+        webDeviceId = `web_${Math.abs(hash)}`;
+      }
+
       // Call backend logout
       await api.post('/auth/logout', {
         deviceInformation: {
-          deviceId: "DEVICE_ID_1234"
+          deviceId: webDeviceId
         }
       });
     } catch (e) {
