@@ -12,7 +12,7 @@ import { ShieldAlert } from "lucide-react";
 import { useSocket } from "@/context/SocketContext";
 
 export default function MySimpleListingsPage() {
-  const { locale } = useDictionary();
+  const { dict, locale } = useDictionary();
   const router = useRouter();
   const { user } = useAuth();
   const { addToast } = useSocket();
