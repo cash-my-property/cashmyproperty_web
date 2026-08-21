@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building } from "lucide-react";
+import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -22,7 +22,7 @@ export default function ListingsPage() {
 
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   useEffect(() => {
@@ -30,15 +30,22 @@ export default function ListingsPage() {
     const fetchProperties = async () => {
       try {
         setIsLoading(true);
+
+        // Sellers are fully blocked from viewing buyer-facing simple listings
+        if (isAuthenticated && isSeller) {
+          setProperties([]);
+          return;
+        }
+
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-        
+
         let res;
         if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
           res = await api.get('/buyer/simpleLiveListings');
         } else {
           res = await axios.get(`${API_URL}/public/simple-live-properties`);
         }
-        
+
         const data = res.data.data;
         setProperties(Array.isArray(data) ? data : (data?.data || []));
       } catch (err) {
@@ -48,7 +55,7 @@ export default function ListingsPage() {
       }
     };
     fetchProperties();
-  }, [authLoading, isAuthenticated, user]);
+  }, [authLoading, isAuthenticated, user, isSeller]);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -166,7 +173,55 @@ export default function ListingsPage() {
         </div>
       </section>
 
-      {/* CATEGORY CHIPS */}
+      {/* SELLER CTA PANEL — fully blocks sellers from accessing simple listings */}
+      {isAuthenticated && isSeller && (
+        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+          <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col lg:flex-row items-center gap-10 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626]">
+            {/* Background glow */}
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#c9a14b]/5 rounded-full blur-[80px] pointer-events-none" />
+
+            {/* Left: Icon Badge */}
+            <div className="relative z-10 w-24 h-24 rounded-3xl bg-[#5CD284]/15 border border-[#5CD284]/30 flex items-center justify-center shrink-0">
+              <Building className="w-12 h-12 text-[#5CD284]" />
+            </div>
+
+            {/* Center: Text */}
+            <div className="relative z-10 flex-1 text-center lg:text-left">
+              <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase block mb-3">
+                Seller Mode Active
+              </span>
+              <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight">
+                Property listings are for buyers only.
+              </h2>
+              <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
+                As a seller, you cannot browse or enquire on simple property listings. Head to your dashboard to manage your own properties and track incoming interest from buyers.
+              </p>
+            </div>
+
+            {/* Right: CTA Buttons */}
+            <div className="relative z-10 flex flex-col gap-3 shrink-0">
+              <Link
+                href={`/${locale}/dashboard/seller/properties`}
+                className="inline-flex items-center justify-center gap-2 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] text-[15px] whitespace-nowrap"
+              >
+                <Key className="w-5 h-5" />
+                My Listings
+              </Link>
+              <Link
+                href={`/${locale}/dashboard`}
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 text-[15px] whitespace-nowrap"
+              >
+                <Home className="w-5 h-5" />
+                Go to Dashboard
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CATEGORY CHIPS — hidden for sellers */}
+      {!(isAuthenticated && isSeller) && (
       <section className="border-b border-gray-200 dark:border-[#1A3626] bg-white dark:bg-[#091711]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4 flex gap-3 overflow-x-auto global-green-scrollbar">
           {["All", "Villa", "Apartment", "Penthouse", "Townhouse", "Commercial"].map((type) => (
@@ -180,8 +235,10 @@ export default function ListingsPage() {
           ))}
         </div>
       </section>
+      )}
 
-      {/* LISTINGS GRID */}
+      {/* LISTINGS GRID — hidden for sellers */}
+      {!(isAuthenticated && isSeller) && (
       <section className="py-16 px-6 lg:px-12 w-full max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
@@ -298,6 +355,7 @@ export default function ListingsPage() {
         })()}
         </div>
       </section>
+      )}
 
     </main>
   );

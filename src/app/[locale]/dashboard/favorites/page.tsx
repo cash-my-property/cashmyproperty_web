@@ -55,7 +55,7 @@ export default function FavoritesPage() {
     try {
       setIsRemovingId(item.favouriteId);
       await api.put("/buyer/favourites", {
-        _id: item.listingId,
+        _id: item._id,
         listingType: item.listingType,
         isFavourited: false
       });
@@ -175,15 +175,19 @@ export default function FavoritesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {favourites.map((item) => {
             const isRegular = item.listingType === "REGULAR";
+            const listingId = item._id;
             const detailPath = isRegular 
-              ? `/${locale}/auctions/${item.listingId}` 
-              : `/${locale}/simple-listings/${item.listingId}`;
+              ? `/${locale}/auctions/${listingId}` 
+              : `/${locale}/simple-listings/${listingId}`;
             
-            const image = item.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
-            const location = typeof item.propertyLocation === 'string' ? item.propertyLocation : (item.propertyLocation?.city || "Dubai");
+            // Extract details depending on listing type (regular/auctions have details nested in propertyDetails)
+            const details = isRegular ? (item.propertyDetails || {}) : item;
+            
+            const image = details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+            const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
             const price = isRegular
-              ? (item.currentHighestBid || item.propertyPrice?.amount || item.propertyPrice || 0)
-              : (item.propertyPrice?.amount || item.propertyPrice || 0);
+              ? (item.currentHighestBid || details.propertyPrice?.amount || details.propertyPrice || 0)
+              : (details.propertyPrice?.amount || details.propertyPrice || 0);
 
             return (
               <Link 
@@ -194,7 +198,7 @@ export default function FavoritesPage() {
                 <div className="relative h-[200px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711] w-full">
                   <Image
                     src={image}
-                    alt={item.propertyTitle || "Property"}
+                    alt={details.propertyTitle || "Property"}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -229,7 +233,7 @@ export default function FavoritesPage() {
 
                 <div className="p-4 pt-5 flex flex-col flex-1">
                   <h3 className="font-bold text-[18px] text-gray-900 dark:text-white leading-tight line-clamp-2 mb-2 min-h-[44px]">
-                    {item.propertyTitle || "Untitled Property"}
+                    {details.propertyTitle || "Untitled Property"}
                   </h3>
                   
                   <p className="text-gray-500 dark:text-gray-400 text-[13px] font-medium flex items-center gap-1.5 mb-4">

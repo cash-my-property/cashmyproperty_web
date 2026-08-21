@@ -18,7 +18,7 @@ interface SimpleListingDetailClientProps {
 
 export default function SimpleListingDetailClient({ id, initialData, locale }: SimpleListingDetailClientProps) {
   const { dict } = useDictionary();
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const { addToast } = useSocket();
 
   const [activeImage, setActiveImage] = useState(0);
@@ -103,6 +103,42 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
           <div className="w-full lg:w-[380px] h-[300px] bg-white dark:bg-[#102418] border border-gray-100 dark:border-[#1A3626] rounded-3xl p-6 flex flex-col gap-4">
             <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2" />
             <div className="h-12 bg-gray-200 dark:bg-[#163321] rounded-md w-full mt-4" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Seller access block — stays on page, shows access restricted screen
+  if (!authLoading && isAuthenticated && isSeller) {
+    return (
+      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] items-center justify-center gap-8 px-6">
+        <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col items-center gap-6 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626] max-w-lg w-full text-center">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-[#5CD284]/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="relative z-10 w-20 h-20 rounded-3xl bg-[#5CD284]/15 border border-[#5CD284]/30 flex items-center justify-center">
+            <Building2 className="w-10 h-10 text-[#5CD284]" />
+          </div>
+          <div className="relative z-10">
+            <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Seller Mode Active</p>
+            <h2 className="text-white text-[28px] font-bold mb-3 leading-tight">Access Restricted</h2>
+            <p className="text-white/65 text-[15px] leading-relaxed">
+              Property detail pages are exclusively for buyers. As a seller, you can only manage and track your own listed properties.
+            </p>
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full justify-center">
+            <Link
+              href={`/${locale}/dashboard/seller/properties`}
+              className="inline-flex items-center justify-center gap-2 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] text-[15px]"
+            >
+              <Building2 className="w-5 h-5" />
+              My Listings
+            </Link>
+            <Link
+              href={`/${locale}/dashboard`}
+              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 text-[15px]"
+            >
+              Go to Dashboard
+            </Link>
           </div>
         </div>
       </main>

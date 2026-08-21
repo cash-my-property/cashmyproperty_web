@@ -23,7 +23,7 @@ export default function HomePage() {
   const [simpleLiveProperties, setSimpleLiveProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { isAuthenticated, user, isBuyer } = useAuth();
+  const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
   const { socket, addToast } = useSocket();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
@@ -100,7 +100,15 @@ export default function HomePage() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        
+
+        if (isAuthenticated && isSeller) {
+          // Seller Mode: Do NOT fetch any buyer listings — sellers have no business browsing properties
+          setLiveProperties([]);
+          setUpcomingProperties([]);
+          setSimpleLiveProperties([]);
+          return;
+        }
+
         if (isAuthenticated && isBuyer) {
           if (buyerType === 'REGULAR') {
             // Logged in Regular Buyer: Only hit regular buyer private routes
@@ -108,35 +116,20 @@ export default function HomePage() {
               api.get('/buyer/live-listings?limit=6'),
               api.get('/buyer/upcoming-listings?limit=6')
             ]);
-            
+
             const liveData = liveRes.data.data;
             const upcomingData = upcomingRes.data.data;
-            
+
             setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
             setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
-            setSimpleLiveProperties([]); // Do not hit public simple listings route
+            setSimpleLiveProperties([]);
           } else if (buyerType === 'SIMPLE') {
             // Logged in Simple Buyer: Only hit simple buyer private routes
             const simpleLiveRes = await api.get('/buyer/simpleLiveListings?limit=6');
             const simpleLiveData = simpleLiveRes.data.data;
-            
-            setLiveProperties([]); // Do not hit public auctions route
-            setUpcomingProperties([]); // Do not hit public upcoming route
-            setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
-          } else {
-            // Fallback for other logged in roles (e.g. Seller)
-            const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
-              api.get('/public/live-properties?limit=6'),
-              api.get('/public/upcoming-properties?limit=6'),
-              api.get('/public/simple-live-properties?limit=6')
-            ]);
-            
-            const liveData = liveRes.data.data;
-            const upcomingData = upcomingRes.data.data;
-            const simpleLiveData = simpleLiveRes.data.data;
-            
-            setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
-            setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
+
+            setLiveProperties([]);
+            setUpcomingProperties([]);
             setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
           }
         } else {
@@ -162,7 +155,7 @@ export default function HomePage() {
       }
     };
     fetchProperties();
-  }, [isAuthenticated, user, isBuyer]);
+  }, [isAuthenticated, user, isBuyer, isSeller]);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">
@@ -307,8 +300,55 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F4F5F7] dark:from-[#091711] to-transparent pointer-events-none" />
       </section>
 
+      {/* SELLER CTA PANEL — Only shown when user is in Seller Mode */}
+      {isAuthenticated && isSeller && (
+        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+          <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col lg:flex-row items-center gap-10 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626]">
+            {/* Background glow */}
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#c9a14b]/5 rounded-full blur-[80px] pointer-events-none" />
+
+            {/* Left: Icon Badge */}
+            <div className="relative z-10 w-24 h-24 rounded-3xl bg-[#5CD284]/15 border border-[#5CD284]/30 flex items-center justify-center shrink-0">
+              <Building className="w-12 h-12 text-[#5CD284]" />
+            </div>
+
+            {/* Center: Text */}
+            <div className="relative z-10 flex-1 text-center lg:text-left">
+              <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase block mb-3">
+                Seller Mode Active
+              </span>
+              <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                You&apos;re here to sell,<br className="hidden sm:block" /> not to browse.
+              </h2>
+              <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
+                As a seller, property listings and live offers are not accessible to you. Head to your dashboard to manage your listings, track offers, and monitor your activity.
+              </p>
+            </div>
+
+            {/* Right: CTA Buttons */}
+            <div className="relative z-10 flex flex-col gap-3 shrink-0">
+              <Link
+                href={`/${locale}/dashboard/seller/properties`}
+                className="inline-flex items-center justify-center gap-2 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] text-[15px] whitespace-nowrap"
+              >
+                <Key className="w-5 h-5" />
+                My Listings
+              </Link>
+              <Link
+                href={`/${locale}/dashboard`}
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 text-[15px] whitespace-nowrap"
+              >
+                <Home className="w-5 h-5" />
+                Go to Dashboard
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) */}
-      {!(isAuthenticated && isBuyer && buyerType === 'SIMPLE') && (
+      {!(isAuthenticated && isSeller) && !(isAuthenticated && isBuyer && buyerType === 'SIMPLE') && (
         <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
@@ -486,7 +526,7 @@ export default function HomePage() {
       )}
 
       {/* 3. SIMPLE LISTINGS */}
-      {!(isAuthenticated && isBuyer && buyerType === 'REGULAR') && (
+      {!(isAuthenticated && isSeller) && !(isAuthenticated && isBuyer && buyerType === 'REGULAR') && (
         <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200/50 dark:border-[#1A3626]/50">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
