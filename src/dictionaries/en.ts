@@ -71,29 +71,141 @@ export const content = {
   },
   about: {
     hero: {
-      tagline: "Our Story",
-      title: "Vision &\nExcellence.",
-      description: "Transforming the property landscape in Dubai and across the Emirates."
+      tagline: "CMP Dubai",
+      title: "Get the Best Price, Faster. Dubai’s First Real-Time Property Offer Platform!",
+      description: "List your property and receive real-time offers from verified buyers within a secure and transparent marketplace."
     },
-    main: {
-      label: "About Cash My Property",
-      heading: "The premier digital real estate live offer platform in the UAE",
-      paragraphs: [
-        "Founded on the principles of transparency, efficiency, and innovation, Cash My Property is redefining how real estate is bought and sold in the UAE.",
-        "We provide a secure, encrypted platform that connects verified sellers with qualified buyers. Our digital live offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against DLD regulations."
-      ],
-      features: [
+    featuresSection: {
+      title: "Enjoy a Next-Level Experience with Our Advanced Features!",
+      description: "CMP replaces slow negotiations and scattered communication with a structured system where verified users can list properties and receive real-time offers instantly.",
+      items: [
         {
-          title: "Transparency",
-          description: "Clear offering processes with no hidden fees or scraped ads."
+          title: "Exclusive for RERA-Certified Brokers",
+          description: "Access is limited to verified real estate professionals, ensuring credibility and trusted participation."
         },
         {
-          title: "Security",
-          description: "Fully encrypted transactions and verified participants."
+          title: "Real-Time Property Offers",
+          description: "Send and receive real-time offers, allowing transparent price discovery and faster decision-making."
+        },
+        {
+          title: "Wide Network of Brokers",
+          description: "Connect with a growing network of verified brokers to increase exposure and deal opportunities."
+        },
+        {
+          title: "Secure & Compliant Platform",
+          description: "Built with strong verification standards and aligned with Dubai’s real estate regulations."
+        },
+        {
+          title: "Instant Notifications & Alerts",
+          description: "Receive real-time alerts for new offers, listing activity, and important updates."
         }
+      ]
+    },
+    experience: {
+      badge: "Seamless, Secure, and Fast",
+      title: "We Offer the Best Experience",
+      description: "Cash My Property is Dubai’s exclusive platform for RERA-certified brokers verified real estate professionals. List properties, receive real-time offers, and move deals forward faster within a secure and transparent ecosystem. CMP removes manual negotiations, reduces delays, and gives agents a structured environment to connect with serious buyers.",
+      cards: [
+        {
+          num: "01",
+          title: "Fast & Transparent Offers",
+          description: "Receive real-time property offers and see live market activity instantly."
+        },
+        {
+          num: "02",
+          title: "Verified & Secure Platform",
+          description: "Only approved professionals can participate, ensuring trust and credibility."
+        },
+        {
+          num: "03",
+          title: "Professional Support",
+          description: "Dedicated assistance to help users navigate the platform smoothly."
+        }
+      ]
+    },
+    founder: {
+      title: "Meet the Founder",
+      name: "Muhammad Sunain Yousuf",
+      quote: "Cash My Property is not just an app. It’s a system designed for RERA-certified brokers only to improve how property deals actually happen.",
+      missionTitle: "Mission",
+      missionText: "To bring structure, trust, and speed into every real estate transaction. By creating a process where demand is clear and decisions move faster.",
+      visionTitle: "Vision",
+      visionText: "To create a market where property transactions happen through verified agents, real-time offers, and clear demand — not assumptions."
+    },
+    cta: {
+      line1: "Say goodbye to unverified interest.",
+      line2: "Say hello to real-time property deals."
+    },
+    howItWorks: {
+      title: "How it Works?",
+      description: "Cash My Property simplifies property transactions through a structured process designed for verified professionals. From listing to receiving real-time offers, every step is built to move deals forward faster and with greater transparency.",
+      steps: [
+        {
+          title: "Install the App",
+          description: "Download Cash My Property and join a secure platform designed for professional real estate transactions."
+        },
+        {
+          title: "Create & Verify Profile",
+          description: "Set up your profile and complete verification to access the platform and start listing properties."
+        },
+        {
+          title: "Enjoy the features!",
+          description: "Track offers and close deals — all from the comfort of your phone."
+        }
+      ]
+    },
+    download: {
+      title: "Download Cash My Property & Start Connecting",
+      description: "List properties, receive real-time offers, and manage transactions directly from your phone.",
+      googlePlay: "Get it on Google Play",
+      appStore: "Download from App Store"
+    },
+    deleteAccount: {
+      title: "Delete Your Account",
+      description: "At Cash My Property, we respect your privacy and give you full control over your data. You can permanently delete your account at any time directly from the app by following the steps below.",
+      howToDeleteTitle: "How to Delete",
+      steps: [
+        "Open the Cash My Property (CMP) app",
+        "Go to your Profile section",
+        "Tap the Delete Account option (top right corner)",
+        "Confirm your request by selecting Yes in the confirmation popup",
+        "Once confirmed, your account deletion request will be processed."
       ],
-      joinButton: "Join the Platform",
-      contactButton: "Contact Us"
+      importantTitle: "Important Information",
+      importantPoints: [
+        "Account deletion is permanent and cannot be undone",
+        "All associated data, including profile and activity, will be removed",
+        "Any ongoing transactions may be affected or cancelled"
+      ],
+      helpTitle: "Need Help?",
+      helpText: "Facing issues while trying to delete your account? Our support team is always here to guide you.",
+      contactButton: "Contact Support"
+    },
+    faq: {
+      title: "Frequently Asked Questions",
+      description: "Everything you need to know to start using Cash My Property.",
+      questions: [
+        {
+          q: "Who can register on Cash My Property?",
+          a: "Registration is exclusive to verified real estate brokers holding active RERA certification or verified real estate professionals in Dubai."
+        },
+        {
+          q: "How does the real-time offer system work?",
+          a: "Brokers list properties on the platform. Other verified agents/buyers can send real-time offers instantly. This reduces scattered communications and promotes transparent price discovery."
+        },
+        {
+          q: "Is there any cost to download the application?",
+          a: "No, the Cash My Property app is completely free to download from both Google Play Store and Apple App Store."
+        },
+        {
+          q: "How can I delete my account?",
+          a: "You can delete your account directly from the app: Go to Profile -> Tap 'Delete Account' in the top right corner -> Confirm your request."
+        },
+        {
+          q: "What data is removed upon account deletion?",
+          a: "All personal data, profile details, and activity records linked to your account will be permanently deleted and cannot be recovered."
+        }
+      ]
     }
   },
   blog: {
