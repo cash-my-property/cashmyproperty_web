@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X, AlertCircle, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDictionary } from "@/components/DictionaryProvider";
@@ -14,18 +14,25 @@ import { useSocket } from "@/context/SocketContext";
 export default function RejectedSimplePropertiesPage() {
   const { locale } = useDictionary();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading, fetchProfile } = useAuth();
   const { addToast } = useSocket();
   const [properties, setProperties] = useState<any[]>([]);
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
   const [editModalProperty, setEditModalProperty] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSwitching, setIsSwitching] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
+  const mainRole = user ? (typeof user.role === 'string' ? user.role.toLowerCase() : (user.role as any)?.main?.toLowerCase()) : '';
+  const isSeller = mainRole === 'seller';
+  const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+
   useEffect(() => {
+    if (authLoading || !user || !isSeller || sellerType !== 'SIMPLE') return;
+
     const fetchProperties = async () => {
       try {
         setIsLoading(true);
@@ -35,7 +42,7 @@ export default function RejectedSimplePropertiesPage() {
           url += `&status=${statusFilter}`;
         }
         const response = await api.get(url);
-        setProperties(response.data?.result?.data || response.data?.data || []);
+        setProperties(response.data?.listings || response.data?.result?.data || response.data?.data || []);
       } catch {
         addToast("Error", "Failed to load rejected listings. Please try refreshing.", "warning");
       } finally {
@@ -43,7 +50,98 @@ export default function RejectedSimplePropertiesPage() {
       }
     };
     fetchProperties();
-  }, [currentPage, statusFilter, sortBy]);
+  }, [currentPage, statusFilter, sortBy, authLoading, user, isSeller, sellerType]);
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#5CD284]" />
+      </div>
+    );
+  }
+
+  if (!isSeller) {
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 sm:p-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            Rejected Properties
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Fix and re-submit your rejected properties</p>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
+          <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Seller Mode</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+            You are currently in Buyer mode. Please switch to Seller mode to access and manage your rejected properties.
+          </p>
+          <button
+            onClick={async () => {
+              try {
+                setIsSwitching(true);
+                await api.put('/switch/toggleRole', { newRole: 'seller' });
+                if (fetchProfile) await fetchProfile();
+                router.refresh();
+                window.location.reload();
+              } catch (error) {
+                console.error("Failed to switch role", error);
+              } finally {
+                setIsSwitching(false);
+              }
+            }}
+            disabled={isSwitching}
+            className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
+            Switch to Seller Mode
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (sellerType !== 'SIMPLE') {
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 sm:p-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            Rejected Properties
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Fix and re-submit your rejected properties</p>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
+          <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Simple Seller Mode</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+            You are currently in Regular Seller mode. Please switch to Simple Seller mode to view your rejected simple properties.
+          </p>
+          <button
+            onClick={async () => {
+              try {
+                setIsSwitching(true);
+                await api.put('/switch/toggleRole', { type: 'SIMPLE' });
+                if (fetchProfile) await fetchProfile();
+                router.refresh();
+                window.location.reload();
+              } catch (error) {
+                console.error("Failed to switch seller type", error);
+              } finally {
+                setIsSwitching(false);
+              }
+            }}
+            disabled={isSwitching}
+            className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
+            Switch to Simple Seller
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="p-4 sm:p-8">
