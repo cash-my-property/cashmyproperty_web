@@ -136,13 +136,7 @@ export default function FavoritesPage() {
         </div>
       )}
 
-      {/* Temporary Debug Info Panel */}
-      <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl">
-        <h4 className="text-sm font-bold text-yellow-600 dark:text-yellow-500 mb-2">DEBUG MODE: API Raw Response</h4>
-        <pre className="text-[11px] text-gray-700 dark:text-gray-300 max-h-40 overflow-y-auto whitespace-pre-wrap font-mono bg-white dark:bg-black/20 p-3 rounded-lg border border-gray-200/50 dark:border-white/5">
-          {JSON.stringify({ favouritesCount: favourites.length, data: favourites }, null, 2)}
-        </pre>
-      </div>
+
 
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
