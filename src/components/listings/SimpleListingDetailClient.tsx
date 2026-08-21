@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2, Share2, MessageCircle } from "lucide-react";
+import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2, Share2, MessageCircle, Heart } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -24,6 +24,37 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
   const [activeImage, setActiveImage] = useState(0);
   const [propertyInfo, setPropertyInfo] = useState<any>(initialData);
   const [isLoading, setIsLoading] = useState(!initialData);
+  const [isFavourited, setIsFavourited] = useState(initialData?.isFavourited || false);
+  const [isFavouriting, setIsFavouriting] = useState(false);
+
+  useEffect(() => {
+    if (propertyInfo) {
+      setIsFavourited(propertyInfo.isFavourited || false);
+    }
+  }, [propertyInfo]);
+
+  const handleToggleFavourite = async () => {
+    try {
+      setIsFavouriting(true);
+      const targetState = !isFavourited;
+      await api.put("/buyer/favourites", {
+        _id: id,
+        listingType: "SIMPLE",
+        isFavourited: targetState
+      });
+      setIsFavourited(targetState);
+      addToast(
+        targetState ? "Saved to Favorites" : "Removed from Favorites",
+        targetState ? "This listing has been bookmarked successfully." : "This listing has been removed from your bookmarks.",
+        "success"
+      );
+    } catch (err) {
+      console.error("Error toggling favorite status", err);
+      addToast("Error", "Failed to update favorite status. Please try again.", "warning");
+    } finally {
+      setIsFavouriting(false);
+    }
+  };
 
   const fetchDetails = async () => {
     try {
@@ -220,6 +251,21 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   >
                     <Share2 className="w-4 h-4" /> Share
                   </button>
+
+                  {isAuthenticated && isBuyer && (
+                    <button 
+                      onClick={handleToggleFavourite}
+                      disabled={isFavouriting}
+                      className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold cursor-pointer"
+                    >
+                      {isFavouriting ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
+                      ) : (
+                        <Heart className={`w-4 h-4 ${isFavourited ? 'fill-rose-500 text-rose-500' : ''}`} />
+                      )}
+                      {isFavourited ? 'Saved' : 'Save'}
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="shrink-0 bg-green-50 dark:bg-[#102418]/80 px-5 py-3 rounded-2xl border border-green-100 dark:border-[#1A3626]">
