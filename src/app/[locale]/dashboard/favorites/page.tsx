@@ -2,35 +2,52 @@
 
 import { useState, useEffect } from "react";
 import { useDictionary } from "@/components/DictionaryProvider";
-import { Heart, Building2, ArrowRight, MapPin, Loader2, Trash2, Tag, Gavel } from "lucide-react";
+import { Heart, Building2, ArrowRight, MapPin, Loader2, Trash2, Tag, Gavel, AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import api from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 
 export default function FavoritesPage() {
   const { dict, locale } = useDictionary();
   const content = dict.dashboard.favorites;
+  
+  const { isAuthenticated, isBuyer, isLoading: authLoading } = useAuth();
+  const { addToast } = useSocket();
 
   const [favourites, setFavourites] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRemovingId, setIsRemovingId] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const fetchFavourites = async () => {
+    if (!isAuthenticated || !isBuyer) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       setIsLoading(true);
+      setApiError(null);
       const res = await api.get("/buyer/favourites?limit=100");
       console.log("Raw Favourites Response:", res.data);
       setFavourites(res.data.data || []);
     } catch (err: any) {
-      console.error("Error fetching favorites", err);
+      console.error("Error fetching favorites:", err);
+      const msg = err.response?.data?.message || err.message || "Failed to load favorites";
+      setApiError(msg);
+      addToast("Error Fetching Favorites", msg, "warning");
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFavourites();
-  }, []);
+    if (!authLoading) {
+      fetchFavourites();
+    }
+  }, [authLoading, isAuthenticated, isBuyer]);
 
   const handleRemoveFavourite = async (e: React.MouseEvent, item: any) => {
     e.preventDefault();
@@ -43,14 +60,16 @@ export default function FavoritesPage() {
         isFavourited: false
       });
       setFavourites((prev) => prev.filter((fav) => fav.favouriteId !== item.favouriteId));
-    } catch (err) {
+      addToast("Success", "Removed from favorites successfully.", "success");
+    } catch (err: any) {
       console.error("Error removing favorite", err);
+      addToast("Error", "Failed to remove from favorites.", "warning");
     } finally {
       setIsRemovingId(null);
     }
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="space-y-6">
         <div>
@@ -75,13 +94,53 @@ export default function FavoritesPage() {
     );
   }
 
+  // Auth/Role Check Warning
+  if (!isBuyer) {
+    return (
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            {content.title}
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{content.description}</p>
+        </div>
+
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
+          <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Buyer Mode</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+            Your current active session is in Seller mode. Favourites is a Buyer feature. Please click the button at the top header to switch to Buyer mode.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* API Error Warning Panel */}
+      {apiError && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="text-sm font-bold text-red-600 dark:text-red-500 mb-1">API Request Failed</h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{apiError}</p>
+            <button 
+              onClick={fetchFavourites} 
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-red-500 hover:underline"
+            >
+              <RefreshCw className="w-3 h-3" /> Retry Connection
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Temporary Debug Info Panel */}
       <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl">
         <h4 className="text-sm font-bold text-yellow-600 dark:text-yellow-500 mb-2">DEBUG MODE: API Raw Response</h4>
         <pre className="text-[11px] text-gray-700 dark:text-gray-300 max-h-40 overflow-y-auto whitespace-pre-wrap font-mono bg-white dark:bg-black/20 p-3 rounded-lg border border-gray-200/50 dark:border-white/5">
-          {JSON.stringify(favourites, null, 2)}
+          {JSON.stringify({ favouritesCount: favourites.length, data: favourites }, null, 2)}
         </pre>
       </div>
 
