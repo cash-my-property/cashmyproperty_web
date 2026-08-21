@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { 
-  Award, 
-  Zap, 
-  Users, 
-  ShieldCheck, 
-  Bell, 
-  ArrowRight, 
-  Smartphone, 
-  UserCheck, 
-  Download, 
-  Trash2, 
-  HelpCircle, 
-  ChevronDown, 
+import {
+  Award,
+  Zap,
+  Users,
+  ShieldCheck,
+  Bell,
+  ArrowRight,
+  Smartphone,
+  UserCheck,
+  Download,
+  Trash2,
+  HelpCircle,
+  ChevronDown,
   Mail,
   Quote,
   Target,
@@ -67,17 +67,17 @@ export default function AboutPage() {
 
   return (
     <main className="flex-1 flex flex-col bg-white dark:bg-[#091711] transition-colors min-h-screen text-gray-800 dark:text-gray-200">
-      
+
       {/* 1. HERO BANNER */}
       <section className="relative w-full py-24 sm:py-32 flex items-center justify-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
           style={{
             backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80")'
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
-        
+
         {/* Glow Effects */}
         <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
@@ -100,7 +100,7 @@ export default function AboutPage() {
         {/* Left: Premium Image Layout */}
         <div className="w-full lg:w-[48%] relative">
           <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5] bg-gray-100 dark:bg-[#102418]">
-            <div 
+            <div
               className="absolute inset-0 bg-cover bg-center hover:scale-105 transition-transform duration-700"
               style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}
             />
@@ -108,13 +108,13 @@ export default function AboutPage() {
           </div>
           {/* Floating badge */}
           <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-2xl border border-gray-100 dark:border-[#1A3626] flex items-center gap-5 w-64 transform hover:scale-105 transition-transform duration-300">
-             <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-full flex items-center justify-center shrink-0">
-               <Award className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
-             </div>
-             <div>
-               <h4 className="text-[20px] font-bold text-gray-900 dark:text-white leading-none mb-1">RERA Certified</h4>
-               <p className="text-[13px] text-gray-500 dark:text-gray-400 font-medium">100% Verified Agents</p>
-             </div>
+            <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-full flex items-center justify-center shrink-0">
+              <Award className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
+            </div>
+            <div>
+              <h4 className="text-[20px] font-bold text-gray-900 dark:text-white leading-none mb-1">RERA Certified</h4>
+              <p className="text-[13px] text-gray-500 dark:text-gray-400 font-medium">100% Verified Agents</p>
+            </div>
           </div>
         </div>
 
@@ -132,8 +132,8 @@ export default function AboutPage() {
 
           <div className="space-y-6">
             {experience.cards.map((card: any, idx: number) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="flex gap-5 p-6 bg-gray-50 dark:bg-[#102418]/45 rounded-2xl border border-gray-100 dark:border-[#1A3626]/40 hover:border-green-200 dark:hover:border-green-900/40 transition-all duration-300 group"
               >
                 <div className="text-[28px] font-black text-gray-300 dark:text-gray-700 leading-none shrink-0 group-hover:text-[#5CD284] dark:group-hover:text-[#c9a14b] transition-colors">
@@ -168,8 +168,8 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuresSection.items.map((item: any, idx: number) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="flex flex-col bg-white dark:bg-[#102418] p-8 rounded-3xl border border-gray-100 dark:border-[#1A3626] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group"
               >
                 <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#5CD284] dark:group-hover:bg-[#c9a14b] transition-all duration-300">
@@ -201,7 +201,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
           {/* Connecting line */}
           <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-green-100 via-green-300 to-green-150 dark:from-green-950/40 dark:via-green-900/50 dark:to-green-950/40 z-0" />
-          
+
           {howItWorks.steps.map((step: any, idx: number) => (
             <div key={idx} className="flex flex-col items-center relative z-10 group">
               <div className="w-20 h-20 bg-[#1A3626] dark:bg-[#c9a14b] rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
@@ -221,12 +221,12 @@ export default function AboutPage() {
       {/* 5. MEET THE FOUNDER SECTION */}
       <section className="py-24 px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15]/45 border-t border-gray-100 dark:border-gray-900/20">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-stretch">
-          
+
           {/* Column 1: Founder Portrait */}
           <div className="w-full lg:w-[32%] relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4] lg:aspect-auto border border-gray-150 dark:border-[#1A3626]/80 bg-gray-100 dark:bg-[#102418] group min-h-[350px]">
-            <img 
-              src="/founder.jpg" 
-              alt="Muhammad Sunain Yousuf - Founder of Cash My Property" 
+            <img
+              src="/founder.jpg"
+              alt="Muhammad Sunain Yousuf - Founder of Cash My Property"
               className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -248,14 +248,14 @@ export default function AboutPage() {
             <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 text-white/5 pointer-events-none">
               <Quote className="w-48 h-48" />
             </div>
-            
+
             <div>
               <Quote className="w-10 h-10 text-[#5CD284] dark:text-[#c9a14b] mb-6 opacity-80" />
               <p className="text-[16px] sm:text-[18px] leading-relaxed italic font-light text-gray-100">
                 "{founder.quote}"
               </p>
             </div>
-            
+
             <div className="mt-6 border-t border-white/10 pt-6">
               <h4 className="text-[15px] font-semibold text-[#5CD284] dark:text-[#c9a14b]">CMP Executive Leadership</h4>
               <p className="text-[12px] text-gray-405">Dubai Real Estate Tech Platform</p>
@@ -284,14 +284,14 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
-          
+
         </div>
       </section>
 
       {/* 6. CALL TO ACTION & APP DOWNLOAD */}
       <section className="py-24 px-6 lg:px-12 w-full bg-[#1B3A2D] dark:bg-[#102418] text-white text-center relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5CD284]/10 rounded-full blur-[120px] pointer-events-none" />
-        
+
         <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
           <h2 className="text-[28px] sm:text-[38px] font-bold mb-3 tracking-tight">
             {cta.line1}
@@ -307,19 +307,19 @@ export default function AboutPage() {
             </p>
 
             <div className="flex flex-wrap justify-center gap-5">
-              <a 
-                href="https://play.google.com/store/apps/details?id=com.cashmyproperty" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://play.google.com/store/apps/details?id=com.cashmyproperty"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-white hover:bg-gray-100 text-gray-900 px-6 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-md hover:scale-[1.03]"
               >
                 <Smartphone className="w-5 h-5 text-gray-900" />
                 <span className="text-[14px]">{download.googlePlay}</span>
               </a>
-              <a 
-                href="https://apps.apple.com/pk/app/cmp-cashmyproperty/id6762503025" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://apps.apple.com/pk/app/cmp-cashmyproperty/id6762503025"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-transparent hover:bg-white/10 border border-white/40 text-white px-6 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-md hover:scale-[1.03]"
               >
                 <Smartphone className="w-5 h-5 text-white" />
@@ -382,8 +382,8 @@ export default function AboutPage() {
               <p className="text-[13px] text-gray-500 dark:text-gray-400 leading-relaxed">
                 {deleteAccount.helpText}
               </p>
-              <a 
-                href="mailto:info@cmpdubai.com" 
+              <a
+                href="mailto:info@cmpdubai.com"
                 className="w-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#102418] text-center py-3 rounded-xl font-bold text-[14px] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-all duration-300 flex items-center justify-center gap-2 shadow-xs"
               >
                 <Mail className="w-4 h-4" />
@@ -410,18 +410,18 @@ export default function AboutPage() {
             {faq.questions.map((item: any, idx: number) => {
               const isOpen = openFaq === idx;
               return (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className="bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] overflow-hidden shadow-xs hover:border-green-200 dark:hover:border-green-900/30 transition-colors duration-300"
                 >
-                  <button 
+                  <button
                     onClick={() => toggleFaq(idx)}
                     className="w-full flex items-center justify-between p-6 sm:p-8 text-left font-bold text-[16px] sm:text-[17px] text-gray-900 dark:text-white gap-4 transition-colors"
                   >
                     <span>{item.q}</span>
                     <ChevronDown className={`w-5 h-5 shrink-0 transition-transform duration-300 text-gray-400 dark:text-gray-500 ${isOpen ? "transform rotate-180 text-[#5CD284] dark:text-[#c9a14b]" : ""}`} />
                   </button>
-                  <div 
+                  <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-[300px] border-t border-gray-50 dark:border-[#1A3626]/30" : "max-h-0"}`}
                   >
                     <p className="p-6 sm:p-8 text-[14px] sm:text-[15px] text-gray-500 dark:text-gray-400 leading-relaxed">
