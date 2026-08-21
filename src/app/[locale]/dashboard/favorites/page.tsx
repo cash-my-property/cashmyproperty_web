@@ -19,8 +19,9 @@ export default function FavoritesPage() {
     try {
       setIsLoading(true);
       const res = await api.get("/buyer/favourites?limit=100");
+      console.log("Raw Favourites Response:", res.data);
       setFavourites(res.data.data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching favorites", err);
     } finally {
       setIsLoading(false);
@@ -76,6 +77,14 @@ export default function FavoritesPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Temporary Debug Info Panel */}
+      <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl">
+        <h4 className="text-sm font-bold text-yellow-600 dark:text-yellow-500 mb-2">DEBUG MODE: API Raw Response</h4>
+        <pre className="text-[11px] text-gray-700 dark:text-gray-300 max-h-40 overflow-y-auto whitespace-pre-wrap font-mono bg-white dark:bg-black/20 p-3 rounded-lg border border-gray-200/50 dark:border-white/5">
+          {JSON.stringify(favourites, null, 2)}
+        </pre>
+      </div>
+
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
           {content.title}
