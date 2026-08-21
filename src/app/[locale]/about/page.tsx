@@ -220,50 +220,71 @@ export default function AboutPage() {
 
       {/* 5. MEET THE FOUNDER SECTION */}
       <section className="py-24 px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15]/45 border-t border-gray-100 dark:border-gray-900/20">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
-          {/* Quote Panel */}
-          <div className="w-full lg:w-[50%] bg-[#1A3626] dark:bg-[#102418] text-white p-10 sm:p-12 rounded-3xl shadow-xl relative overflow-hidden">
+        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-stretch">
+          
+          {/* Column 1: Founder Portrait */}
+          <div className="w-full lg:w-[32%] relative rounded-3xl overflow-hidden shadow-xl aspect-[3/4] lg:aspect-auto border border-gray-150 dark:border-[#1A3626]/80 bg-gray-100 dark:bg-[#102418] group min-h-[350px]">
+            <img 
+              src="/founder.jpg" 
+              alt="Muhammad Sunain Yousuf - Founder of Cash My Property" 
+              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white text-left">
+              <span className="text-[#5CD284] dark:text-[#c9a14b] text-[11px] font-bold uppercase tracking-[0.1em] block mb-1">
+                {founder.title}
+              </span>
+              <h4 className="text-[19px] font-bold text-white leading-tight">
+                {founder.name}
+              </h4>
+              <p className="text-[13px] text-gray-305 font-medium mt-1">
+                Founder, Cash My Property
+              </p>
+            </div>
+          </div>
+
+          {/* Column 2: Quote Panel */}
+          <div className="w-full lg:w-[36%] bg-[#1A3626] dark:bg-[#102418] text-white p-8 sm:p-10 rounded-3xl shadow-xl relative overflow-hidden flex flex-col justify-between">
             <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 text-white/5 pointer-events-none">
               <Quote className="w-48 h-48" />
             </div>
             
-            <span className="text-[#5CD284] dark:text-[#c9a14b] font-bold tracking-[0.15em] text-[11px] uppercase block mb-8">
-              {founder.title}
-            </span>
-            
-            <Quote className="w-10 h-10 text-[#5CD284] dark:text-[#c9a14b] mb-6 opacity-80" />
-            <p className="text-[18px] sm:text-[21px] leading-relaxed italic mb-8 font-light text-gray-100">
-              {founder.quote}
-            </p>
-            
             <div>
-              <h4 className="text-[19px] font-bold text-white">{founder.name}</h4>
-              <p className="text-[13px] text-gray-400 font-medium">Founder, Cash My Property</p>
+              <Quote className="w-10 h-10 text-[#5CD284] dark:text-[#c9a14b] mb-6 opacity-80" />
+              <p className="text-[16px] sm:text-[18px] leading-relaxed italic font-light text-gray-100">
+                "{founder.quote}"
+              </p>
+            </div>
+            
+            <div className="mt-6 border-t border-white/10 pt-6">
+              <h4 className="text-[15px] font-semibold text-[#5CD284] dark:text-[#c9a14b]">CMP Executive Leadership</h4>
+              <p className="text-[12px] text-gray-405">Dubai Real Estate Tech Platform</p>
             </div>
           </div>
 
-          {/* Mission & Vision Panel */}
-          <div className="w-full lg:w-[50%] flex flex-col gap-8">
-            <div className="bg-white dark:bg-[#102418] p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]/80 flex gap-5 animate-fade-in">
-              <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center shrink-0">
-                <Target className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
+          {/* Column 3: Mission & Vision Panel */}
+          <div className="w-full lg:w-[32%] flex flex-col gap-6 justify-between">
+            <div className="bg-white dark:bg-[#102418] p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]/80 flex gap-4 flex-1">
+              <div className="w-12 h-12 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center shrink-0">
+                <Target className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
               </div>
               <div>
-                <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-2">{founder.missionTitle}</h3>
-                <p className="text-[15px] text-gray-500 dark:text-gray-400 leading-relaxed">{founder.missionText}</p>
+                <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-2">{founder.missionTitle}</h3>
+                <p className="text-[14px] text-gray-550 dark:text-gray-400 leading-relaxed">{founder.missionText}</p>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#102418] p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]/80 flex gap-5 animate-fade-in">
-              <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center shrink-0">
-                <Eye className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
+            <div className="bg-white dark:bg-[#102418] p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]/80 flex gap-4 flex-1">
+              <div className="w-12 h-12 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center shrink-0">
+                <Eye className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
               </div>
               <div>
-                <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-2">{founder.visionTitle}</h3>
-                <p className="text-[15px] text-gray-500 dark:text-gray-400 leading-relaxed">{founder.visionText}</p>
+                <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-2">{founder.visionTitle}</h3>
+                <p className="text-[14px] text-gray-550 dark:text-gray-400 leading-relaxed">{founder.visionText}</p>
               </div>
             </div>
           </div>
+          
         </div>
       </section>
 
