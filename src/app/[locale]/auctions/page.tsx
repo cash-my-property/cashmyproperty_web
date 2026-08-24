@@ -107,12 +107,14 @@ export default function AuctionsListingPage() {
           queryParams.append('search', appliedSearch);
         }
         if (activeType && activeType !== 'All') {
-          queryParams.append('propertyType', activeType);
+          queryParams.append('propertyType', activeType.toUpperCase());
         }
-        if (selectedType && selectedType !== 'All Type' && selectedType !== 'All') {
-          const capitalizedType = selectedType.charAt(0).toUpperCase() + selectedType.slice(1);
-          queryParams.append('category', capitalizedType);
-          queryParams.append('propertyCategory', capitalizedType);
+        if (selectedType && selectedType !== 'all') {
+          if (selectedType === 'land') {
+            queryParams.append('propertyType', 'LAND');
+          } else {
+            queryParams.append('category', selectedType.toUpperCase());
+          }
         }
         if (priceSort) {
           queryParams.append('sortBy', priceSort === 'asc' ? 'priceLow' : 'priceHigh');
@@ -205,7 +207,7 @@ export default function AuctionsListingPage() {
                   <div className="flex items-center gap-2 min-w-0">
                     <Building className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors shrink-0" />
                     <span className="text-[13.5px] text-gray-600 dark:text-gray-300 font-semibold truncate">
-                      {selectedType || content.hero.filters.type}
+                      {selectedType ? (dict.home.hero.filters.types as Record<string, string>)[selectedType] : content.hero.filters.type}
                     </span>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all shrink-0 ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
@@ -216,8 +218,8 @@ export default function AuctionsListingPage() {
                     {Object.entries(dict.home.hero.filters.types).map(([key, value]) => (
                       <div 
                         key={key} 
-                        className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                        onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
+                        className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                        onClick={() => { setSelectedType(key); setActiveDropdown(null); }}
                       >
                         {value as string}
                       </div>

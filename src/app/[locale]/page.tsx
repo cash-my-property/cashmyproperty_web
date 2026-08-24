@@ -100,45 +100,80 @@ export default function HomePage() {
           return;
         }
 
-        const queryParams = new URLSearchParams();
-        queryParams.append('limit', '6');
-
+        // 1. Live Properties (realtime campaigns) Query
+        const liveParams = new URLSearchParams();
+        liveParams.append('limit', '6');
         if (appliedSearch) {
-          queryParams.append('search', appliedSearch);
+          liveParams.append('search', appliedSearch);
         }
         if (selectedType && selectedType !== 'all') {
-          const capitalizedType = selectedType.charAt(0).toUpperCase() + selectedType.slice(1);
-          queryParams.append('category', capitalizedType);
-          queryParams.append('propertyCategory', capitalizedType);
+          if (selectedType === 'land') {
+            liveParams.append('propertyType', 'LAND');
+          } else {
+            liveParams.append('category', selectedType.toUpperCase());
+          }
         }
         if (selectedPrice && selectedPrice !== 'all') {
           if (selectedPrice === 'under1m') {
-            queryParams.append('maxPrice', '1000000');
+            liveParams.append('maxPrice', '1000000');
           } else if (selectedPrice === '1mTo5m') {
-            queryParams.append('minPrice', '1000000');
-            queryParams.append('maxPrice', '5000000');
+            liveParams.append('minPrice', '1000000');
+            liveParams.append('maxPrice', '5000000');
           } else if (selectedPrice === 'over5m') {
-            queryParams.append('minPrice', '5000000');
+            liveParams.append('minPrice', '5000000');
           }
         }
         if (selectedSort) {
           if (selectedSort === 'newest') {
-            queryParams.append('sortBy', 'newest');
+            liveParams.append('sortBy', 'newest');
           } else if (selectedSort === 'priceAsc') {
-            queryParams.append('sortBy', 'priceLow');
+            liveParams.append('sortBy', 'priceLow');
           } else if (selectedSort === 'priceDesc') {
-            queryParams.append('sortBy', 'priceHigh');
+            liveParams.append('sortBy', 'priceHigh');
           }
         }
+        const liveQuery = liveParams.toString();
 
-        const queryString = queryParams.toString();
+        // 2. Simple Listings Query
+        const simpleParams = new URLSearchParams();
+        simpleParams.append('limit', '6');
+        if (appliedSearch) {
+          simpleParams.append('search', appliedSearch);
+        }
+        if (selectedType && selectedType !== 'all') {
+          if (selectedType === 'land') {
+            simpleParams.append('propertyType', 'LAND');
+          } else {
+            simpleParams.append('propertyCategory', selectedType.toUpperCase());
+          }
+        }
+        if (selectedPrice && selectedPrice !== 'all') {
+          if (selectedPrice === 'under1m') {
+            simpleParams.append('maxPrice', '1000000');
+          } else if (selectedPrice === '1mTo5m') {
+            simpleParams.append('minPrice', '1000000');
+            simpleParams.append('maxPrice', '5000000');
+          } else if (selectedPrice === 'over5m') {
+            simpleParams.append('minPrice', '5000000');
+          }
+        }
+        if (selectedSort) {
+          if (selectedSort === 'newest') {
+            simpleParams.append('sortBy', 'newest');
+          } else if (selectedSort === 'priceAsc') {
+            simpleParams.append('sortBy', 'priceLow');
+          } else if (selectedSort === 'priceDesc') {
+            simpleParams.append('sortBy', 'priceHigh');
+          }
+        }
+        const simpleQuery = simpleParams.toString();
 
         if (isAuthenticated && isBuyer) {
           if (buyerType === 'REGULAR') {
             // Logged in Regular Buyer: Only hit regular buyer private routes
             const [liveRes, upcomingRes] = await Promise.all([
-              api.get(`/buyer/live-listings?${queryString}`),
-              api.get(`/buyer/upcoming-listings?${queryString}`)
+              api.get(`/buyer/live-listings?${liveQuery}`),
+              api.get(`/buyer/upcoming-listings?${liveQuery}`)
             ]);
 
             const liveData = liveRes.data.data;
@@ -149,7 +184,7 @@ export default function HomePage() {
             setSimpleLiveProperties([]);
           } else if (buyerType === 'SIMPLE') {
             // Logged in Simple Buyer: Only hit simple buyer private routes
-            const simpleLiveRes = await api.get(`/buyer/simpleLiveListings?${queryString}`);
+            const simpleLiveRes = await api.get(`/buyer/simpleLiveListings?${simpleQuery}`);
             const simpleLiveData = simpleLiveRes.data.data;
 
             setLiveProperties([]);
@@ -159,9 +194,9 @@ export default function HomePage() {
         } else {
           // Guest User: Fetch public routes only
           const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
-            api.get(`/public/live-properties?${queryString}`),
-            api.get(`/public/upcoming-properties?${queryString}`),
-            api.get(`/public/simple-live-properties?${queryString}`)
+            api.get(`/public/live-properties?${liveQuery}`),
+            api.get(`/public/upcoming-properties?${liveQuery}`),
+            api.get(`/public/simple-live-properties?${simpleQuery}`)
           ]);
 
           const liveData = liveRes.data.data;
