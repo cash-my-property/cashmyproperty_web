@@ -83,18 +83,18 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
     
     const bidValue = Number(bidAmount);
     if (!bidAmount || isNaN(bidValue)) {
-      setErrorMessage("Please enter a valid bid amount");
+      setErrorMessage("Please enter a valid offer amount");
       return;
     }
 
     if (bidValue < currentValue) {
-      setErrorMessage(`Bid cannot be lower than the current value of AED ${currentValue.toLocaleString()}`);
+      setErrorMessage(`Offer cannot be lower than the current value of AED ${currentValue.toLocaleString()}`);
       return;
     }
     
     const maxAllowed = currentValue * 1.10;
     if (bidValue > maxAllowed) {
-      setErrorMessage(`Bid cannot exceed 10% of the current value (Max: AED ${Math.floor(maxAllowed).toLocaleString()})`);
+      setErrorMessage(`Offer cannot exceed 10% of the current value (Max: AED ${Math.floor(maxAllowed).toLocaleString()})`);
       return;
     }
 
@@ -104,13 +104,13 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
         onBidOptimistic(bidValue);
       }
       await api.post('/buyer/place-bid', { auctionId, bidAmount: bidValue });
-      setSuccessMessage("Bid placed successfully!");
+      setSuccessMessage("Offer placed successfully!");
       setTimeout(() => onBidSuccess(), 1500);
     } catch (error: any) {
       if (onBidOptimistic) {
         onBidOptimistic(currentValue);
       }
-      setErrorMessage(error.response?.data?.message || "Failed to place bid");
+      setErrorMessage(error.response?.data?.message || "Failed to place offer");
     } finally {
       setIsBidding(false);
     }
@@ -122,7 +122,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
         <div className="flex flex-col items-center justify-center text-center py-6">
           <Clock className="w-12 h-12 text-blue-500 mb-4" />
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Contract Under Review</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Your purchase contract is currently pending admin approval. You will be able to place bids once approved.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Your purchase contract is currently pending admin approval. You will be able to place offers once approved.</p>
         </div>
       </div>
     );
@@ -132,7 +132,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
     const maxAllowed = currentValue * 1.10;
     return (
       <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#1A3626]">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Place a Bid</h3>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Place an Offer</h3>
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm rounded-xl">
             {errorMessage}
@@ -145,7 +145,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
         )}
         <form onSubmit={placeBid} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bid Amount (AED)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Offer Amount (AED)</label>
             <input 
               type="number" 
               value={bidAmount}
@@ -158,7 +158,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Max allowable bid: AED {Math.floor(maxAllowed).toLocaleString()} (+10%)
+              Max allowable offer: AED {Math.floor(maxAllowed).toLocaleString()} (+10%)
             </p>
           </div>
 
@@ -188,7 +188,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
       )}
 
       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Sign Purchase Contract</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">You must upload the following mandatory documents to participate in this auction.</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">You must upload the following mandatory documents to submit offers on this property.</p>
 
       {errorMessage && (
         <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm rounded-xl">

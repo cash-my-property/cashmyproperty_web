@@ -474,7 +474,7 @@ export const content = {
       plan: "Property Plan",
       trakheesi: "Trakheesi Number",
       interestedTitle: "Interested in this property?",
-      interestedDesc: "Log in to make an offer or place a bid on this property.",
+      interestedDesc: "Log in to make an offer on this property.",
       makeOffer: "Make Offer",
       loginRequired: "Login Required",
       loginRequiredDesc: "You need to be logged in to make an offer. Would you like to log in now?",
@@ -548,7 +548,7 @@ export const content = {
       },
       status: {
         winning: "Winning",
-        outbid: "Outoffer",
+        outbid: "Outoffered",
         won: "Won",
         lost: "Lost"
       }
@@ -557,8 +557,8 @@ export const content = {
       title: "Saved Properties",
       description: "Properties you have saved as favorites.",
       noFavorites: "No Saved Properties Yet",
-      noFavoritesSub: "Browse our live auctions and direct listings, then save your favorite properties here to keep track of them.",
-      browseAuctions: "Browse Auctions",
+      noFavoritesSub: "Browse our live offers and direct listings, then save your favorite properties here to keep track of them.",
+      browseAuctions: "Browse Live Offers",
       browseDirectListings: "Browse Direct Listings"
     },
     settings: {

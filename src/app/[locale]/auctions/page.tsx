@@ -293,10 +293,10 @@ export default function AuctionsListingPage() {
                 Seller Mode Active
               </span>
               <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight">
-                Live auctions are for buyers only.
+                Live offers are for buyers only.
               </h2>
               <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
-                As a seller, you cannot participate in or view live auction offers. Head to your dashboard to manage your own property listings and track incoming offers on them.
+                As a seller, you cannot participate in or view live offers. Head to your dashboard to manage your own property listings and track incoming offers on them.
               </p>
             </div>
 

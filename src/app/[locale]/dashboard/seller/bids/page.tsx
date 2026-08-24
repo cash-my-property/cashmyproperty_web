@@ -32,7 +32,7 @@ export default function ReceivedBidsPage() {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Received Bids</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Received Offers</h1>
           <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Review all offers made on your properties</p>
         </div>
       </div>
@@ -46,8 +46,8 @@ export default function ReceivedBidsPage() {
           <div className="w-20 h-20 bg-gray-50 dark:bg-[#1A3626]/30 rounded-full flex items-center justify-center mb-6">
             <ListOrdered className="w-10 h-10 text-gray-400 dark:text-[#c9a14b]" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Bids Yet</h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md">You haven't received any bids on your properties yet. When buyers place offers, they will appear here.</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Offers Yet</h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md">You haven't received any offers on your properties yet. When buyers place offers, they will appear here.</p>
         </div>
       ) : (
         <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
@@ -57,7 +57,7 @@ export default function ReceivedBidsPage() {
                 <tr className="bg-gray-50 dark:bg-[#163321]/50 border-b border-gray-100 dark:border-[#1A3626]">
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Buyer Details</th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Bid Amount</th>
+                  <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Offer Amount</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Actions</th>

@@ -28,7 +28,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string; lo
 
   const details = propertyInfo.propertyDetails || propertyInfo || {};
   const title = details.propertyTitle || "Untitled Property";
-  const desc = details.propertyDescription || "Explore live offers and digital real estate auctions on Cash My Property UAE.";
+  const desc = details.propertyDescription || "Explore live offers and digital real estate listings on Cash My Property UAE.";
   const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i: any) => i.url) : [];
 
   return {

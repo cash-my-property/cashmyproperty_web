@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 import { useAuth } from './AuthContext';
 import { usePathname } from 'next/navigation';
 import api from '@/lib/api';
-import { Bell, ShieldCheck, CheckCircle2, Gavel, X, FileText, AlertTriangle, Building } from 'lucide-react';
+import { Bell, ShieldCheck, CheckCircle2, Tag, X, FileText, AlertTriangle, Building } from 'lucide-react';
 
 interface Toast {
   id: string;
@@ -152,7 +152,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     let finalIcon = icon;
     if (!finalIcon) {
       if (type === 'success') finalIcon = <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      else if (type === 'warning') finalIcon = <Gavel className="w-5 h-5 text-amber-500" />;
+      else if (type === 'warning') finalIcon = <AlertTriangle className="w-5 h-5 text-amber-500" />;
       else finalIcon = <Bell className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" />;
     }
 
@@ -235,21 +235,21 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         // Setup listeners for push notifications
         socketInstance.on('outbid_notification', (data: any) => {
           console.log("📡 [Socket Event] Received outbid_notification:", data);
-          const msg = `You have been outbid on "${data.propertyTitle || 'Property'}". New highest bid is Ð ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
+          const msg = `You have been outoffered on "${data.propertyTitle || 'Property'}". New highest offer is Ð ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
           addToast(
-            "Outbid Alert!", 
+            "Higher Offer Alert!", 
             msg,
             'warning',
-            <Gavel className="w-5 h-5 text-rose-500 animate-bounce" />
+            <Tag className="w-5 h-5 text-rose-500 animate-bounce" />
           );
           fetchNotifications();
         });
 
         socketInstance.on('new_bid_on_property', (data: any) => {
           console.log("📡 [Socket Event] Received new_bid_on_property:", data);
-          const msg = `A new bid of Ð ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
+          const msg = `A new offer of Ð ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
           addToast(
-            "New Bid Received!", 
+            "New Offer Received!", 
             msg,
             'success',
             <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -284,7 +284,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         // ── BUYER SPECIFIC EVENTS ──
         socketInstance.on('contract_approved', (data: any) => {
           console.log("📡 [Socket Event] Received contract_approved:", data);
-          const msg = `Your signed contract for auction has been approved by admin! You can now place bids!`;
+          const msg = `Your signed contract has been approved by admin! You can now place offers!`;
           addToast(
             "Contract Approved!", 
             msg,
@@ -312,10 +312,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           if (!data || !data._id) return;
           const title = data.propertyId?.propertyTitle || data.propertyDetails?.propertyTitle || "New Property";
           const price = data.currentHighestBid ? data.currentHighestBid.toLocaleString() : (data.propertyDetails?.propertyPrice?.amount || "N/A");
-          const msg = `"${title}" is now active with a starting bid of Ð ${price}!`;
+          const msg = `"${title}" is now active with a starting price of Ð ${price}!`;
           
           addToast(
-            "New Auction Live!", 
+            "New Offer Live!", 
             msg,
             'success',
             <Building className="w-5 h-5 text-green-500 animate-bounce" />
@@ -324,7 +324,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           // Construct a local NotificationItem and prepend it to the list
           const localNotif: NotificationItem = {
             id: `local-${data._id}-${Date.now()}`,
-            title: "New Auction Live!",
+            title: "New Offer Live!",
             message: msg,
             type: 'success',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),

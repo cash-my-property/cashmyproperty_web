@@ -1,7 +1,7 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { Gavel, Heart, Building2, TrendingUp, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Tag, Heart, Building2, TrendingUp, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 import { useState, useEffect } from "react";
@@ -90,8 +90,8 @@ export default function DashboardOverviewPage() {
             id: bid.bidId?.toString() || '',
             type: bid.bidStatus === 'LEADING' ? 'offer' : 'outbid',
             text: bid.bidStatus === 'LEADING'
-              ? `You placed a bid of AED ${(bid.bidAmount ?? 0).toLocaleString()} on ${bid.property?.propertyTitle || 'a property'}`
-              : `You were outbid on ${bid.property?.propertyTitle || 'a property'}`,
+              ? `You placed an offer of AED ${(bid.bidAmount ?? 0).toLocaleString()} on ${bid.property?.propertyTitle || 'a property'}`
+              : `You were outoffered on ${bid.property?.propertyTitle || 'a property'}`,
             date: new Date(bid.bidDate)
           }));
 
@@ -101,8 +101,8 @@ export default function DashboardOverviewPage() {
             id: item._id?.toString() || '',
             type: item.status === 'WON' ? 'won' : 'lost',
             text: item.status === 'WON'
-              ? `You won the auction for ${item.property?.title || 'a property'}`
-              : `You lost the auction for ${item.property?.title || 'a property'}`,
+              ? `You won the offer for ${item.property?.title || 'a property'}`
+              : `Your offer was unsuccessful for ${item.property?.title || 'a property'}`,
             date: new Date(item.bidInfo.date)
           }));
 
@@ -132,7 +132,7 @@ export default function DashboardOverviewPage() {
   const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
 
   let stats = [
-    { label: content.stats.activeBids, value: activeBidsCount, icon: Gavel, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: content.stats.activeBids, value: activeBidsCount, icon: Tag, color: "text-blue-500", bg: "bg-blue-500/10" },
     { label: content.stats.wonAuctions, value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
     { label: content.stats.savedProperties, value: "0", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10" },
   ];
@@ -145,8 +145,8 @@ export default function DashboardOverviewPage() {
     ];
   } else if (role === 'seller' && sellerType === 'REGULAR') {
     stats = [
-      { label: "Received Bids", value: activeBidsCount, icon: Gavel, color: "text-blue-500", bg: "bg-blue-500/10" },
-      { label: "Active Auctions", value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
+      { label: "Received Offers", value: activeBidsCount, icon: Tag, color: "text-blue-500", bg: "bg-blue-500/10" },
+      { label: "Active Listings", value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
       { label: "Total Properties", value: propertiesCount, icon: Building2, color: "text-rose-500", bg: "bg-rose-500/10" },
     ];
   }
@@ -202,7 +202,7 @@ export default function DashboardOverviewPage() {
                     activity.type === 'outbid' || activity.type === 'lost' ? 'bg-orange-500/10 text-orange-500' :
                     'bg-rose-500/10 text-rose-500'
                   }`}>
-                    {activity.type === 'offer' ? <Gavel className="w-4 h-4" /> :
+                    {activity.type === 'offer' ? <Tag className="w-4 h-4" /> :
                      activity.type === 'won' ? <CheckCircle2 className="w-4 h-4" /> :
                      activity.type === 'outbid' || activity.type === 'lost' ? <TrendingUp className="w-4 h-4 rotate-180" /> :
                      <Heart className="w-4 h-4" />}

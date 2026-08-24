@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, Globe, ChevronDown, User, Bell, Gavel, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2 } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
@@ -49,12 +49,12 @@ export default function Navbar() {
         return [
           { title: "Home", href: "/" },
           { title: "Simple Listings", href: "/listings" },
-          { title: "Bids", href: "/dashboard/bids" }
+          { title: "My Offers", href: "/dashboard/bids" }
         ];
       } else {
         return [
           { title: "Home", href: "/" },
-          { title: "Auctions", href: "/auctions" },
+          { title: "Live Offers", href: "/auctions" },
           { title: "Distress Deals", href: "/auctions" },
           { title: "Contracts", href: "/dashboard/contracts" }
         ];

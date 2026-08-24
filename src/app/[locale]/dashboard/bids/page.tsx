@@ -73,7 +73,7 @@ export default function OffersPage() {
           </div>
         ) : bids.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-500 dark:text-gray-400">
-            <p>You haven't placed any bids yet.</p>
+            <p>You haven't placed any offers yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -116,7 +116,7 @@ export default function OffersPage() {
                         {offer.status === 'outbid' && <ArrowUpRight className="w-3.5 h-3.5 rotate-90" />}
                         {offer.status === 'won' && <CheckCircle2 className="w-3.5 h-3.5" />}
                         {offer.status === 'lost' && <XCircle className="w-3.5 h-3.5" />}
-                        {offer.status}
+                        {(content.status as Record<string, string>)?.[offer.status] || offer.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-[13px] text-gray-500 dark:text-gray-400">

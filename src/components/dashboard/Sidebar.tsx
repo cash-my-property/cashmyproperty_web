@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Gavel, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle, Flame } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle, Flame, Tag, TrendingUp } from "lucide-react";
 import Image from "next/image";
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -17,7 +17,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const buyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: "Auctions", href: `/${locale}/auctions`, icon: Gavel },
+    { name: "Live Offers", href: `/${locale}/auctions`, icon: TrendingUp },
     { name: content.favorites || "Favorites", href: `/${locale}/dashboard/favorites`, icon: Heart },
     { name: "My Contracts", href: `/${locale}/dashboard/contracts`, icon: FileText },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
@@ -26,7 +26,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const simpleBuyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: "Simple Listings", href: `/${locale}/listings`, icon: Building },
-    { name: "My Bids", href: `/${locale}/dashboard/bids`, icon: Gavel },
+    { name: "My Offers", href: `/${locale}/dashboard/bids`, icon: Tag },
     { name: content.favorites || "Favorites", href: `/${locale}/dashboard/favorites`, icon: Heart },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];

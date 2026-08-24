@@ -310,10 +310,10 @@ export const content = {
       viewAll: "عرض جميع القوائم"
     },
     realtimebids: {
-      label: "مزادات مباشرة",
+      label: "عروض حية",
       heading: "عروض في الوقت الفعلي",
-      description: "قوائم العقارات المتعثرة حالياً في مزاد نشط لمدة 7 أيام. قدم عطاءك الآن قبل انتهاء الوقت.",
-      viewAllText: "عرض جميع المزادات",
+      description: "قوائم العقارات المتعثرة حالياً في عروض حية نشطة لمدة 7 أيام. قدم عرضك الآن قبل انتهاء الوقت.",
+      viewAllText: "عرض جميع العروض الحية",
       items: [
         {
           id: "r1",
@@ -545,19 +545,19 @@ export const content = {
   },
   auctions: {
     hero: {
-      tagline: "مزادات مباشرة",
-      title: "زايد على\nعقارات متميزة",
-      description: "شارك في مزادات حية للعقارات ذات القيمة العالية. آمنة، شفافة، وسريعة."
+      tagline: "عروض حية",
+      title: "قدم عروضك على\nعقارات متميزة",
+      description: "شارك في العروض الحية للعقارات ذات القيمة العالية. آمنة، شفافة، وسريعة."
     },
     liveStatus: "مباشر الآن",
     offering: {
-      currentBid: "أعلى مزايدة حالية",
+      currentBid: "أعلى عرض حالي",
       minIncrement: "الحد الأدنى للزيادة",
-      endsIn: "ينتهي المزاد في",
-      placeOfferBtn: "قدم مزايدة",
-      offerPlaceholder: "أدخل مبلغ المزايدة",
-      offerHistory: "سجل المزايدات",
-      buyers: "المزايدون"
+      endsIn: "ينتهي العرض في",
+      placeOfferBtn: "قدم عرضاً",
+      offerPlaceholder: "أدخل مبلغ العرض",
+      offerHistory: "سجل العروض",
+      buyers: "المشاركون"
     },
     property: {
       description: "وصف العقار",
@@ -600,7 +600,7 @@ export const content = {
     quickLinksTitle: "روابط سريعة",
     quickLinks: [
       { title: "الرئيسية", href: "/" },
-      { title: "المزادات", href: "/auctions" },
+      { title: "العروض الحية", href: "/auctions" },
       { title: "قوائم العقارات", href: "/listings" },
       { title: "الأسئلة الشائعة", href: "#" }
     ],
@@ -620,7 +620,7 @@ export const content = {
   dashboard: {
     sidebar: {
       overview: "نظرة عامة",
-      myBids: "مزايداتي",
+      myBids: "عروضي",
       favorites: "المفضلة",
       settings: "الإعدادات",
       logout: "تسجيل الخروج"
@@ -632,8 +632,8 @@ export const content = {
     overview: {
       title: "نظرة عامة",
       stats: {
-        activeBids: "المزايدات النشطة",
-        wonAuctions: "المزادات الرابحة",
+        activeBids: "العروض النشطة",
+        wonAuctions: "العروض المقبولة",
         savedProperties: "العقارات المحفوظة"
       },
       recentActivity: "الأنشطة الأخيرة",
@@ -641,12 +641,12 @@ export const content = {
       noActivity: "لا توجد أنشطة أخيرة."
     },
     bids: {
-      title: "مزايداتي",
-      description: "إدارة وتتبع جميع مزايداتك العقارية النشطة والسابقة.",
+      title: "عروضي",
+      description: "إدارة وتتبع جميع عروضك العقارية النشطة والسابقة.",
       table: {
         property: "العقار",
-        bidAmount: "مزايدتك",
-        currentHighest: "أعلى مزايدة",
+        bidAmount: "عرضك",
+        currentHighest: "أعلى عرض",
         status: "الحالة",
         date: "التاريخ"
       },
@@ -661,8 +661,8 @@ export const content = {
       title: "العقارات المحفوظة",
       description: "العقارات التي قمت بحفظها كمفضلة.",
       noFavorites: "لا توجد عقارات محفوظة بعد",
-      noFavoritesSub: "تصفح المزادات الحية والقوائم المباشرة، ثم قم بحفظ عقاراتك المفضلة هنا لمتابعتها.",
-      browseAuctions: "تصفح المزادات",
+      noFavoritesSub: "تصفح العروض الحية والقوائم المباشرة، ثم قم بحفظ عقاراتك المفضلة هنا لمتابعتها.",
+      browseAuctions: "تصفح العروض الحية",
       browseDirectListings: "تصفح القوائم المباشرة"
     },
     settings: {

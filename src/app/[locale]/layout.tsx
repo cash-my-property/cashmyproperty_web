@@ -34,7 +34,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "CMP - CashMyProperty",
-  description: "Cash My Property - Real Estate Auctions & Listings Portal in UAE",
+  description: "Cash My Property - Real Estate Live Offers & Listings Portal in UAE",
   icons: {
     icon: "/cmpfavicon-removebg-preview.png",
   },

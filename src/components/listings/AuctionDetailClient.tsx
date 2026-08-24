@@ -172,7 +172,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Seller Mode Active</p>
             <h2 className="text-white text-[28px] font-bold mb-3 leading-tight">Access Restricted</h2>
             <p className="text-white/65 text-[15px] leading-relaxed">
-              Auction detail pages are exclusively for buyers. As a seller, you can only manage and track your own listed properties.
+              Live offer detail pages are exclusively for buyers. As a seller, you can only manage and track your own listed properties.
             </p>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full justify-center">
@@ -231,7 +231,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
       {isAuthenticated && !isConnected && (
         <div className="w-full bg-amber-500/10 border-b border-amber-500/20 py-2.5 px-6 text-center text-[13px] font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 animate-pulse mb-6">
           <AlertTriangle className="w-4 h-4 shrink-0" />
-          Live connection offline. Bids may not update in real-time. Retrying...
+          Live connection offline. Offers may not update in real-time. Retrying...
         </div>
       )}
       
@@ -457,7 +457,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             ) : (
               <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#1A3626] flex flex-col items-center justify-center text-center">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{detailDict.interestedTitle || "Interested in this property?"}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{detailDict.interestedDesc || "Log in to make an offer or place a bid on this property."}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{detailDict.interestedDesc || "Log in to make an offer on this property."}</p>
                 <button 
                   onClick={() => setShowLoginModal(true)}
                   className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors cursor-pointer"
