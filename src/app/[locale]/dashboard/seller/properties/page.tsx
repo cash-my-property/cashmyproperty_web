@@ -36,8 +36,9 @@ export default function MyPropertiesPage() {
         }
         const response = await api.get(url);
         setProperties(response.data?.result?.data || response.data?.data || []);
-      } catch {
-        addToast("Error", "Failed to load your properties. Please try refreshing.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load your properties. Please try refreshing.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }

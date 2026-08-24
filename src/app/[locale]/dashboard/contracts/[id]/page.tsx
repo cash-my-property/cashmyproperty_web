@@ -24,8 +24,9 @@ export default function ContractDetailsPage() {
         setIsLoading(true);
         const res = await api.get(`/buyer/my-contracts/${id}`);
         setContract(res.data.data);
-      } catch {
-        addToast("Error", "Failed to load contract details. Please try again.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load contract details. Please try again.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }

@@ -19,8 +19,9 @@ export default function MyAuctionsPage() {
       try {
         const response = await api.get('/seller/myAuction');
         setAuctions(response.data?.data || []);
-      } catch {
-        addToast("Error", "Failed to load your auctions. Please try refreshing.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load your auctions. Please try refreshing.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }

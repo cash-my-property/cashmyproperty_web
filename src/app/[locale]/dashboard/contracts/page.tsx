@@ -20,8 +20,9 @@ export default function ContractsPage() {
         setIsLoading(true);
         const res = await api.get('/buyer/my-contracts');
         setContracts(res.data.data || []);
-      } catch {
-        addToast("Error", "Failed to load your contracts. Please try refreshing.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load your contracts. Please try refreshing.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }

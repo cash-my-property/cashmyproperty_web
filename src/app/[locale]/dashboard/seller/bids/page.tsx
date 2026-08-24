@@ -18,8 +18,9 @@ export default function ReceivedBidsPage() {
       try {
         const response = await api.get('/seller/myBids');
         setBids(response.data?.data || []);
-      } catch {
-        addToast("Error", "Failed to load received bids. Please try refreshing.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load received bids. Please try refreshing.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }

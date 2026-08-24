@@ -36,8 +36,9 @@ export default function MySimpleListingsPage() {
         }
         const response = await api.get(url);
         setProperties(response.data?.result?.data || response.data?.data || []);
-      } catch {
-        addToast("Error", "Failed to load your listings. Please try refreshing.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load your listings. Please try refreshing.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }
