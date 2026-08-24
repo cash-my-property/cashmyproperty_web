@@ -14,7 +14,7 @@ export default function BlogPage() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80")'
+            backgroundImage: 'url("/hero-bg.svg")'
           }}
         />
         <div className="absolute inset-0 bg-[#1B3A2D]/80 dark:bg-[#091711]/90 mix-blend-multiply" />
@@ -54,7 +54,7 @@ export default function BlogPage() {
                 <div 
                   className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
                   style={{
-                    backgroundImage: `url("https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80")`
+                    backgroundImage: `url("/property-placeholder.svg")`
                   }}
                 />
                 <div className="absolute top-4 left-4">

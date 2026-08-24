@@ -73,7 +73,7 @@ export default function AboutPage() {
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80")'
+            backgroundImage: 'url("/hero-bg.svg")'
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
@@ -102,7 +102,7 @@ export default function AboutPage() {
           <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5] bg-gray-100 dark:bg-[#102418]">
             <div
               className="absolute inset-0 bg-cover bg-center hover:scale-105 transition-transform duration-700"
-              style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}
+              style={{ backgroundImage: 'url("/property-placeholder.svg")' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           </div>

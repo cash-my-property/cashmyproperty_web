@@ -56,17 +56,6 @@ export default function AuctionsListingPage() {
       console.log("📡 [Auctions Socket] Received new_auction_live:", fullCard);
       if (!fullCard || !fullCard._id) return;
 
-      const title = fullCard.propertyId?.propertyTitle || fullCard.propertyDetails?.propertyTitle || "New Property";
-      const price = fullCard.currentHighestBid ? fullCard.currentHighestBid.toLocaleString() : (fullCard.propertyDetails?.propertyPrice?.amount || "N/A");
-
-      // Show dynamic notification toast!
-      addToast(
-        "New Auction Live!",
-        `"${title}" is now active with a starting bid of Ð ${price}!`,
-        'success',
-        <Building className="w-5 h-5 text-green-500 animate-bounce" />
-      );
-
       setLiveAuctions(prev => {
         if (prev.some(p => p._id === fullCard._id)) return prev;
         return [fullCard, ...prev];
@@ -433,7 +422,7 @@ export default function AuctionsListingPage() {
               const details = item.propertyDetails || {};
               const title = details.propertyTitle || "Untitled Property";
               const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
-              const image = details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+              const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
               const beds = details.propertyBedrooms || 0;
               const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
               const type = details.propertyType || "Property";

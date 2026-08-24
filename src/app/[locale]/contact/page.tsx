@@ -45,7 +45,7 @@ export default function ContactPage() {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1577493340887-b7bfff550145?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80")'
+            backgroundImage: 'url("/hero-bg.svg")'
           }}
         />
         <div className="absolute inset-0 bg-[#1B3A2D]/85 dark:bg-[#091711]/90 mix-blend-multiply" />
@@ -229,7 +229,7 @@ export default function ContactPage() {
           <div className="w-full h-[300px] bg-gray-200 dark:bg-[#163321] rounded-3xl overflow-hidden shadow-sm relative group">
             <div 
               className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
-              style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80")' }}
+              style={{ backgroundImage: 'url("/property-placeholder.svg")' }}
             />
             {/* Map Overlay Button */}
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center">

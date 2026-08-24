@@ -4,17 +4,20 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, Globe, ChevronDown, User } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, User, Bell, Gavel, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { locale, dict } = useDictionary();
   const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
+  const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
+  const [showNotifications, setShowNotifications] = useState(false);
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
   const userType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
@@ -154,13 +157,113 @@ export default function Navbar() {
             </div>
 
             {isAuthenticated ? (
-              <Link
-                href={`/${locale}/dashboard`}
-                className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
-              >
-                <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 group-hover:translate-x-full transition-transform duration-500 ease-out -translate-x-full skew-x-12"></div>
-                <span className="relative flex items-center gap-2"><User className="w-4 h-4" /> Dashboard</span>
-              </Link>
+              <div className="flex items-center gap-4">
+                {/* Notifications Center */}
+                <div className="relative flex items-center">
+                  <button 
+                    onClick={() => {
+                      setShowNotifications(!showNotifications);
+                      if (!showNotifications) {
+                        markAllAsRead();
+                      }
+                    }}
+                    className="relative w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors cursor-pointer"
+                  >
+                    <Bell className="w-4 h-4" />
+                    {notifications.some(n => !n.read) && (
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+                    )}
+                  </button>
+
+                  {showNotifications && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-30" 
+                        onClick={() => setShowNotifications(false)}
+                      />
+                      <div className="absolute top-[135%] right-0 mt-2 w-80 bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 transform origin-top-right scale-100 transition-all overflow-hidden flex flex-col max-h-[420px]">
+                        <div className="px-4 py-3 border-b border-gray-50 dark:border-[#1A3626] flex items-center justify-between bg-gray-50/50 dark:bg-[#102418]/50">
+                          <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
+                          {notifications.length > 0 && (
+                            <button 
+                              onClick={() => {
+                                clearAllNotifications();
+                                setShowNotifications(false);
+                              }}
+                              className="text-[11px] font-bold text-gray-400 hover:text-rose-500 transition-colors"
+                            >
+                              Clear All
+                            </button>
+                          )}
+                        </div>
+                        
+                        <div className="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-[#1A3626] max-h-[320px] custom-scrollbar">
+                          {notifications.length === 0 ? (
+                            <div className="p-8 flex flex-col items-center justify-center text-center">
+                              <Bell className="w-8 h-8 text-gray-300 dark:text-[#1A3626] mb-2" />
+                              <p className="text-[12px] text-gray-400 font-medium">You don't have any notifications yet</p>
+                            </div>
+                          ) : (
+                            notifications.map((notif) => (
+                              <div key={notif.id} className="p-4 flex gap-3 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors group/item relative">
+                                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                                  notif.type === 'success' ? 'bg-green-500' :
+                                  notif.type === 'warning' ? 'bg-amber-500' :
+                                  'bg-[#1A3626] dark:bg-[#c9a14b]'
+                                }`} />
+                                <div className="flex-1 flex flex-col gap-0.5 pr-8">
+                                  <span className={`text-[12.5px] font-bold text-gray-900 dark:text-white leading-tight ${notif.read ? 'opacity-60' : ''}`}>
+                                    {notif.title}
+                                  </span>
+                                  <span className={`text-[11.5px] text-gray-500 dark:text-gray-400 font-medium leading-normal ${notif.read ? 'opacity-60' : ''}`}>
+                                    {notif.message}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold mt-1">
+                                    {notif.timestamp}
+                                  </span>
+                                </div>
+                                {/* Hover Action Buttons */}
+                                <div className="absolute right-3 top-3.5 flex items-center gap-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                  {!notif.read && (
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        markAsRead(notif.id);
+                                      }}
+                                      className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] dark:hover:bg-[#204930] text-green-600 dark:text-green-400 border border-gray-200/50 dark:border-[#1A3626] cursor-pointer"
+                                      title="Mark as Read"
+                                    >
+                                      <Check className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteNotification(notif.id);
+                                    }}
+                                    className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] dark:hover:bg-[#204930] text-rose-500 dark:text-rose-400 border border-gray-200/50 dark:border-[#1A3626] cursor-pointer"
+                                    title="Delete"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <Link
+                  href={`/${locale}/dashboard`}
+                  className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-6 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
+                >
+                  <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 group-hover:translate-x-full transition-transform duration-500 ease-out -translate-x-full skew-x-12"></div>
+                  <span className="relative flex items-center gap-2"><User className="w-4 h-4" /> Dashboard</span>
+                </Link>
+              </div>
             ) : isLoginPage ? (
               <Link
                 href={`/${locale}/signup`}
@@ -181,13 +284,112 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu Toggle */}
-        <button
-          className="lg:hidden p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-full transition-colors cursor-pointer"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Mobile Menu Toggle & Notifications */}
+        <div className="flex items-center gap-2 lg:hidden">
+          {isAuthenticated && (
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  if (!showNotifications) {
+                    markAllAsRead();
+                  }
+                }}
+                className="relative p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-full transition-colors cursor-pointer"
+              >
+                <Bell className="w-5 h-5" />
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+                )}
+              </button>
+              
+              {showNotifications && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-35" 
+                    onClick={() => setShowNotifications(false)}
+                  />
+                  <div className="absolute top-[135%] right-0 mt-2 w-[280px] bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 overflow-hidden flex flex-col max-h-[350px]">
+                    <div className="px-4 py-3 border-b border-gray-50 dark:border-[#1A3626] flex items-center justify-between bg-gray-50/50 dark:bg-[#102418]/50">
+                      <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
+                      {notifications.length > 0 && (
+                        <button 
+                          onClick={() => {
+                            clearAllNotifications();
+                            setShowNotifications(false);
+                          }}
+                          className="text-[11px] font-bold text-gray-400 hover:text-rose-500 transition-colors"
+                        >
+                          Clear All
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-[#1A3626] max-h-[250px] custom-scrollbar">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 flex flex-col items-center justify-center text-center">
+                          <Bell className="w-8 h-8 text-gray-300 dark:text-[#1A3626] mb-2" />
+                          <p className="text-[12px] text-gray-400 font-medium">You don't have any notifications yet</p>
+                        </div>
+                      ) : (
+                        notifications.map((notif) => (
+                          <div key={notif.id} className="p-3 flex gap-2 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors relative group/item">
+                            <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
+                              notif.type === 'success' ? 'bg-green-500' :
+                              notif.type === 'warning' ? 'bg-amber-500' :
+                              'bg-[#1A3626] dark:bg-[#c9a14b]'
+                            }`} />
+                            <div className="flex-1 flex flex-col gap-0.5 pr-12">
+                              <span className={`text-[11.5px] font-bold text-gray-900 dark:text-white leading-tight animate-in fade-in ${notif.read ? 'opacity-60' : ''}`}>
+                                {notif.title}
+                              </span>
+                              <span className={`text-[10.5px] text-gray-500 dark:text-gray-400 font-medium leading-normal ${notif.read ? 'opacity-60' : ''}`}>
+                                {notif.message}
+                              </span>
+                              <span className="text-[9px] text-gray-400 dark:text-gray-500 font-semibold mt-0.5">
+                                {notif.timestamp}
+                              </span>
+                            </div>
+                            {/* Action Buttons for Mobile */}
+                            <div className="absolute right-2 top-2.5 flex items-center gap-1">
+                              {!notif.read && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAsRead(notif.id);
+                                  }}
+                                  className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] text-green-600 dark:text-green-400 border border-gray-200/40 dark:border-[#1A3626] cursor-pointer"
+                                >
+                                  <Check className="w-3 h-3" />
+                                </button>
+                              )}
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification(notif.id);
+                                }}
+                                className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] text-rose-500 dark:text-rose-400 border border-gray-200/40 dark:border-[#1A3626] cursor-pointer"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          
+          <button
+            className="p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-full transition-colors cursor-pointer"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Drawer */}

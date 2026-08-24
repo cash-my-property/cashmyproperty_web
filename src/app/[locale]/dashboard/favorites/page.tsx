@@ -183,7 +183,7 @@ export default function FavoritesPage() {
             // Extract details depending on listing type (regular/auctions have details nested in propertyDetails)
             const details = isRegular ? (item.propertyDetails || {}) : item;
             
-            const image = details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+            const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
             const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
             const price = isRegular
               ? (item.currentHighestBid || details.propertyPrice?.amount || details.propertyPrice || 0)

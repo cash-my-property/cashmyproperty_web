@@ -54,17 +54,6 @@ export default function HomePage() {
       console.log("📡 [Homepage Socket] Received new_auction_live:", fullCard);
       if (!fullCard || !fullCard._id) return;
 
-      const title = fullCard.propertyId?.propertyTitle || fullCard.propertyDetails?.propertyTitle || "New Property";
-      const price = fullCard.currentHighestBid ? fullCard.currentHighestBid.toLocaleString() : (fullCard.propertyDetails?.propertyPrice?.amount || "N/A");
-
-      // Show dynamic notification toast!
-      addToast(
-        "New Auction Live!",
-        `"${title}" is now active with a starting bid of Ð ${price}!`,
-        'success',
-        <Building className="w-5 h-5 text-green-500 animate-bounce" />
-      );
-
       setLiveProperties(prev => {
         if (prev.some(p => p._id === fullCard._id)) return prev;
         return [fullCard, ...prev].slice(0, 6);
@@ -165,7 +154,7 @@ export default function HomePage() {
         {/* Background Image / Overlay */}
         <div className="absolute inset-0 overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            src="/hero-bg.svg"
             alt="Hero Background"
             fill
             priority
@@ -399,7 +388,7 @@ export default function HomePage() {
               const details = item.propertyDetails || {};
               const title = details.propertyTitle || "Untitled Property";
               const location = details.propertyLocation?.city || "Dubai";
-              const image = details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+              const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
               const beds = details.propertyBedrooms || 0;
               const baths = details.propertyBathrooms || 0;
               const getArea = (area: any) => {
@@ -564,7 +553,7 @@ export default function HomePage() {
               const details = item.propertyDetails || item || {};
               const title = item.title || details.propertyTitle || "Untitled Property";
               const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
-              const image = item.image || details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+              const image = item.image || details.propertyImages?.[0]?.url || "/property-placeholder.svg";
               const beds = item.specs?.beds || details.propertyBedrooms || 0;
               const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
               const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
@@ -703,7 +692,7 @@ export default function HomePage() {
           <div className="relative z-10 w-full md:w-2/5 flex justify-center md:justify-end pr-0 md:pr-12 lg:pr-20 pt-10 md:pt-0 overflow-hidden">
              <div className="relative w-[280px] h-[350px] md:h-[450px]">
                <Image 
-                 src="https://images.unsplash.com/photo-1601784551446-20c9e07cd56e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                 src="/hero-bg.svg" 
                  alt="CMP App" 
                  fill
                  sizes="(max-width: 768px) 280px, 450px"

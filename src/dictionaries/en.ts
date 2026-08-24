@@ -320,7 +320,7 @@ export const content = {
           title: "Luxury Marina Penthouse",
           location: "Dubai Marina, Dubai",
           currentBid: "Ð 4,500,000",
-          image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: "/property-placeholder.svg",
           timeLeft: "2d 04h 15m",
           beds: 4,
           baths: 5,
@@ -331,7 +331,7 @@ export const content = {
           title: "Modern Downtown Apartment",
           location: "Downtown Dubai",
           currentBid: "Ð 2,100,000",
-          image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: "/property-placeholder.svg",
           timeLeft: "0d 12h 30m",
           beds: 2,
           baths: 2,
@@ -342,7 +342,7 @@ export const content = {
           title: "Palm Jumeirah Signature Villa",
           location: "Palm Jumeirah, Dubai",
           currentBid: "Ð 18,500,000",
-          image: "https://images.unsplash.com/photo-1613490908571-9ce2249b49be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: "/property-placeholder.svg",
           timeLeft: "5d 08h 45m",
           beds: 6,
           baths: 7,
@@ -434,9 +434,9 @@ export const content = {
       basePrice: 25000000,
       minIncrement: 100000,
       images: [
-        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        "/property-placeholder.svg",
+        "/property-placeholder.svg",
+        "/property-placeholder.svg"
       ],
       initialBids: [
         { id: 1, user: "A***K", amount: 26500000, time: "2 mins ago" },

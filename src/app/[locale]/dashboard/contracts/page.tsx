@@ -66,7 +66,7 @@ export default function ContractsPage() {
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-lg overflow-hidden relative flex-shrink-0 bg-gray-100 dark:bg-[#163321]">
                           <Image
-                            src={contract.property?.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
+                            src={contract.property?.thumbnail || "/property-placeholder.svg"}
                             alt={contract.property?.title || 'Property'}
                             fill
                             className="object-cover"

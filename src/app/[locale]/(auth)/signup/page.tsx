@@ -146,7 +146,7 @@ export default function SignupPage() {
           <div 
             className="absolute inset-0 opacity-30 mix-blend-overlay"
             style={{
-              backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80")',
+              backgroundImage: 'url("/hero-bg.svg")',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}

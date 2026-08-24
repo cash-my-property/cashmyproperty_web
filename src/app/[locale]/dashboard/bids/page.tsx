@@ -25,7 +25,7 @@ export default function OffersPage() {
           id: bid.bidId?.toString() || '',
           auctionId: bid.auction?.auctionId?.toString() || '',
           propertyTitle: bid.property?.propertyTitle || 'Property',
-          image: bid.property?.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: bid.property?.thumbnail || "/property-placeholder.svg",
           myOffer: bid.bidAmount != null ? `AED ${bid.bidAmount.toLocaleString()}` : "N/A",
           status: bid.bidStatus ? bid.bidStatus.toLowerCase() : 'unknown',
           date: bid.bidDate ? new Date(bid.bidDate).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',

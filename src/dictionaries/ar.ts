@@ -320,7 +320,7 @@ export const content = {
           title: "بنتهاوس فاخر في المارينا",
           location: "دبي مارينا، دبي",
           currentBid: "4,500,000 درهم",
-          image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: "/property-placeholder.svg",
           timeLeft: "2 يوم 04 س 15 د",
           beds: 4,
           baths: 5,
@@ -331,7 +331,7 @@ export const content = {
           title: "شقة حديثة في وسط المدينة",
           location: "وسط مدينة دبي",
           currentBid: "2,100,000 درهم",
-          image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: "/property-placeholder.svg",
           timeLeft: "0 يوم 12 س 30 د",
           beds: 2,
           baths: 2,
@@ -342,7 +342,7 @@ export const content = {
           title: "فيلا سيغنتشر في نخلة جميرا",
           location: "نخلة جميرا، دبي",
           currentBid: "18,500,000 درهم",
-          image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          image: "/property-placeholder.svg",
           timeLeft: "5 يوم 08 س 45 د",
           beds: 6,
           baths: 7,
@@ -449,7 +449,7 @@ export const content = {
         beds: 5,
         baths: 6,
         sqft: "8,500",
-        image: "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        image: "/property-placeholder.svg",
         type: "فيلا"
       },
       {
@@ -460,7 +460,7 @@ export const content = {
         beds: 3,
         baths: 3,
         sqft: "2,100",
-        image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        image: "/property-placeholder.svg",
         type: "شقة"
       },
       {
@@ -471,7 +471,7 @@ export const content = {
         beds: 4,
         baths: 5,
         sqft: "4,200",
-        image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        image: "/property-placeholder.svg",
         type: "بنتهاوس"
       },
       {
@@ -482,7 +482,7 @@ export const content = {
         beds: 4,
         baths: 4,
         sqft: "3,500",
-        image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        image: "/property-placeholder.svg",
         type: "تاون هاوس"
       },
       {
@@ -493,7 +493,7 @@ export const content = {
         beds: 7,
         baths: 8,
         sqft: "14,000",
-        image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        image: "/property-placeholder.svg",
         type: "فيلا"
       },
       {
@@ -504,7 +504,7 @@ export const content = {
         beds: 2,
         baths: 2,
         sqft: "1,450",
-        image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        image: "/property-placeholder.svg",
         type: "شقة"
       }
     ],
@@ -527,9 +527,9 @@ export const content = {
         "مطبخ مجهز بالكامل"
       ],
       images: [
-        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        "/property-placeholder.svg",
+        "/property-placeholder.svg",
+        "/property-placeholder.svg"
       ]
     },
     contactForm: {
@@ -576,9 +576,9 @@ export const content = {
       basePrice: 25000000,
       minIncrement: 100000,
       images: [
-        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+        "/property-placeholder.svg",
+        "/property-placeholder.svg",
+        "/property-placeholder.svg"
       ],
       initialBids: [
         { id: 1, user: "أ***ك", amount: 26500000, time: "منذ دقيقتين" },

@@ -140,7 +140,7 @@ export default function ContractDetailsPage() {
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden sticky top-24">
             <div className="aspect-[4/3] relative bg-gray-100 dark:bg-[#163321]">
-              <Image src={prop.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"} alt="Property" fill className="object-cover" />
+              <Image src={prop.propertyImages?.[0]?.url || "/property-placeholder.svg"} alt="Property" fill className="object-cover" />
             </div>
             <div className="p-6">
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">{prop.propertyTitle || (auc._id ? `Auction Offer #${auc._id.slice(-6).toUpperCase()}` : 'Property')}</h3>

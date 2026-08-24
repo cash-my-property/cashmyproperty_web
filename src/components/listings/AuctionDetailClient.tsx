@@ -207,7 +207,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
   }
 
   const details = propertyInfo.propertyDetails || {};
-  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url) : ["https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80"];
+  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url) : ["/property-placeholder.svg"];
   const title = details.propertyTitle || "Untitled Property";
   const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
   const priceAmount = details.propertyPrice?.amount || details.propertyPrice || 0;

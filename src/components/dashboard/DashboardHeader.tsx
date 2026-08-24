@@ -2,7 +2,7 @@
 
 import { useDictionary } from "@/components/DictionaryProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Bell, User, Search, Globe, ChevronDown, LogOut, RefreshCw, Loader2 } from "lucide-react";
+import { Bell, User, Search, Globe, ChevronDown, LogOut, RefreshCw, Loader2, Check, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -15,7 +15,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
   const content = dict.dashboard.header;
   const router = useRouter();
   const { user, logout, fetchProfile } = useAuth();
-  const { notifications, markAllAsRead, clearAllNotifications } = useSocket();
+  const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [isSwitching, setIsSwitching] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -194,22 +194,47 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                       </div>
                     ) : (
                       notifications.map((notif) => (
-                        <div key={notif.id} className="p-4 flex gap-3 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors">
+                        <div key={notif.id} className="p-4 flex gap-3 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors group/item relative">
                           <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                             notif.type === 'success' ? 'bg-green-500' :
                             notif.type === 'warning' ? 'bg-amber-500' :
                             'bg-[#1A3626] dark:bg-[#c9a14b]'
                           }`} />
-                          <div className="flex-1 flex flex-col gap-0.5">
-                            <span className="text-[12.5px] font-bold text-gray-900 dark:text-white leading-tight">
+                          <div className="flex-1 flex flex-col gap-0.5 pr-8">
+                            <span className={`text-[12.5px] font-bold text-gray-900 dark:text-white leading-tight ${notif.read ? 'opacity-60' : ''}`}>
                               {notif.title}
                             </span>
-                            <span className="text-[11.5px] text-gray-500 dark:text-gray-400 font-medium leading-normal">
+                            <span className={`text-[11.5px] text-gray-500 dark:text-gray-400 font-medium leading-normal ${notif.read ? 'opacity-60' : ''}`}>
                               {notif.message}
                             </span>
                             <span className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold mt-1">
                               {notif.timestamp}
                             </span>
+                          </div>
+                          {/* Hover Action Buttons */}
+                          <div className="absolute right-3 top-3.5 flex items-center gap-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                            {!notif.read && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  markAsRead(notif.id);
+                                }}
+                                className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] dark:hover:bg-[#204930] text-green-600 dark:text-green-400 border border-gray-200/50 dark:border-[#1A3626] cursor-pointer"
+                                title="Mark as Read"
+                              >
+                                <Check className="w-3 h-3" />
+                              </button>
+                            )}
+                            <button 
+                              onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification(notif.id);
+                              }}
+                              className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] dark:hover:bg-[#204930] text-rose-500 dark:text-rose-400 border border-gray-200/50 dark:border-[#1A3626] cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
                           </div>
                         </div>
                       ))

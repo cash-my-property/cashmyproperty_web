@@ -305,7 +305,7 @@ export default function ListingsPage() {
               const details = item.propertyDetails || item || {};
               const title = item.title || details.propertyTitle || "Untitled Property";
               const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
-              const image = item.image || details.propertyImages?.[0]?.url || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
+              const image = item.image || details.propertyImages?.[0]?.url || "/property-placeholder.svg";
               const beds = item.specs?.beds || details.propertyBedrooms || 0;
               const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
               const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');

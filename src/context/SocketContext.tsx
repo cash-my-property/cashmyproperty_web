@@ -4,7 +4,9 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import type { Socket } from 'socket.io-client';
 import Cookies from 'js-cookie';
 import { useAuth } from './AuthContext';
-import { Bell, ShieldCheck, CheckCircle2, Gavel, X, FileText, AlertTriangle } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import api from '@/lib/api';
+import { Bell, ShieldCheck, CheckCircle2, Gavel, X, FileText, AlertTriangle, Building } from 'lucide-react';
 
 interface Toast {
   id: string;
@@ -32,6 +34,9 @@ interface SocketContextType {
   notifications: NotificationItem[];
   markAllAsRead: () => void;
   clearAllNotifications: () => void;
+  fetchNotifications: () => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);
@@ -44,7 +49,38 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user, isSeller, isLoading: authLoading, fetchProfile } = useAuth();
   const socketRef = useRef<Socket | null>(null);
 
-  // Load notifications from localStorage on client-side mount
+  // Helper to fetch notifications from the backend
+  const fetchNotifications = async () => {
+    if (!isAuthenticated || authLoading) return;
+    try {
+      const res = await api.get("/notifications?limit=50");
+      const mapped = (res.data?.data?.notifications || res.data?.data || []).map((n: any) => ({
+        id: n._id,
+        title: n.title,
+        message: n.body,
+        type: n.type?.toLowerCase().includes('decline') || n.type?.toLowerCase().includes('reject') || n.type?.toLowerCase().includes('restrict') || n.type?.toLowerCase().includes('outbid') ? 'warning' : 
+              n.type?.toLowerCase().includes('approve') || n.type?.toLowerCase().includes('verify') || n.type?.toLowerCase().includes('won') || n.type?.toLowerCase().includes('live') || n.type?.toLowerCase().includes('placed') ? 'success' : 
+              'info',
+        timestamp: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+        read: n.isRead
+      }));
+      
+      setNotifications((prev) => {
+        // Keep any local notifications (whose IDs start with 'local-') that are not already present in the backend list
+        const localNotifs = prev.filter(n => n.id.startsWith('local-'));
+        const uniqueLocal = localNotifs.filter(ln => !mapped.some((mn: any) => mn.title === ln.title && mn.message === ln.message));
+        const combined = [...uniqueLocal, ...mapped].slice(0, 50);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cmp_notifications', JSON.stringify(combined));
+        }
+        return combined;
+      });
+    } catch (err) {
+      console.error("Failed to fetch notifications from backend:", err);
+    }
+  };
+
+  // Load initial notifications from localStorage on mount (hybrid offline-first pattern)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('cmp_notifications');
@@ -58,27 +94,50 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const addNotification = (
-    title: string,
-    message: string,
-    type: 'success' | 'warning' | 'info' = 'info'
-  ) => {
-    const newNotif: NotificationItem = {
-      id: Math.random().toString(36).substring(2, 9),
-      title,
-      message,
-      type,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-      read: false
-    };
-
-    setNotifications((prev) => {
-      const updated = [newNotif, ...prev].slice(0, 50); // Keep max 50 items
+  // Fetch latest notifications on authentication change
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      fetchNotifications();
+    } else if (!authLoading && !isAuthenticated) {
+      setNotifications([]);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('cmp_notifications', JSON.stringify(updated));
+        localStorage.removeItem('cmp_notifications');
       }
-      return updated;
-    });
+    }
+  }, [isAuthenticated, authLoading]);
+
+  const playChime = () => {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      const now = ctx.currentTime;
+      
+      // High-pitched sine wave double chime (soft, alert-style)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(1318.51, now); // E6
+      gain1.gain.setValueAtTime(0.06, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.5);
+      
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1760.00, now + 0.1); // A6
+      gain2.gain.setValueAtTime(0.06, now + 0.1);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.1);
+      osc2.stop(now + 0.6);
+    } catch (e) {
+      console.warn("Audio Context playback failed or blocked by browser:", e);
+    }
   };
 
   const addToast = (
@@ -98,6 +157,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
 
     setToasts((prev) => [...prev, { id, title, message, type, icon: finalIcon }]);
+    playChime();
     
     // Remove toast after 5 seconds
     setTimeout(() => {
@@ -182,7 +242,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             'warning',
             <Gavel className="w-5 h-5 text-rose-500 animate-bounce" />
           );
-          addNotification("Outbid Alert!", msg, 'warning');
+          fetchNotifications();
         });
 
         socketInstance.on('new_bid_on_property', (data: any) => {
@@ -194,7 +254,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             'success',
             <CheckCircle2 className="w-5 h-5 text-green-500" />
           );
-          addNotification("New Bid Received!", msg, 'success');
+          fetchNotifications();
         });
 
         socketInstance.on('property_approved', (data: any) => {
@@ -206,7 +266,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             'success',
             <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
           );
-          addNotification("Property Approved!", msg, 'success');
+          fetchNotifications();
         });
 
         socketInstance.on('account_verified', (data: any) => {
@@ -218,7 +278,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             'success',
             <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
           );
-          addNotification("Account Verified!", msg, 'success');
+          fetchNotifications();
         });
 
         // ── BUYER SPECIFIC EVENTS ──
@@ -231,7 +291,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             'success',
             <FileText className="w-5 h-5 text-green-500" />
           );
-          addNotification("Contract Approved!", msg, 'success');
+          fetchNotifications();
         });
 
         socketInstance.on('contract_rejected', (data: any) => {
@@ -243,7 +303,41 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             'warning',
             <AlertTriangle className="w-5 h-5 text-rose-500" />
           );
-          addNotification("Contract Rejected!", msg, 'warning');
+          fetchNotifications();
+        });
+
+        // ── GLOBAL BROADCAST EVENTS ──
+        socketInstance.on('new_auction_live', (data: any) => {
+          console.log("📡 [Socket Event] Received new_auction_live globally:", data);
+          if (!data || !data._id) return;
+          const title = data.propertyId?.propertyTitle || data.propertyDetails?.propertyTitle || "New Property";
+          const price = data.currentHighestBid ? data.currentHighestBid.toLocaleString() : (data.propertyDetails?.propertyPrice?.amount || "N/A");
+          const msg = `"${title}" is now active with a starting bid of Ð ${price}!`;
+          
+          addToast(
+            "New Auction Live!", 
+            msg,
+            'success',
+            <Building className="w-5 h-5 text-green-500 animate-bounce" />
+          );
+
+          // Construct a local NotificationItem and prepend it to the list
+          const localNotif: NotificationItem = {
+            id: `local-${data._id}-${Date.now()}`,
+            title: "New Auction Live!",
+            message: msg,
+            type: 'success',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+            read: false
+          };
+
+          setNotifications((prev) => {
+            const updated = [localNotif, ...prev].slice(0, 50);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('cmp_notifications', JSON.stringify(updated));
+            }
+            return updated;
+          });
         });
       } catch (err) {
         console.error("Failed to dynamically initialize Socket.io client:", err);
@@ -275,25 +369,88 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications((prev) => {
-      const updated = prev.map((n) => ({ ...n, read: true }));
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('cmp_notifications', JSON.stringify(updated));
-      }
-      return updated;
-    });
-  };
-
-  const clearAllNotifications = () => {
-    setNotifications([]);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('cmp_notifications');
+  const markAllAsRead = async () => {
+    try {
+      setNotifications((prev) => {
+        const updated = prev.map((n) => ({ ...n, read: true }));
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cmp_notifications', JSON.stringify(updated));
+        }
+        return updated;
+      });
+      await api.patch("/notifications/read-all");
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+      fetchNotifications();
     }
   };
 
+  const clearAllNotifications = async () => {
+    try {
+      setNotifications([]);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('cmp_notifications');
+      }
+      await api.delete("/notifications/clear-all");
+    } catch (err) {
+      console.error("Failed to clear all notifications:", err);
+      fetchNotifications();
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    try {
+      setNotifications((prev) => {
+        const updated = prev.map((n) => n.id === id ? { ...n, read: true } : n);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cmp_notifications', JSON.stringify(updated));
+        }
+        return updated;
+      });
+      if (!id.startsWith('local-')) {
+        await api.patch(`/notifications/${id}/read`);
+      }
+    } catch (err) {
+      console.error(`Failed to mark notification ${id} as read:`, err);
+      fetchNotifications();
+    }
+  };
+
+  const deleteNotification = async (id: string) => {
+    try {
+      setNotifications((prev) => {
+        const updated = prev.filter((n) => n.id !== id);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cmp_notifications', JSON.stringify(updated));
+        }
+        return updated;
+      });
+      if (!id.startsWith('local-')) {
+        await api.delete(`/notifications/${id}`);
+      }
+    } catch (err) {
+      console.error(`Failed to delete notification ${id}:`, err);
+      fetchNotifications();
+    }
+  };
+
+  const pathname = usePathname();
+
+  // Browser tab title count synchronization effect
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const unreadCount = notifications.filter(n => !n.read).length;
+    const cleanTitle = document.title.replace(/^\(\d+\)\s*/, '');
+    
+    if (unreadCount > 0) {
+      document.title = `(${unreadCount}) ${cleanTitle}`;
+    } else {
+      document.title = cleanTitle;
+    }
+  }, [notifications, pathname]);
+
   return (
-    <SocketContext.Provider value={{ socket, isConnected, joinRoom, leaveRoom, addToast, notifications, markAllAsRead, clearAllNotifications }}>
+    <SocketContext.Provider value={{ socket, isConnected, joinRoom, leaveRoom, addToast, notifications, markAllAsRead, clearAllNotifications, fetchNotifications, markAsRead, deleteNotification }}>
       {children}
       
       {/* Toast Notifications Overlay Container */}
