@@ -17,6 +17,8 @@ export default function HomePage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   const [liveProperties, setLiveProperties] = useState<any[]>([]);
   const [upcomingProperties, setUpcomingProperties] = useState<any[]>([]);
@@ -89,7 +91,7 @@ export default function HomePage() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-
+        setIsLoading(true);
         if (isAuthenticated && isSeller) {
           // Seller Mode: Do NOT fetch any buyer listings — sellers have no business browsing properties
           setLiveProperties([]);
@@ -98,12 +100,45 @@ export default function HomePage() {
           return;
         }
 
+        const queryParams = new URLSearchParams();
+        queryParams.append('limit', '6');
+
+        if (appliedSearch) {
+          queryParams.append('search', appliedSearch);
+        }
+        if (selectedType && selectedType !== 'all') {
+          const capitalizedType = selectedType.charAt(0).toUpperCase() + selectedType.slice(1);
+          queryParams.append('category', capitalizedType);
+          queryParams.append('propertyCategory', capitalizedType);
+        }
+        if (selectedPrice && selectedPrice !== 'all') {
+          if (selectedPrice === 'under1m') {
+            queryParams.append('maxPrice', '1000000');
+          } else if (selectedPrice === '1mTo5m') {
+            queryParams.append('minPrice', '1000000');
+            queryParams.append('maxPrice', '5000000');
+          } else if (selectedPrice === 'over5m') {
+            queryParams.append('minPrice', '5000000');
+          }
+        }
+        if (selectedSort) {
+          if (selectedSort === 'newest') {
+            queryParams.append('sortBy', 'newest');
+          } else if (selectedSort === 'priceAsc') {
+            queryParams.append('sortBy', 'priceLow');
+          } else if (selectedSort === 'priceDesc') {
+            queryParams.append('sortBy', 'priceHigh');
+          }
+        }
+
+        const queryString = queryParams.toString();
+
         if (isAuthenticated && isBuyer) {
           if (buyerType === 'REGULAR') {
             // Logged in Regular Buyer: Only hit regular buyer private routes
             const [liveRes, upcomingRes] = await Promise.all([
-              api.get('/buyer/live-listings?limit=6'),
-              api.get('/buyer/upcoming-listings?limit=6')
+              api.get(`/buyer/live-listings?${queryString}`),
+              api.get(`/buyer/upcoming-listings?${queryString}`)
             ]);
 
             const liveData = liveRes.data.data;
@@ -114,7 +149,7 @@ export default function HomePage() {
             setSimpleLiveProperties([]);
           } else if (buyerType === 'SIMPLE') {
             // Logged in Simple Buyer: Only hit simple buyer private routes
-            const simpleLiveRes = await api.get('/buyer/simpleLiveListings?limit=6');
+            const simpleLiveRes = await api.get(`/buyer/simpleLiveListings?${queryString}`);
             const simpleLiveData = simpleLiveRes.data.data;
 
             setLiveProperties([]);
@@ -124,9 +159,9 @@ export default function HomePage() {
         } else {
           // Guest User: Fetch public routes only
           const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
-            api.get('/public/live-properties?limit=6'),
-            api.get('/public/upcoming-properties?limit=6'),
-            api.get('/public/simple-live-properties?limit=6')
+            api.get(`/public/live-properties?${queryString}`),
+            api.get(`/public/upcoming-properties?${queryString}`),
+            api.get(`/public/simple-live-properties?${queryString}`)
           ]);
 
           const liveData = liveRes.data.data;
@@ -144,7 +179,7 @@ export default function HomePage() {
       }
     };
     fetchProperties();
-  }, [isAuthenticated, user, isBuyer, isSeller]);
+  }, [isAuthenticated, user, isBuyer, isSeller, appliedSearch, selectedType, selectedPrice, selectedSort]);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">
@@ -189,10 +224,16 @@ export default function HomePage() {
                 <input 
                   type="text" 
                   placeholder={home.hero.searchPlaceholder}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') setAppliedSearch(searchQuery); }}
                   className="w-full bg-transparent border-none outline-none text-gray-900 dark:text-white placeholder:text-gray-400 text-[15px]"
                 />
               </div>
-              <button className="w-full sm:w-auto px-10 py-4 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(92,210,132,0.3)] hover:shadow-[0_0_30px_rgba(92,210,132,0.5)] shrink-0 cursor-pointer">
+              <button 
+                onClick={() => setAppliedSearch(searchQuery)}
+                className="w-full sm:w-auto px-10 py-4 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(92,210,132,0.3)] hover:shadow-[0_0_30px_rgba(92,210,132,0.5)] shrink-0 cursor-pointer"
+              >
                 {home.hero.searchButton}
               </button>
             </div>
@@ -207,8 +248,10 @@ export default function HomePage() {
                     className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <Building className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'type' || selectedType ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
-                      <span className="text-[13.5px] font-semibold">{selectedType || home.hero.filters.type}</span>
+                      <Building className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'type' || (selectedType && selectedType !== 'all') ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
+                      <span className="text-[13.5px] font-semibold">
+                        {selectedType ? (home.hero.filters.types as Record<string, string>)[selectedType] : home.hero.filters.type}
+                      </span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
                   </div>
@@ -217,8 +260,8 @@ export default function HomePage() {
                       {Object.entries(home.hero.filters.types).map(([key, value]) => (
                         <div 
                           key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                          onClick={() => { setSelectedType(value as string); setActiveDropdown(null); }}
+                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                          onClick={() => { setSelectedType(key); setActiveDropdown(null); }}
                         >
                           {value as string}
                         </div>
@@ -234,8 +277,10 @@ export default function HomePage() {
                     className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <span className={`text-[14px] font-bold opacity-60 transition-colors ${activeDropdown === 'price' || selectedPrice ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`}>د.إ</span>
-                      <span className="text-[13.5px] font-semibold">{selectedPrice || home.hero.filters.price}</span>
+                      <span className={`text-[14px] font-bold opacity-60 transition-colors ${activeDropdown === 'price' || (selectedPrice && selectedPrice !== 'all') ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`}>د.إ</span>
+                      <span className="text-[13.5px] font-semibold">
+                        {selectedPrice ? (home.hero.filters.prices as Record<string, string>)[selectedPrice] : home.hero.filters.price}
+                      </span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'price' ? 'rotate-180' : ''}`} />
                   </div>
@@ -244,8 +289,8 @@ export default function HomePage() {
                       {Object.entries(home.hero.filters.prices).map(([key, value]) => (
                         <div 
                           key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedPrice === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                          onClick={() => { setSelectedPrice(value as string); setActiveDropdown(null); }}
+                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedPrice === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                          onClick={() => { setSelectedPrice(key); setActiveDropdown(null); }}
                         >
                           {value as string}
                         </div>
@@ -261,8 +306,10 @@ export default function HomePage() {
                     className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
                   >
                     <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <ArrowDownUp className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'sort' || selectedSort ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
-                      <span className="text-[13.5px] font-semibold">{selectedSort || home.hero.filters.sort}</span>
+                      <ArrowDownUp className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'sort' || (selectedSort && selectedSort !== 'newest') ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
+                      <span className="text-[13.5px] font-semibold">
+                        {selectedSort ? (home.hero.filters.sortOptions as Record<string, string>)[selectedSort] : home.hero.filters.sort}
+                      </span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'sort' ? 'rotate-180' : ''}`} />
                   </div>
@@ -271,8 +318,8 @@ export default function HomePage() {
                       {Object.entries(home.hero.filters.sortOptions).map(([key, value]) => (
                         <div 
                           key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedSort === value ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                          onClick={() => { setSelectedSort(value as string); setActiveDropdown(null); }}
+                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedSort === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
+                          onClick={() => { setSelectedSort(key); setActiveDropdown(null); }}
                         >
                           {value as string}
                         </div>

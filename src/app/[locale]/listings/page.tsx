@@ -18,6 +18,7 @@ export default function ListingsPage() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -39,11 +40,28 @@ export default function ListingsPage() {
 
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
 
+        const queryParams = new URLSearchParams();
+        if (appliedSearch) {
+          queryParams.append('search', appliedSearch);
+        }
+        if (activeType && activeType !== 'All') {
+          queryParams.append('propertyType', activeType);
+        }
+        if (selectedType && selectedType !== 'All Type' && selectedType !== 'All') {
+          queryParams.append('propertyCategory', selectedType);
+          queryParams.append('category', selectedType);
+        }
+        if (priceSort) {
+          queryParams.append('sortBy', priceSort === 'asc' ? 'priceLow' : 'priceHigh');
+        }
+
+        const queryString = queryParams.toString();
+
         let res;
         if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
-          res = await api.get('/buyer/simpleLiveListings');
+          res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
         } else {
-          res = await axios.get(`${API_URL}/public/simple-live-properties`);
+          res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
         }
 
         const data = res.data.data;
@@ -55,7 +73,7 @@ export default function ListingsPage() {
       }
     };
     fetchProperties();
-  }, [authLoading, isAuthenticated, user, isSeller]);
+  }, [authLoading, isAuthenticated, user, isSeller, appliedSearch, activeType, selectedType, priceSort]);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -88,11 +106,15 @@ export default function ListingsPage() {
                   placeholder={content.hero.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') setAppliedSearch(searchQuery); }}
                   className="w-full bg-transparent border-none outline-none text-[15px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
                 />
               </div>
               
-              <button className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3.5 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap">
+              <button 
+                onClick={() => setAppliedSearch(searchQuery)}
+                className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3.5 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap"
+              >
                 <Filter className="w-4 h-4 shrink-0" />
                 {content.hero.searchButton}
               </button>
@@ -255,47 +277,7 @@ export default function ListingsPage() {
               </div>
             ))
           ) : (() => {
-            const filteredProperties = properties
-              .filter(item => {
-                const details = item.propertyDetails || item || {};
-                const title = item.title || details.propertyTitle || "";
-                const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
-
-                if (searchQuery) {
-                  const query = searchQuery.toLowerCase();
-                  const matchTitle = title.toLowerCase().includes(query);
-                  const matchLocation = location.toLowerCase().includes(query);
-                  return matchTitle || matchLocation;
-                }
-                return true;
-              })
-              .filter(item => {
-                const details = item.propertyDetails || item || {};
-                const type = details.propertyType || "";
-
-                if (activeType !== "All") {
-                  return type.toUpperCase() === activeType.toUpperCase();
-                }
-                return true;
-              })
-              .filter(item => {
-                const details = item.propertyDetails || item || {};
-                const type = details.propertyType || "";
-
-                if (selectedType && selectedType !== "All Type" && selectedType !== "All") {
-                  return type.toUpperCase() === selectedType.toUpperCase();
-                }
-                return true;
-              })
-              .sort((a, b) => {
-                if (!priceSort) return 0;
-                const detailsA = a.propertyDetails || a || {};
-                const detailsB = b.propertyDetails || b || {};
-                const priceA = a.price?.amount || detailsA.propertyPrice?.amount || detailsA.propertyPrice || 0;
-                const priceB = b.price?.amount || detailsB.propertyPrice?.amount || detailsB.propertyPrice || 0;
-
-                return priceSort === "asc" ? priceA - priceB : priceB - priceA;
-              });
+            const filteredProperties = properties;
 
             if (filteredProperties.length === 0) {
               return <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">No properties match the selected filters.</div>;
