@@ -31,8 +31,9 @@ export default function OffersPage() {
           date: bid.bidDate ? new Date(bid.bidDate).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' }) : '—',
         }));
         setBids(formattedBids);
-      } catch {
-        addToast("Error", "Failed to load your bids. Please try refreshing.", "warning");
+      } catch (err: any) {
+        const errorMsg = err?.response?.data?.message || "Failed to load your bids. Please try refreshing.";
+        addToast("Error", errorMsg, "warning");
       } finally {
         setIsLoading(false);
       }
