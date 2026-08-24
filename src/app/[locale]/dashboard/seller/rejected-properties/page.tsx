@@ -50,7 +50,7 @@ export default function RejectedPropertiesPage() {
       }
     };
     fetchProperties();
-  }, [currentPage, statusFilter, sortBy, authLoading, user, isSeller, sellerType]);
+  }, [currentPage, statusFilter, sortBy, authLoading, user?.email, isSeller, sellerType]);
 
   if (authLoading) {
     return (

@@ -24,6 +24,7 @@ export default function AuctionsListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
+  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   const [liveAuctions, setLiveAuctions] = useState<any[]>([]);
   const [upcomingAuctions, setUpcomingAuctions] = useState<any[]>([]);
@@ -123,7 +124,6 @@ export default function AuctionsListingPage() {
         const queryString = queryParams.toString();
 
         let liveRes, upcomingRes;
-        const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
         if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
           [liveRes, upcomingRes] = await Promise.all([
             api.get(`/buyer/live-listings?${queryString}`),
@@ -146,7 +146,7 @@ export default function AuctionsListingPage() {
       }
     };
     fetchAuctions();
-  }, [authLoading, isAuthenticated, user, isSeller, appliedSearch, activeType, selectedType, priceSort]);
+  }, [authLoading, isAuthenticated, buyerType, isSeller, appliedSearch, activeType, selectedType, priceSort]);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -219,7 +219,13 @@ export default function AuctionsListingPage() {
                       <div 
                         key={key} 
                         className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                        onClick={() => { setSelectedType(key); setActiveDropdown(null); }}
+                        onClick={() => {
+                          setSelectedType(key);
+                          setActiveDropdown(null);
+                          if (key === 'land') {
+                            setActiveType('All');
+                          }
+                        }}
                       >
                         {value as string}
                       </div>
@@ -355,7 +361,12 @@ export default function AuctionsListingPage() {
           {["All", "Villa", "Apartment", "Penthouse", "Townhouse", "Commercial"].map((type) => (
             <button 
               key={type}
-              onClick={() => setActiveType(type)}
+              onClick={() => {
+                setActiveType(type);
+                if (selectedType === 'land') {
+                  setSelectedType('all');
+                }
+              }}
               className={`whitespace-nowrap px-5 py-2 rounded-full text-[14px] font-bold transition-all duration-300 ${activeType === type ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#091711] dark:text-gray-300 dark:hover:bg-[#163321]'}`}
             >
               {type}

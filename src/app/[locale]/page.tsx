@@ -25,7 +25,7 @@ export default function HomePage() {
   const [simpleLiveProperties, setSimpleLiveProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const { socket, addToast } = useSocket();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
@@ -89,6 +89,7 @@ export default function HomePage() {
   }, [socket]);
 
   useEffect(() => {
+    if (authLoading) return;
     const fetchProperties = async () => {
       try {
         setIsLoading(true);
@@ -214,7 +215,7 @@ export default function HomePage() {
       }
     };
     fetchProperties();
-  }, [isAuthenticated, user, isBuyer, isSeller, appliedSearch, selectedType, selectedPrice, selectedSort]);
+  }, [authLoading, isAuthenticated, buyerType, isBuyer, isSeller, appliedSearch, selectedType, selectedPrice, selectedSort]);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">

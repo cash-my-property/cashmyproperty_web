@@ -21,10 +21,11 @@ export default function DashboardOverviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [quota, setQuota] = useState<any>(null);
 
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { addToast } = useSocket();
 
   useEffect(() => {
+    if (authLoading || !user) return;
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
@@ -123,10 +124,8 @@ export default function DashboardOverviewPage() {
       }
     };
 
-    if (user) {
-      fetchDashboardData();
-    }
-  }, [user]);
+    fetchDashboardData();
+  }, [authLoading, user?.email]);
 
   const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
   const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
