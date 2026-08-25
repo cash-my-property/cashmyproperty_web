@@ -377,7 +377,7 @@ export const content = {
           description: "No hidden fees, no opaque processes. All offers are tracked and visible, ensuring a fair market value for every transaction."
         },
         {
-          title: "DLD Verified",
+          title: "Fully Verified",
           description: "Fully compliant with the Dubai Land Department regulations. We enforce mandatory document checks before any offer is placed."
         },
         {
@@ -450,7 +450,7 @@ export const content = {
     hero: {
       tagline: "Property Listings",
       title: "Discover Your\nNext Property",
-      description: "Explore our exclusive DLD-verified properties available for immediate purchase or active live offers."
+      description: "Explore our exclusive verified properties available for immediate purchase or active live offers."
     },
     filters: {
       searchPlaceholder: "Search properties by name or location...",
@@ -480,7 +480,7 @@ export const content = {
       loginRequiredDesc: "You need to be logged in to make an offer. Would you like to log in now?",
       stayLoggedOut: "Stay Logged Out",
       goToLogin: "Go to Login",
-      verifiedDld: "Verified by DLD",
+      verifiedDld: "Verified Property",
       backToProperties: "Back to listings",
       propertyNotFound: "Property not found"
     }

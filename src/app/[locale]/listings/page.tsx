@@ -86,12 +86,18 @@ export default function ListingsPage() {
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* HERO BANNER */}
-      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center bg-[#1B3A2D] dark:bg-[#0A1612]">
-        {/* Background elements wrapped to prevent overflow clipping dropdown */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5CD284]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#5CD284]/5 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/3" />
-        </div>
+      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
+          style={{
+            backgroundImage: 'url("/hero-bg.svg")'
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
+        
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         
         <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center mt-8">
             {/* placeholder for tagline */}

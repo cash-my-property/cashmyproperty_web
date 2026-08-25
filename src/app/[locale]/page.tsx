@@ -233,18 +233,15 @@ export default function HomePage() {
             className="object-cover object-[center_40%] pointer-events-none"
           />
           {/* Dark Green Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A3626]/90 via-[#0A1C12]/80 to-[#0A1C12]/95 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
           <div className="absolute inset-0 bg-black/30" />
+
+          {/* Glow Effects */}
+          <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         </div>
         
         <div className="relative z-10 w-full max-w-6xl mx-auto px-6 flex flex-col items-center text-center mt-6">
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 border border-[#5CD284]/30 rounded-full bg-white/10 backdrop-blur-md shadow-lg mb-8">
-            <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
-            <span className="text-[#5CD284] font-bold text-[12px] uppercase tracking-[0.15em]">
-              Verified by DLD
-            </span>
-          </div>
-
           <h1 className="text-white text-4xl sm:text-5xl lg:text-[64px] font-bold mb-6 leading-[1.1] tracking-tight max-w-4xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {home.hero.headline}
           </h1>

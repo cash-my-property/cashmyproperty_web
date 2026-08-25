@@ -80,7 +80,7 @@ export const content = {
       heading: "The premier digital real estate offer platform in the UAE",
       paragraphs: [
         "Founded on the principles of transparency, efficiency, and innovation, Cash My Property is redefining how real estate is bought and sold in the UAE.",
-        "We provide a secure, encrypted platform that connects verified sellers with qualified buyers. Our digital offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against DLD regulations."
+        "We provide a secure, encrypted platform that connects verified sellers with qualified buyers. Our digital offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against official regulations."
       ],
       features: [
         {
@@ -324,7 +324,7 @@ export const content = {
     hero: {
       tagline: "Property Listings",
       title: "Discover Your\nNext Property",
-      description: "Explore our exclusive DLD-verified properties available for immediate purchase or active live offers."
+      description: "Explore our exclusive verified properties available for immediate purchase or active live offers."
     },
     filters: {
       searchPlaceholder: "Search properties by name or location...",
@@ -354,7 +354,7 @@ export const content = {
       loginRequiredDesc: "You need to be logged in to make an offer. Would you like to log in now?",
       stayLoggedOut: "Stay Logged Out",
       goToLogin: "Go to Login",
-      verifiedDld: "Verified by DLD",
+      verifiedDld: "Verified Property",
       backToProperties: "Back to listings",
       propertyNotFound: "Property not found"
     }

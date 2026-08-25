@@ -40,24 +40,27 @@ export default function ContactPage() {
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* HERO BANNER */}
-      <section className="relative w-full h-[300px] sm:h-[400px] flex items-center justify-center overflow-hidden">
-        {/* Background Image / Overlay */}
+      <section className="relative w-full py-24 sm:py-32 flex items-center justify-center overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
           style={{
             backgroundImage: 'url("/hero-bg.svg")'
           }}
         />
-        <div className="absolute inset-0 bg-[#1B3A2D]/85 dark:bg-[#091711]/90 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
         
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center pt-10">
-          <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[12px] mb-4 uppercase bg-white/10 px-5 py-2 rounded-full backdrop-blur-sm border border-white/10">
+        {/* Glow Effects */}
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
+
+        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
+          <span className="text-[#5CD284] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[11px] sm:text-[12px] mb-6 uppercase bg-white/10 dark:bg-white/5 px-5 py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm">
             {content.contact.hero.tagline}
           </span>
-          <h1 className="text-white text-[44px] sm:text-[56px] font-bold mb-4 leading-[1.1] tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <h1 className="text-white text-[38px] sm:text-[56px] lg:text-[62px] font-bold mb-6 leading-[1.15] tracking-tight max-w-3xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {content.contact.hero.title.replace('\n', ' ')}
           </h1>
-          <p className="text-white/80 text-[16px] sm:text-[18px] max-w-xl leading-relaxed font-light">
+          <p className="text-white/80 dark:text-gray-300 text-[16px] sm:text-[18px] max-w-2xl leading-relaxed font-light">
             {content.contact.hero.description}
           </p>
         </div>

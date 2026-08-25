@@ -35,12 +35,6 @@ export default function Footer() {
           <p className="text-green-100/60 text-[15px] leading-relaxed mb-8">
             {siteConfig.description}
           </p>
-          <div className="inline-flex items-center gap-2.5 px-4 py-2.5 border border-[#5CD284]/20 rounded-full bg-[#5CD284]/10 shadow-[0_0_15px_rgba(92,210,132,0.05)]">
-            <ShieldCheck className="w-4 h-4 text-[#5CD284]" />
-            <span className="text-[#5CD284] font-bold text-[11px] uppercase tracking-widest">
-              Verified by DLD
-            </span>
-          </div>
         </div>
         
         {/* Quick Links (Spans 2 cols) */}
