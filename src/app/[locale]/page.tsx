@@ -789,13 +789,13 @@ export default function HomePage() {
 
           {/* Phone Mockup Graphic */}
           <div className="relative z-10 w-full md:w-2/5 flex justify-center md:justify-end pr-0 md:pr-12 lg:pr-20 pt-10 md:pt-0 overflow-hidden">
-             <div className="relative w-[280px] h-[350px] md:h-[450px]">
+             <div className="relative w-[280px] h-[350px] md:h-[450px] overflow-visible">
                <Image 
-                 src="/hero-bg.svg" 
-                 alt="CMP App" 
+                 src="/app-mockup.png" 
+                 alt="CMP App Mockup" 
                  fill
                  sizes="(max-width: 768px) 280px, 450px"
-                 className="absolute bottom-[-20%] md:bottom-[-10%] right-0 w-full h-[120%] object-cover object-top rounded-t-[40px] border-4 border-b-0 border-gray-900 shadow-[0_-20px_60px_rgba(0,0,0,0.5)] transform -rotate-12 translate-x-10"
+                 className="absolute bottom-[-10%] md:bottom-[-5%] right-0 w-full h-[115%] object-contain filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.35)] transform -rotate-6 translate-x-8"
                />
              </div>
           </div>

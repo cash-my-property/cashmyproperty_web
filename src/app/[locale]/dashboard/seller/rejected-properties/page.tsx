@@ -30,6 +30,14 @@ export default function RejectedPropertiesPage() {
   const isSeller = mainRole === 'seller';
   const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
 
+  // Redirect Simple Sellers to simple rejected page
+  useEffect(() => {
+    if (authLoading || !user) return;
+    if (isSeller && sellerType === 'SIMPLE') {
+      router.replace(`/${locale}/dashboard/seller/rejected-simple-properties`);
+    }
+  }, [authLoading, user, isSeller, sellerType, locale, router]);
+
   useEffect(() => {
     if (authLoading || !user || !isSeller || sellerType !== 'REGULAR') return;
 

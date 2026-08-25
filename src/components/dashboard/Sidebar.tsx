@@ -13,7 +13,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const content = dict.dashboard.sidebar;
   const pathname = usePathname();
   const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
-  const userType = (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+  const userType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
 
   const buyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
