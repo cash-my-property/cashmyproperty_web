@@ -35,12 +35,15 @@ api.interceptors.response.use(
 
     // Check if the error status is 401 and the request has not been retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Avoid looping if the refresh request itself fails with 401/403
-      if (originalRequest.url?.includes('/auth/refresh')) {
-        if (typeof window !== 'undefined') {
-          const locale = window.location.pathname.split('/')[1] || 'en';
-          window.location.href = `/${locale}/login`;
-        }
+      // Avoid refreshing token if the failed request was an auth action (login, signup, refresh, verify, reset, forgot)
+      if (
+        originalRequest.url?.includes('/auth/login') ||
+        originalRequest.url?.includes('/auth/signup') ||
+        originalRequest.url?.includes('/auth/refresh') ||
+        originalRequest.url?.includes('/auth/verify') ||
+        originalRequest.url?.includes('/auth/reset-password') ||
+        originalRequest.url?.includes('/auth/forgot-password')
+      ) {
         return Promise.reject(error);
       }
 
