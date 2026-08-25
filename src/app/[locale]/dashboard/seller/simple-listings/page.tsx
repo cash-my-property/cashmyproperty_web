@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import Dirham from "@/components/Dirham";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -120,8 +121,8 @@ export default function MySimpleListingsPage() {
                   <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">
                     {property.title}
                   </h3>
-                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
-                    Ð {property.price?.amount?.toLocaleString() || 0}
+                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap flex items-center gap-1">
+                    <Dirham className="text-[20px]" /> {property.price?.amount?.toLocaleString() || 0}
                   </span>
                 </div>
                 

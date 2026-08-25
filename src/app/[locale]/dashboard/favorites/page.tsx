@@ -8,6 +8,7 @@ import Image from "next/image";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
+import Dirham from "@/components/Dirham";
 
 export default function FavoritesPage() {
   const { dict, locale } = useDictionary();
@@ -244,8 +245,8 @@ export default function FavoritesPage() {
                     <span className="text-[12px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
                       {isRegular ? "Highest Bid" : "Price"}
                     </span>
-                    <span className="font-bold text-[20px] text-[#1A3626] dark:text-[#c9a14b] leading-none">
-                      Ð {price.toLocaleString()}
+                    <span className="font-bold text-[20px] text-[#1A3626] dark:text-[#c9a14b] leading-none flex items-center gap-1">
+                      <Dirham className="text-[18px]" /> {price.toLocaleString()}
                     </span>
                   </div>
                 </div>

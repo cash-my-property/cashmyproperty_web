@@ -5,6 +5,7 @@ import api from "@/lib/api";
 import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X, AlertCircle, RefreshCw } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import Dirham from "@/components/Dirham";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -59,6 +60,26 @@ export default function RejectedPropertiesPage() {
     };
     fetchProperties();
   }, [currentPage, statusFilter, sortBy, authLoading, user?.email, isSeller, sellerType]);
+
+  const fetchPropertyDetails = async (property: any) => {
+    try {
+      setIsLoading(true);
+      const propertyId = property.id || property._id || property.propertyId;
+      const response = await api.get(`/seller/rejectedPropertydetails/${propertyId}`);
+      
+      const detailData = response.data?.data || response.data?.result?.data || response.data || {};
+      setViewModalProperty({
+        ...property,
+        ...detailData,
+        ...(detailData.propertyDetails || {})
+      });
+    } catch (err) {
+      console.error("Failed to fetch rejected property details:", err);
+      setViewModalProperty(property);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -233,8 +254,8 @@ export default function RejectedPropertiesPage() {
                   <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">
                     {property.title || property.propertyTitle}
                   </h3>
-                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
-                    Ð {property.pricing?.price?.amount || property.price?.amount?.toLocaleString() || 0}
+                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap flex items-center gap-1">
+                    <Dirham className="text-[20px]" /> {property.pricing?.price?.amount || property.price?.amount?.toLocaleString() || 0}
                   </span>
                 </div>
                 
@@ -250,11 +271,11 @@ export default function RejectedPropertiesPage() {
                 </div>
 
                 <div className="mt-1 mb-3 bg-red-50 dark:bg-red-500/10 rounded-lg p-2.5 text-xs border border-red-100 dark:border-red-900/30">
-                    <p className="text-red-700 dark:text-red-400 font-bold mb-1">Rejected Count: {property.rejectedCount || 0}</p>
+                    <p className="text-red-700 dark:text-red-400 font-bold mb-1">Rejected Count: {property.rejectionCount ?? property.rejectedCount ?? 0}</p>
                     <p className="text-red-600 dark:text-red-300 line-clamp-2">Reason: {property.rejectionReason || 'No reason provided'}</p>
                   </div>
                   <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
-  <button onClick={() => setViewModalProperty(property)} className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"><Eye className="w-4 h-4" /> View</button>
+  <button onClick={() => fetchPropertyDetails(property)} className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"><Eye className="w-4 h-4" /> View</button>
   <button onClick={() => router.push(`/${locale}/dashboard/seller/edit-property/${property.id || property._id || property.propertyId}`)} className="flex-1 py-2 text-sm font-semibold bg-[#1A3626] dark:bg-[#c9a14b] text-white rounded-lg transition-opacity hover:opacity-90 flex items-center justify-center gap-2 cursor-pointer"><Edit className="w-4 h-4" /> Edit & Fix</button>
 </div>
               </div>
@@ -331,7 +352,7 @@ export default function RejectedPropertiesPage() {
                 </div>
                   
                   <div className="bg-red-50 dark:bg-red-500/10 rounded-2xl p-4 border border-red-100 dark:border-red-900/30">
-                    <h4 className="text-red-700 dark:text-red-400 font-bold text-sm mb-1">Rejection Details (Count: {viewModalProperty.rejectedCount || 0})</h4>
+                    <h4 className="text-red-700 dark:text-red-400 font-bold text-sm mb-1">Rejection Details (Count: {viewModalProperty.rejectionCount ?? viewModalProperty.rejectedCount ?? 0})</h4>
                     <p className="text-red-600 dark:text-red-300 text-sm">{viewModalProperty.rejectionReason || 'No reason provided'}</p>
                   </div>
 

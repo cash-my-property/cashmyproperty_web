@@ -292,9 +292,9 @@ export const content = {
         },
         prices: {
           all: "Any Price",
-          under1m: "Under 1M Ð",
-          "1mTo5m": "1M - 5M Ð",
-          over5m: "5M+ Ð"
+          under1m: "Under 1M AED",
+          "1mTo5m": "1M - 5M AED",
+          over5m: "5M+ AED"
         },
         sortOptions: {
           newest: "Newest First",
@@ -319,7 +319,7 @@ export const content = {
           id: "r1",
           title: "Luxury Marina Penthouse",
           location: "Dubai Marina, Dubai",
-          currentBid: "Ð 4,500,000",
+          currentBid: "AED 4,500,000",
           image: "/property-placeholder.svg",
           timeLeft: "2d 04h 15m",
           beds: 4,
@@ -330,7 +330,7 @@ export const content = {
           id: "r2",
           title: "Modern Downtown Apartment",
           location: "Downtown Dubai",
-          currentBid: "Ð 2,100,000",
+          currentBid: "AED 2,100,000",
           image: "/property-placeholder.svg",
           timeLeft: "0d 12h 30m",
           beds: 2,
@@ -341,7 +341,7 @@ export const content = {
           id: "r3",
           title: "Palm Jumeirah Signature Villa",
           location: "Palm Jumeirah, Dubai",
-          currentBid: "Ð 18,500,000",
+          currentBid: "AED 18,500,000",
           image: "/property-placeholder.svg",
           timeLeft: "5d 08h 45m",
           beds: 6,

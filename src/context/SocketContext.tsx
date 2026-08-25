@@ -235,7 +235,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         // Setup listeners for push notifications
         socketInstance.on('outbid_notification', (data: any) => {
           console.log("📡 [Socket Event] Received outbid_notification:", data);
-          const msg = `You have been outoffered on "${data.propertyTitle || 'Property'}". New highest offer is Ð ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
+          const msg = `You have been outoffered on "${data.propertyTitle || 'Property'}". New highest offer is AED ${Number(data.bidAmount || data.newPrice || 0).toLocaleString()}.`;
           addToast(
             "Higher Offer Alert!", 
             msg,
@@ -247,7 +247,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         socketInstance.on('new_bid_on_property', (data: any) => {
           console.log("📡 [Socket Event] Received new_bid_on_property:", data);
-          const msg = `A new offer of Ð ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
+          const msg = `A new offer of AED ${Number(data.bidAmount).toLocaleString()} was placed on your property "${data.propertyTitle}".`;
           addToast(
             "New Offer Received!", 
             msg,
@@ -312,7 +312,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           if (!data || !data._id) return;
           const title = data.propertyId?.propertyTitle || data.propertyDetails?.propertyTitle || "New Property";
           const price = data.currentHighestBid ? data.currentHighestBid.toLocaleString() : (data.propertyDetails?.propertyPrice?.amount || "N/A");
-          const msg = `"${title}" is now active with a starting price of Ð ${price}!`;
+           const msg = `"${title}" is now active with a starting price of AED ${price}!`;
           
           addToast(
             "New Offer Live!", 

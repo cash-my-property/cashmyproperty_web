@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
+import Dirham from "@/components/Dirham";
 
 interface PropertyDetailClientProps {
   id: string;
@@ -212,7 +213,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
   const priceAmount = details.propertyPrice?.amount || details.propertyPrice || 0;
   const highestBid = propertyInfo.currentHighestBid || (typeof propertyInfo.currentHighestOffer === 'object' ? propertyInfo.currentHighestOffer?.amount : propertyInfo.currentHighestOffer);
-  const price = highestBid ? `Ð ${highestBid.toLocaleString()}` : `Ð ${priceAmount.toLocaleString()}`;
+  const priceValue = highestBid ? highestBid.toLocaleString() : priceAmount.toLocaleString();
   const type = details.propertyType || "N/A";
   const beds = details.propertyBedrooms || 0;
   const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
@@ -358,8 +359,8 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
               </div>
               <div className="shrink-0 bg-green-50 dark:bg-[#102418]/80 px-5 py-3 rounded-2xl border border-green-100 dark:border-[#1A3626]">
                 <p className="text-[13px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">{propertyInfo.currentHighestOffer ? 'Highest Offer' : 'Asking Price'}</p>
-                <p className="text-[24px] font-bold text-[#1A3626] dark:text-[#c9a14b] tabular-nums">
-                  {price}
+                <p className="text-[24px] font-bold text-[#1A3626] dark:text-[#c9a14b] tabular-nums flex items-center gap-1">
+                  <Dirham className="text-[22px]" /> {priceValue}
                 </p>
               </div>
             </div>
