@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import api from "@/lib/api";
-import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import Image from "next/image";
@@ -90,6 +90,40 @@ export default function AddPropertyPage() {
 
   const removeImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const moveImage = (index: number, direction: 'left' | 'right') => {
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= images.length) return;
+    setImages(prev => {
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[newIndex];
+      updated[newIndex] = temp;
+      return updated;
+    });
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("draggedIndex", index.toString());
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    const draggedIndexStr = e.dataTransfer.getData("draggedIndex");
+    if (!draggedIndexStr) return;
+    const draggedIndex = parseInt(draggedIndexStr, 10);
+    if (draggedIndex === targetIndex) return;
+
+    setImages(prev => {
+      const updated = [...prev];
+      const [draggedItem] = updated.splice(draggedIndex, 1);
+      updated.splice(targetIndex, 0, draggedItem);
+      return updated;
+    });
   };
 
   const currentConfig = PROPERTY_DOC_CONFIG[formData.propertyCategory]?.[formData.propertyPlan]?.[formData.propertyType];
@@ -358,13 +392,46 @@ export default function AddPropertyPage() {
           </div>
 
           {images.length > 0 && (
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mt-4">
               {images.map((file, i) => (
-                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] group">
-                  <Image src={URL.createObjectURL(file)} alt="Preview" fill className="object-cover" />
-                  <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div 
+                  key={i} 
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, i)}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, i)}
+                  className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] group cursor-grab active:cursor-grabbing hover:border-[#5CD284] dark:hover:border-[#5CD284] transition-all"
+                >
+                  <Image src={URL.createObjectURL(file)} alt="Preview" fill className="object-cover pointer-events-none" />
+                  <button 
+                    type="button" 
+                    onClick={() => removeImage(i)} 
+                    className="absolute top-1 right-1 bg-black/70 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer"
+                    title="Remove Image"
+                  >
                     <X className="w-3 h-3" />
                   </button>
+                  <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs py-1 px-1.5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <button
+                      type="button"
+                      disabled={i === 0}
+                      onClick={() => moveImage(i, 'left')}
+                      className="text-white hover:text-[#5CD284] disabled:opacity-30 disabled:hover:text-white transition-colors cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <span className="text-[10px] text-white font-bold tracking-wider">
+                      #{i + 1}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={i === images.length - 1}
+                      onClick={() => moveImage(i, 'right')}
+                      className="text-white hover:text-[#5CD284] disabled:opacity-30 disabled:hover:text-white transition-colors cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
