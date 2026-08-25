@@ -51,7 +51,7 @@ export default function AddPropertyPage() {
     propertyPrice: "",
     propertyArea: "",
     propertyBedrooms: "1",
-    propertyWashrooms: "1",
+    propertyBathrooms: "1",
     propertyBuiltUpArea: "",
     propertyDescription: "",
     trakheesiNumber: ""
@@ -169,10 +169,10 @@ export default function AddPropertyPage() {
       payload.set('propertyPrice', formData.propertyPrice);
       payload.set('propertyArea', formData.propertyArea);
 
-      // propertyBedrooms and propertyWashrooms: only allowed for APARTMENT or VILLA
+      // propertyBedrooms and propertyBathrooms: only allowed for APARTMENT or VILLA
       if (['APARTMENT', 'VILLA'].includes(formData.propertyType)) {
         if (formData.propertyBedrooms) payload.set('propertyBedrooms', formData.propertyBedrooms);
-        if (formData.propertyWashrooms) payload.set('propertyWashrooms', formData.propertyWashrooms);
+        if (formData.propertyBathrooms) payload.set('propertyBathrooms', formData.propertyBathrooms);
       }
 
       // propertyBuiltUpArea: only allowed for VILLA, LAND, BUILDING
@@ -336,13 +336,13 @@ export default function AddPropertyPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Washrooms</label>
-                  <select name="propertyWashrooms" value={formData.propertyWashrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]">
-                    <option value="1">1 Washroom</option>
-                    <option value="2">2 Washrooms</option>
-                    <option value="3">3 Washrooms</option>
-                    <option value="4">4 Washrooms</option>
-                    <option value="5+">5+ Washrooms</option>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bathrooms</label>
+                  <select name="propertyBathrooms" value={formData.propertyBathrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]">
+                    <option value="1">1 Bathroom</option>
+                    <option value="2">2 Bathrooms</option>
+                    <option value="3">3 Bathrooms</option>
+                    <option value="4">4 Bathrooms</option>
+                    <option value="5+">5+ Bathrooms</option>
                   </select>
                 </div>
               </>
