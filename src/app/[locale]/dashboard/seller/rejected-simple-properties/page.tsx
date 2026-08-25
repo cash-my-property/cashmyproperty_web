@@ -110,6 +110,14 @@ export default function RejectedSimplePropertiesPage() {
   }
 
   if (sellerType !== 'SIMPLE') {
+    if (isSeller) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-[#5CD284]" />
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 p-4 sm:p-8">
         <div>
