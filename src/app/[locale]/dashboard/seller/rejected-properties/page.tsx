@@ -68,11 +68,35 @@ export default function RejectedPropertiesPage() {
       const response = await api.get(`/seller/rejectedPropertydetails/${propertyId}`);
       
       const detailData = response.data?.data || response.data?.result?.data || response.data || {};
-      setViewModalProperty({
+      const normalizedData = {
         ...property,
         ...detailData,
         ...(detailData.propertyDetails || {})
-      });
+      };
+
+      // Ensure normalized key fallbacks for rendering
+      normalizedData.images = normalizedData.propertyImages || normalizedData.images;
+      normalizedData.title = normalizedData.propertyTitle || normalizedData.title;
+      normalizedData.location = normalizedData.propertyLocation || normalizedData.location;
+      normalizedData.description = normalizedData.propertyDescription || normalizedData.description;
+      normalizedData.propertyId = normalizedData.propertyId || normalizedData.listingId || propertyId;
+      
+      if (normalizedData.propertyPrice) {
+        normalizedData.pricing = {
+          price: {
+            amount: normalizedData.propertyPrice.amount || 0,
+            currency: normalizedData.propertyPrice.currency || "AED"
+          }
+        };
+      }
+      
+      normalizedData.details = {
+        bedrooms: normalizedData.propertyBedrooms || normalizedData.details?.bedrooms || 0,
+        washrooms: normalizedData.propertyBathrooms || normalizedData.propertyWashrooms || normalizedData.details?.washrooms || 0,
+        area: normalizedData.propertyArea || normalizedData.details?.area || { value: 0, unit: "sqft" }
+      };
+
+      setViewModalProperty(normalizedData);
     } catch (err) {
       console.error("Failed to fetch rejected property details:", err);
       setViewModalProperty(property);
@@ -264,11 +288,7 @@ export default function RejectedPropertiesPage() {
                   <span className="line-clamp-1">{property.location || property.propertyLocation || "Dubai"}</span>
                 </p>
                 
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {property.details?.bedrooms || property.specs?.beds || 0}</div>
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {property.details?.washrooms || property.specs?.washrooms || 0}</div>
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.details?.area?.value || property.area?.value || 0} {property.details?.area?.unit || property.area?.unit || "sqft"}</div>
-                </div>
+
 
                 <div className="mt-1 mb-3 bg-red-50 dark:bg-red-500/10 rounded-lg p-2.5 text-xs border border-red-100 dark:border-red-900/30">
                     <p className="text-red-700 dark:text-red-400 font-bold mb-1">Rejected Count: {property.rejectionCount ?? property.rejectedCount ?? 0}</p>
