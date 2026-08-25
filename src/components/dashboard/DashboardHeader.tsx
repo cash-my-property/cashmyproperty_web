@@ -152,9 +152,6 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
             <button 
               onClick={() => {
                 setShowNotifications(!showNotifications);
-                if (!showNotifications) {
-                  markAllAsRead();
-                }
               }}
               className="relative w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors cursor-pointer"
             >
@@ -174,15 +171,28 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                   <div className="px-4 py-3 border-b border-gray-50 dark:border-[#1A3626] flex items-center justify-between bg-gray-50/50 dark:bg-[#102418]/50">
                     <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
                     {notifications.length > 0 && (
-                      <button 
-                        onClick={() => {
-                          clearAllNotifications();
-                          setShowNotifications(false);
-                        }}
-                        className="text-[11px] font-bold text-gray-400 hover:text-rose-500 transition-colors"
-                      >
-                        Clear All
-                      </button>
+                      <div className="flex gap-2.5 items-center">
+                        {notifications.some(n => !n.read) && (
+                          <button 
+                            onClick={() => {
+                              markAllAsRead();
+                            }}
+                            className="text-[11px] font-bold text-[#5CD284] hover:text-[#4ab872] transition-colors cursor-pointer"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                        <span className="text-gray-300 dark:text-[#1A3626] text-[10px]">|</span>
+                        <button 
+                          onClick={() => {
+                            clearAllNotifications();
+                            setShowNotifications(false);
+                          }}
+                          className="text-[11px] font-bold text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
+                        >
+                          Clear All
+                        </button>
+                      </div>
                     )}
                   </div>
                   
@@ -194,7 +204,15 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                       </div>
                     ) : (
                       notifications.map((notif) => (
-                        <div key={notif.id} className="p-4 flex gap-3 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors group/item relative">
+                        <div 
+                          key={notif.id} 
+                          onClick={() => {
+                            if (!notif.read) {
+                              markAsRead(notif.id);
+                            }
+                          }}
+                          className={`p-4 flex gap-3 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors group/item relative cursor-pointer ${!notif.read ? 'bg-green-50/10 dark:bg-[#163321]/10' : ''}`}
+                        >
                           <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                             notif.type === 'success' ? 'bg-green-500' :
                             notif.type === 'warning' ? 'bg-amber-500' :
