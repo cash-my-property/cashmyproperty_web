@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import api from "@/lib/api";
-import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import Image from "next/image";
@@ -164,6 +164,14 @@ useEffect(() => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const getExistingDoc = (docType: string) => {
+    if (!existingDocs) return null;
+    if (Array.isArray(existingDocs)) {
+      return existingDocs.find((d: any) => d.type === docType || d.documentType === docType || d.name === docType);
+    }
+    return existingDocs[docType] || null;
+  };
+
   const currentConfig = PROPERTY_DOC_CONFIG[formData.propertyCategory]?.[formData.propertyPlan]?.[formData.propertyType];
   const requiredDocs = currentConfig?.required || [];
   const minImages = currentConfig?.images?.min || 1;
@@ -185,8 +193,8 @@ useEffect(() => {
       return;
     }
     for (const doc of requiredDocs) {
-      const hasExistingDoc = existingDocs.some(d => d.type === doc || d.documentType === doc);
-      if (!documents[doc] && !hasExistingDoc) {
+      const existing = getExistingDoc(doc);
+      if (!documents[doc] && !existing) {
         setError(`Missing required document: ${doc}`);
         setIsSubmitting(false);
         return;
@@ -244,6 +252,7 @@ useEffect(() => {
       });
 
       payload.append('deletedImages', JSON.stringify(deletedImages));
+      payload.append('imagesToRemove', JSON.stringify(deletedImages));
       payload.append('deletedDocs', JSON.stringify(deletedDocs));
       await api.patch(`/seller/editRejectedSimpleListing/${params.id}`, payload, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -500,12 +509,82 @@ useEffect(() => {
             />
           </div>
 
-          {images.length > 0 && (
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mt-4">
+          {/* Combined Image Gallery (Existing + New) */}
+          {(existingImages.filter(img => !deletedImages.includes(img._id || img.id || img.public_id)).length > 0 || images.length > 0) && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mt-4">
+              {/* Existing Images */}
+              {existingImages
+                .filter(img => !deletedImages.includes(img._id || img.id || img.public_id))
+                .map((img, i) => {
+                  const imgId = img._id || img.id || img.public_id;
+                  const imgSrc = img.url || img;
+                  return (
+                    <div key={`existing-${imgId}-${i}`} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] group">
+                      <Image src={imgSrc} alt="Existing Preview" fill className="object-cover" />
+                      <span className="absolute bottom-1 left-1 bg-gray-900/70 dark:bg-black/70 text-[10px] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                        Existing
+                      </span>
+                      <button 
+                        type="button" 
+                        onClick={() => setDeletedImages(prev => [...prev, imgId])} 
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+              {/* New Images */}
               {images.map((file, i) => (
-                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] group">
-                  <Image src={URL.createObjectURL(file)} alt="Preview" fill className="object-cover" />
-                  <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div 
+                  key={`new-${i}`} 
+                  className="relative aspect-square rounded-xl overflow-hidden border border-[#5CD284] group"
+                >
+                  <Image src={URL.createObjectURL(file)} alt="New Preview" fill className="object-cover" />
+                  <span className="absolute bottom-1 left-1 bg-[#1A3626] text-[10px] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                    New
+                  </span>
+                  
+                  {/* Reordering Controls */}
+                  <div className="absolute bottom-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    {i > 0 && (
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setImages(prev => {
+                            const updated = [...prev];
+                            const temp = updated[i];
+                            updated[i] = updated[i - 1];
+                            updated[i - 1] = temp;
+                            return updated;
+                          });
+                        }} 
+                        className="bg-black/60 text-white p-1 rounded-md hover:bg-black/80 cursor-pointer"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                    )}
+                    {i < images.length - 1 && (
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setImages(prev => {
+                            const updated = [...prev];
+                            const temp = updated[i];
+                            updated[i] = updated[i + 1];
+                            updated[i + 1] = temp;
+                            return updated;
+                          });
+                        }} 
+                        className="bg-black/60 text-white p-1 rounded-md hover:bg-black/80 cursor-pointer"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
                     <X className="w-3 h-3" />
                   </button>
                 </div>
@@ -522,36 +601,64 @@ useEffect(() => {
             <p className="text-gray-500">No documents required or unsupported configuration.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {requiredDocs.map((doc: string) => (
-                <div key={doc} className="bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] p-4 rounded-xl">
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 capitalize">
-                    {doc.replace(/([A-Z])/g, ' $1').trim()} *
-                  </label>
-                  {documents[doc] ? (
-                    <div className="flex items-center justify-between bg-white dark:bg-[#102418] p-2 rounded-lg border border-[#5CD284]">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <FileIcon className="w-4 h-4 text-[#5CD284] flex-shrink-0" />
-                        <span className="text-xs truncate">{documents[doc].name}</span>
-                      </div>
-                      <button type="button" onClick={() => {
-                        const newDocs = {...documents};
-                        delete newDocs[doc];
-                        setDocuments(newDocs);
-                      }}>
-                        <X className="w-4 h-4 text-red-500" />
-                      </button>
+              {requiredDocs.map((doc: string) => {
+                const existing = getExistingDoc(doc);
+                const isRequired = !existing; // If it doesn't exist, it's required!
+                return (
+                  <div key={doc} className="bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] p-4 rounded-xl flex flex-col justify-between">
+                    <div className="mb-4">
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 capitalize">
+                        {doc.replace(/([A-Z])/g, ' $1').trim()} {isRequired ? '*' : ''}
+                      </label>
+                      
+                      {existing && (
+                        <div className="mb-3 p-2.5 bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30 rounded-lg flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider">Already Uploaded</p>
+                            <a 
+                              href={existing.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-xs text-[#1A3626] dark:text-[#c9a14b] font-semibold hover:underline truncate block"
+                            >
+                              {existing.fileName || 'View Document'}
+                            </a>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <input 
-                      required
-                      type="file" 
-                      accept=".pdf,image/*" 
-                      onChange={(e) => handleDocumentChange(doc, e)}
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer"
-                    />
-                  )}
-                </div>
-              ))}
+
+                    {documents[doc] ? (
+                      <div className="flex items-center justify-between bg-white dark:bg-[#102418] p-2.5 rounded-lg border border-[#5CD284]">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <FileIcon className="w-4 h-4 text-[#5CD284] flex-shrink-0" />
+                          <span className="text-xs truncate">{documents[doc].name}</span>
+                        </div>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            const newDocs = {...documents};
+                            delete newDocs[doc];
+                            setDocuments(newDocs);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <X className="w-4 h-4 text-red-500" />
+                        </button>
+                      </div>
+                    ) : (
+                      <input 
+                        required={isRequired}
+                        type="file" 
+                        accept=".pdf,image/*" 
+                        onChange={(e) => handleDocumentChange(doc, e)}
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer"
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
