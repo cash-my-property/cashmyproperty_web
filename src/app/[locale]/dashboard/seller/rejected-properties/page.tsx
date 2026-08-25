@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
@@ -20,6 +20,7 @@ export default function RejectedPropertiesPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
+  const [modalActiveImage, setModalActiveImage] = useState<number>(0);
   const [editModalProperty, setEditModalProperty] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -97,6 +98,7 @@ export default function RejectedPropertiesPage() {
       };
 
       setViewModalProperty(normalizedData);
+      setModalActiveImage(0);
     } catch (err) {
       console.error("Failed to fetch rejected property details:", err);
       setViewModalProperty(property);
@@ -316,23 +318,69 @@ export default function RejectedPropertiesPage() {
             </div>
             
             <div className="p-6 overflow-y-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {(Array.isArray(viewModalProperty.images) ? viewModalProperty.images[0]?.url || viewModalProperty.images[0] : viewModalProperty.images) || viewModalProperty.image ? (
-                  <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden shadow-sm">
-                    <Image 
-                      src={(Array.isArray(viewModalProperty.images) ? viewModalProperty.images[0]?.url || viewModalProperty.images[0] : viewModalProperty.images) || viewModalProperty.image} 
-                      alt={viewModalProperty.title || viewModalProperty.propertyTitle}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover"
-                    />
+              {/* Image Gallery */}
+              {(() => {
+                const images = Array.isArray(viewModalProperty.images) ? viewModalProperty.images : (viewModalProperty.propertyImages || []);
+                return (
+                  <div className="flex flex-col gap-3 mb-6">
+                    <div className="relative h-64 sm:h-96 w-full rounded-2xl overflow-hidden shadow-sm bg-gray-100 dark:bg-[#091711] group">
+                      {images.length > 0 ? (
+                        <>
+                          <Image 
+                            src={images[modalActiveImage]?.url || images[modalActiveImage]} 
+                            alt={viewModalProperty.title || viewModalProperty.propertyTitle}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 80vw"
+                            className="object-cover"
+                          />
+                          
+                          {images.length > 1 && (
+                            <>
+                              <button 
+                                onClick={() => setModalActiveImage(prev => (prev === 0 ? images.length - 1 : prev - 1))}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#c9a14b] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                              >
+                                <ChevronLeft className="w-6 h-6" />
+                              </button>
+                              <button 
+                                onClick={() => setModalActiveImage(prev => (prev === images.length - 1 ? 0 : prev + 1))}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 dark:bg-black/50 hover:bg-white dark:hover:bg-black text-[#1A3626] dark:text-[#c9a14b] rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                              >
+                                <ChevronRight className="w-6 h-6" />
+                              </button>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Building className="w-12 h-12 text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Thumbnails */}
+                    {images.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                        {images.map((img: any, idx: number) => (
+                          <button 
+                            key={idx}
+                            onClick={() => setModalActiveImage(idx)}
+                            className={`relative w-20 h-14 shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 ${modalActiveImage === idx ? 'border-[#1A3626] dark:border-[#c9a14b] scale-95 shadow' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                          >
+                            <Image 
+                              src={img?.url || img} 
+                              alt="Thumbnail" 
+                              fill 
+                              sizes="80px"
+                              className="object-cover" 
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                    <Building className="w-12 h-12 text-gray-300" />
-                  </div>
-                )}
-              </div>
+                );
+              })()}
               
               <div className="space-y-6">
                 <div>
@@ -355,16 +403,76 @@ export default function RejectedPropertiesPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Area</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.details?.area?.value || viewModalProperty.area?.value || 0} {viewModalProperty.details?.area?.unit || viewModalProperty.area?.unit || "sqft"}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.details?.area?.value || viewModalProperty.propertyArea?.value || viewModalProperty.propertyArea || viewModalProperty.area?.value || 0} {viewModalProperty.details?.area?.unit || viewModalProperty.propertyArea?.unit || "sqft"}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Bedrooms</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.details?.bedrooms || viewModalProperty.specs?.beds || "N/A"}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.details?.bedrooms || viewModalProperty.propertyBedrooms || viewModalProperty.specs?.beds || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Washrooms</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.specs?.washrooms || "N/A"}</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.details?.washrooms || viewModalProperty.propertyBathrooms || viewModalProperty.propertyWashrooms || viewModalProperty.specs?.washrooms || "N/A"}</p>
                   </div>
+                  {viewModalProperty.listingPurpose && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Listing Purpose</p>
+                      <p className="font-semibold text-gray-900 dark:text-white uppercase">{viewModalProperty.listingPurpose}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.propertyCategory && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Category</p>
+                      <p className="font-semibold text-gray-900 dark:text-white uppercase">{viewModalProperty.propertyCategory}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.propertyPlan && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Property Plan</p>
+                      <p className="font-semibold text-gray-900 dark:text-white uppercase">{viewModalProperty.propertyPlan}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.propertyType && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Property Type</p>
+                      <p className="font-semibold text-gray-900 dark:text-white uppercase">{viewModalProperty.propertyType}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.whatsappNumber && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">WhatsApp Contact</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.whatsappNumber}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.parkingSpaces !== undefined && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Parking Spaces</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.parkingSpaces}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.furnishingStatus && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Furnishing</p>
+                      <p className="font-semibold text-gray-900 dark:text-white uppercase">{viewModalProperty.furnishingStatus}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.availability && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Availability</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.availability}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.permitNumber && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Permit Number</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.permitNumber}</p>
+                    </div>
+                  )}
+                  {viewModalProperty.referenceNumber && (
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Reference Number</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.referenceNumber}</p>
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Date Added</p>
                     <p className="font-semibold text-gray-900 dark:text-white">{new Date(viewModalProperty.createdAt).toLocaleDateString()}</p>
@@ -382,6 +490,52 @@ export default function RejectedPropertiesPage() {
                     {viewModalProperty.description || viewModalProperty.propertyDescription || "No description provided."}
                   </p>
                 </div>
+
+                {/* Amenities List */}
+                {viewModalProperty.features && viewModalProperty.features.length > 0 && (
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Amenities</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {viewModalProperty.features.map((item: string, idx: number) => (
+                        <span key={idx} className="bg-gray-50 dark:bg-[#163321]/30 border border-gray-100 dark:border-[#1A3626] text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded-full text-xs font-semibold">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Documents Download Block */}
+                {viewModalProperty.propertyDocuments && Object.keys(viewModalProperty.propertyDocuments).length > 0 && (
+                  <div className="border-t border-gray-100 dark:border-[#1A3626] pt-6">
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Property Documents</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {Object.entries(viewModalProperty.propertyDocuments).map(([key, doc]: [string, any]) => {
+                        if (!doc || !doc.url) return null;
+                        const label = key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase());
+                        return (
+                          <a 
+                            key={key}
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#163321]/30 hover:bg-[#1A3626]/10 dark:hover:bg-[#163321]/50 rounded-xl border border-gray-100 dark:border-[#1A3626] transition-colors group"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <FileText className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                              <span className="text-[13px] font-semibold text-gray-800 dark:text-gray-200 truncate">
+                                {label}
+                              </span>
+                            </div>
+                            <Download className="w-4 h-4 text-gray-400 group-hover:text-[#1A3626] dark:group-hover:text-[#c9a14b] transition-colors shrink-0" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
