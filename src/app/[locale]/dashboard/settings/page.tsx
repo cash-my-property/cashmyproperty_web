@@ -1,7 +1,7 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { User, Lock, Bell, Camera, Loader2 } from "lucide-react";
+import { User, Lock, Bell, Camera, Loader2, Trash2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -166,6 +166,16 @@ export default function SettingsPage() {
           >
             <Lock className="w-4 h-4" /> {content.tabs.security}
           </button>
+          <button 
+            onClick={() => setActiveTab('delete')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] ${
+              activeTab === 'delete' 
+                ? 'bg-red-600/10 text-red-600 dark:text-red-500' 
+                : 'text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/10 hover:text-red-600'
+            }`}
+          >
+            <Trash2 className="w-4 h-4" /> {content.tabs.deleteAccount}
+          </button>
         </div>
 
         {/* Content Area */}
@@ -304,7 +314,7 @@ export default function SettingsPage() {
                 />
               </div>
               
-              <div className="pt-4 pb-8 border-b border-gray-100 dark:border-[#1A3626]">
+              <div className="pt-4 pb-8">
                 <button 
                   onClick={handlePasswordUpdate}
                   disabled={isSavingSecurity}
@@ -314,53 +324,23 @@ export default function SettingsPage() {
                   {content.form.updatePassword}
                 </button>
               </div>
+            </div>
+          )}
 
-              {/* Danger Zone: Delete Account */}
-              <div className="space-y-4 pt-4">
-                <div>
-                  <h3 className="text-lg font-bold text-red-600 dark:text-red-500">Delete Account</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Once you delete your account, there is no going back. Please be certain.
-                  </p>
-                </div>
-                
-                {isDeleting ? (
-                  <div className="space-y-4 animate-in fade-in">
-                    <div className="space-y-2">
-                      <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">Reason for deletion</label>
-                      <textarea 
-                        value={deleteReason}
-                        onChange={(e) => setDeleteReason(e.target.value)}
-                        placeholder="Please tell us why you are leaving..."
-                        className="w-full px-4 py-3 rounded-xl bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-900 focus:outline-none focus:border-red-500 transition-colors text-gray-900 dark:text-white h-24 resize-none"
-                      />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button 
-                        onClick={handleDeleteAccount}
-                        disabled={!deleteReason.trim() || isSubmittingDelete}
-                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-600 text-white font-bold text-[14px] tracking-wide hover:bg-red-700 transition-all disabled:opacity-50 cursor-pointer"
-                      >
-                        {isSubmittingDelete ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        Confirm Deletion
-                      </button>
-                      <button 
-                        onClick={() => { setIsDeleting(false); setDeleteReason(""); }}
-                        disabled={isSubmittingDelete}
-                        className="px-6 py-3 rounded-xl bg-gray-100 dark:bg-[#102418] text-gray-700 dark:text-gray-300 font-bold text-[14px] hover:bg-gray-200 dark:hover:bg-[#1A3626] transition-all"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button 
-                    onClick={() => setIsDeleting(true)}
-                    className="px-6 py-3 rounded-xl border border-red-200 dark:border-red-900 text-red-600 dark:text-red-500 font-bold text-[14px] hover:bg-red-50 dark:hover:bg-red-500/10 transition-all cursor-pointer"
-                  >
-                    Delete Account
-                  </button>
-                )}
+          {activeTab === 'delete' && (
+            <div className="space-y-6 animate-in fade-in duration-500 max-w-md">
+              <div>
+                <h3 className="text-lg font-bold text-red-600 dark:text-red-500">{content.tabs.deleteAccount}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+              </div>
+              <div className="pt-2">
+                <button 
+                  className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[14px] tracking-wide transition-all cursor-pointer shadow-sm hover:shadow-md"
+                >
+                  Delete Account
+                </button>
               </div>
             </div>
           )}

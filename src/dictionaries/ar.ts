@@ -671,7 +671,8 @@ export const content = {
       tabs: {
         personal: "المعلومات الشخصية",
         security: "الأمان",
-        notifications: "الإشعارات"
+        notifications: "الإشعارات",
+        deleteAccount: "حذف الحساب"
       },
       form: {
         firstName: "الاسم الأول",

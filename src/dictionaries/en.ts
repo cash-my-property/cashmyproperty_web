@@ -567,7 +567,8 @@ export const content = {
       tabs: {
         personal: "Personal Info",
         security: "Security",
-        notifications: "Notifications"
+        notifications: "Notifications",
+        deleteAccount: "Delete Account"
       },
       form: {
         firstName: "First Name",
