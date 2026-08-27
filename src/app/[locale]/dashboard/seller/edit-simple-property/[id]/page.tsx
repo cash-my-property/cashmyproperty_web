@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef } from "react";
 import api from "@/lib/api";
@@ -33,7 +33,46 @@ const PROPERTY_DOC_CONFIG: any = {
   }
 };
 
-const AMENITIES = ["Balcony", "Central A/C", "Covered Parking", "Private Pool", "Shared Gym", "Security", "View of Water", "Children's Play Area"];
+const AMENITIES_CONFIG: Record<string, string[]> = {
+  RESIDENTIAL: [
+    "Balcony",
+    "Barbecue Area",
+    "Built in Wardrobes",
+    "Central A/C",
+    "Covered Parking",
+    "Private Gym",
+    "Private Jacuzzi",
+    "Kitchen Appliances",
+    "Maids Room",
+    "Pets Allowed",
+    "Private Garden",
+    "Private Pool",
+    "Shared Pool",
+    "Study",
+    "View of Water",
+    "Security",
+    "Concierge",
+    "Shared Spa",
+    "Shared Gym",
+    "Maid Service",
+    "Walk-in Closet",
+    "View of Landmark",
+    "Children's Play Area",
+    "Lobby in Building",
+    "Children's Pool",
+    "Vastu-compliant"
+  ],
+  COMMERCIAL: [
+    "Networked",
+    "Covered Parking",
+    "Shared Pool",
+    "Shared Gym",
+    "Dining in building",
+    "Conference room",
+    "Lobby in Building",
+    "Vastu-compliant"
+  ]
+};
 
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -82,10 +121,39 @@ export default function EditSimplePropertyPage() {
   const [deletedDocs, setDeletedDocs] = useState<string[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [documents, setDocuments] = useState<Record<string, File>>({});
+  const [step, setStep] = useState(1);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-useEffect(() => {
+  const validateStep = (s: number): boolean => {
+    setError(null);
+    if (s === 1) {
+      if (!formData.propertyTitle.trim()) { setError('Property title is required.'); return false; }
+      if (!formData.listingPurpose) { setError('Listing purpose is required.'); return false; }
+      if (!formData.propertyCategory) { setError('Category is required.'); return false; }
+    }
+    if (s === 2) {
+      if (!formData.propertyLocation.trim()) { setError('Location is required.'); return false; }
+      if (!formData.propertyPrice || Number(formData.propertyPrice) <= 0) { setError('A valid price is required.'); return false; }
+      if (!formData.propertyArea || Number(formData.propertyArea) <= 0) { setError('A valid area is required.'); return false; }
+      if (!formData.whatsappNumber.trim()) { setError('WhatsApp number is required.'); return false; }
+      if (!formData.permitNumber.trim()) { setError('Trakheesi permit number is required.'); return false; }
+      if (!formData.referenceNumber.trim()) { setError('Reference number is required.'); return false; }
+      if (!formData.unitNumber.trim()) { setError('Unit number is required.'); return false; }
+      if (!formData.propertyDescription.trim()) { setError('Description is required.'); return false; }
+      if (amenities.length === 0) { setError('Please select at least one amenity.'); return false; }
+    }
+    return true;
+  };
+
+  const isStepValid = (s: number): boolean => {
+    if (s < 1) return false;
+    if (s >= 1 && (!formData.propertyTitle.trim() || !formData.listingPurpose || !formData.propertyCategory)) return false;
+    if (s >= 2 && (!formData.propertyLocation.trim() || !formData.propertyPrice || !formData.propertyArea || !formData.whatsappNumber.trim() || !formData.permitNumber.trim() || !formData.referenceNumber.trim() || !formData.unitNumber.trim() || !formData.propertyDescription.trim() || amenities.length === 0)) return false;
+    return true;
+  };
+
+  useEffect(() => {
     const fetchProperty = async () => {
       if (!params.id) return;
       try {
@@ -136,10 +204,19 @@ useEffect(() => {
   
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    if (type === 'number') {
+      if (value !== "" && Number(value) < 0) {
+        return;
+      }
+    }
+    setFormData({ ...formData, [name]: value });
     // Reset documents if category/plan/type changes to avoid orphaned files
     if (["propertyCategory", "propertyPlan", "propertyType"].includes(e.target.name)) {
       setDocuments({});
+      if (e.target.name === "propertyCategory") {
+        setAmenities([]);
+      }
     }
   };
 
@@ -295,8 +372,42 @@ useEffect(() => {
       ) : (
       <>
       <div className="mb-6 sm:mb-10">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Edit Rejected Property</h1>
-        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Update your property details to resolve the rejection issues and re-submit.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Edit Rejected Simple Listing</h1>
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Update your listing details to resolve the rejection issues and re-submit.</p>
+      </div>
+
+      {/* Stepper Progress Indicator */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between relative">
+          <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 dark:bg-[#1A3626] z-0">
+            <div
+              className="h-full bg-[#5CD284] transition-all duration-500"
+              style={{ width: step === 1 ? '0%' : step === 2 ? '50%' : '100%' }}
+            />
+          </div>
+          {[
+            { num: 1, label: 'Basic Info' },
+            { num: 2, label: 'Details & Amenities' },
+            { num: 3, label: 'Media & Docs' },
+          ].map(({ num, label }) => (
+            <div key={num} className="flex flex-col items-center z-10">
+              <button
+                type="button"
+                onClick={() => { if (isStepValid(num - 1)) setStep(num); }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 border-2 ${
+                  step === num
+                    ? 'bg-[#5CD284] border-[#5CD284] text-white shadow-lg shadow-[#5CD284]/30 scale-110'
+                    : isStepValid(num)
+                    ? 'bg-[#1A3626] border-[#5CD284] text-white'
+                    : 'bg-white dark:bg-[#102418] border-gray-300 dark:border-[#1A3626] text-gray-400'
+                }`}
+              >
+                {isStepValid(num) && step > num ? 'âœ“' : num}
+              </button>
+              <span className={`mt-2 text-xs font-semibold ${step === num ? 'text-[#5CD284]' : 'text-gray-400 dark:text-gray-500'}`}>{label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {error && (
@@ -307,378 +418,325 @@ useEffect(() => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-white dark:bg-[#102418] p-4 sm:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]">
-        
-        {/* Basic Info */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4">1. Basic Information</h2>
-          
-          <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Title *</label>
-            <input required name="propertyTitle" value={formData.propertyTitle} onChange={handleChange} placeholder="e.g. Luxury 4BHK Villa in Palm Jumeirah" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors" />
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Step 1: Basic Info */}
+        {step === 1 && (
+          <div className="space-y-6 animate-fadeIn">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4">1. Basic Information</h2>
+
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Listing Purpose *</label>
-              <select name="listingPurpose" value={formData.listingPurpose} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                <option value="SALE">For Sale</option>
-                <option value="RENT">For Rent</option>
-              </select>
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Title *</label>
+              <input required name="propertyTitle" value={formData.propertyTitle} onChange={handleChange} placeholder="e.g. Luxury 4BHK Villa in Palm Jumeirah" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors" />
             </div>
-            {formData.listingPurpose === "RENT" && (
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Rental Period *</label>
-                <select name="rentalPeriod" value={formData.rentalPeriod} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                  <option value="PER_YEAR">Per Year</option>
-                  <option value="PER_MONTH">Per Month</option>
-                  <option value="PER_WEEK">Per Week</option>
-                  <option value="PER_DAY">Per Day</option>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Listing Purpose *</label>
+                <select name="listingPurpose" value={formData.listingPurpose} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                  <option value="SALE">For Sale</option>
+                  <option value="RENT">For Rent</option>
                 </select>
               </div>
-            )}
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Category</label>
-              <select name="propertyCategory" value={formData.propertyCategory} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                <option value="RESIDENTIAL">Residential</option>
-                <option value="COMMERCIAL">Commercial</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Completion Status</label>
-              <select name="propertyPlan" value={formData.propertyPlan} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                <option value="READY">Ready</option>
-                <option value="OFF_PLAN">Off-Plan</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Type</label>
-              <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                {formData.propertyCategory === 'RESIDENTIAL' ? (
-                  <>
-                    <option value="APARTMENT">Apartment</option>
-                    <option value="VILLA">Villa</option>
-                    {formData.propertyPlan === 'READY' && <option value="LAND">Land</option>}
-                  </>
-                ) : (
-                  <>
-                    <option value="RETAIL">Retail</option>
-                    {formData.propertyPlan === 'READY' && (
-                      <>
-                        <option value="OFFICES">Offices</option>
-                        <option value="BUILDING">Building</option>
-                      </>
-                    )}
-                  </>
-                )}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Details & Pricing */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4 pt-4">2. Details & Pricing</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Location *</label>
-              <input required name="propertyLocation" value={formData.propertyLocation} onChange={handleChange} placeholder="e.g. Dubai Marina" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Price (AED) *</label>
-              <input required type="number" name="propertyPrice" value={formData.propertyPrice} onChange={handleChange} placeholder="e.g. 1500000" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Trakheesi Number *</label>
-              <input required type="number" name="trakheesiNumber" value={formData.trakheesiNumber} onChange={handleChange} placeholder="e.g. 12345678" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Total Area (sq.ft) *</label>
-              <input required type="number" name="propertyArea" value={formData.propertyArea} onChange={handleChange} placeholder="e.g. 2500" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            {["VILLA", "LAND", "BUILDING"].includes(formData.propertyType) && (
+              {formData.listingPurpose === "RENT" && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Rental Period *</label>
+                  <select name="rentalPeriod" value={formData.rentalPeriod} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                    <option value="PER_YEAR">Per Year</option>
+                    <option value="PER_MONTH">Per Month</option>
+                    <option value="PER_WEEK">Per Week</option>
+                    <option value="PER_DAY">Per Day</option>
+                  </select>
+                </div>
+              )}
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Built-up Area (sq.ft) *</label>
-                <input required type="number" name="propertyBuiltUpArea" value={formData.propertyBuiltUpArea} onChange={handleChange} placeholder="e.g. 2000" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                <select name="propertyCategory" value={formData.propertyCategory} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                  <option value="RESIDENTIAL">Residential</option>
+                  <option value="COMMERCIAL">Commercial</option>
+                </select>
               </div>
-            )}
-            {["APARTMENT", "VILLA"].includes(formData.propertyType) && (
-              <>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Completion Status</label>
+                <select name="propertyPlan" value={formData.propertyPlan} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                  <option value="READY">Ready</option>
+                  <option value="OFF_PLAN">Off-Plan</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Type</label>
+                <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                  {formData.propertyCategory === 'RESIDENTIAL' ? (
+                    <>
+                      <option value="APARTMENT">Apartment</option>
+                      <option value="VILLA">Villa</option>
+                      {formData.propertyPlan === 'READY' && <option value="LAND">Land</option>}
+                    </>
+                  ) : (
+                    <>
+                      <option value="RETAIL">Retail</option>
+                      {formData.propertyPlan === 'READY' && (
+                        <>
+                          <option value="OFFICES">Offices</option>
+                          <option value="BUILDING">Building</option>
+                        </>
+                      )}
+                    </>
+                  )}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Details, Pricing & Amenities */}
+        {step === 2 && (
+          <div className="space-y-6 animate-fadeIn">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4">2. Details &amp; Pricing</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Location *</label>
+                <input required name="propertyLocation" value={formData.propertyLocation} onChange={handleChange} placeholder="e.g. Dubai Marina" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Price (AED) *</label>
+                <input required type="number" name="propertyPrice" min="1" value={formData.propertyPrice} onChange={handleChange} placeholder="e.g. 1500000" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Total Area (sq.ft) *</label>
+                <input required type="number" name="propertyArea" min="1" value={formData.propertyArea} onChange={handleChange} placeholder="e.g. 2500" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              {["VILLA", "LAND", "BUILDING"].includes(formData.propertyType) && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bedrooms</label>
-                  <select name="propertyBedrooms" value={formData.propertyBedrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]">
-                    <option value="Studio">Studio</option>
-                    <option value="1">1 Bedroom</option>
-                    <option value="2">2 Bedrooms</option>
-                    <option value="3">3 Bedrooms</option>
-                    <option value="4">4 Bedrooms</option>
-                    <option value="5+">5+ Bedrooms</option>
-                  </select>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Built-up Area (sq.ft) *</label>
+                  <input required type="number" name="propertyBuiltUpArea" min="1" value={formData.propertyBuiltUpArea} onChange={handleChange} placeholder="e.g. 2000" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bathrooms</label>
-                  <select name="propertyBathrooms" value={formData.propertyBathrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]">
-                    <option value="1">1 Bathroom</option>
-                    <option value="2">2 Bathrooms</option>
-                    <option value="3">3 Bathrooms</option>
-                    <option value="4">4 Bathrooms</option>
-                    <option value="5+">5+ Bathrooms</option>
-                  </select>
-                </div>
-              </>
-            )}
-          </div>
+              )}
+              {["APARTMENT", "VILLA"].includes(formData.propertyType) && (
+                <>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bedrooms</label>
+                    <select name="propertyBedrooms" value={formData.propertyBedrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] max-h-48 overflow-y-auto">
+                      <option value="Studio">Studio</option>
+                      {Array.from({ length: 30 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num.toString()}>{num} {num === 1 ? 'Bedroom' : 'Bedrooms'}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bathrooms</label>
+                    <select name="propertyBathrooms" value={formData.propertyBathrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] max-h-48 overflow-y-auto">
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num.toString()}>{num} {num === 1 ? 'Bathroom' : 'Bathrooms'}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">WhatsApp Number *</label>
-              <input required name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="e.g. +971501234567" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">WhatsApp Number *</label>
+                <input required name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="e.g. +971501234567" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Trakheesi Permit Number *</label>
+                <input required name="permitNumber" value={formData.permitNumber} onChange={handleChange} placeholder="e.g. 7123456789" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Reference Number *</label>
+                <input required name="referenceNumber" value={formData.referenceNumber} onChange={handleChange} placeholder="e.g. REF-1234567890" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Unit Number *</label>
+                <input required name="unitNumber" value={formData.unitNumber} onChange={handleChange} placeholder="e.g. Apartment 1402" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Parking Spaces *</label>
+                <input required type="number" name="parkingSpaces" value={formData.parkingSpaces} onChange={handleChange} placeholder="e.g. 1" min="0" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Furnishing Status *</label>
+                <select name="furnishingStatus" value={formData.furnishingStatus} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                  <option value="NOT_FURNISHED">Unfurnished</option>
+                  <option value="SEMI">Semi-Furnished</option>
+                  <option value="FULL">Fully Furnished</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Availability *</label>
+                <input required name="availability" value={formData.availability} onChange={handleChange} placeholder="e.g. Vacant, or Date" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              </div>
             </div>
+
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Permit Number *</label>
-              <input required name="permitNumber" value={formData.permitNumber} onChange={handleChange} placeholder="e.g. 7123456789" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description *</label>
+              <textarea required rows={4} name="propertyDescription" value={formData.propertyDescription} onChange={handleChange} placeholder="Describe your property..." className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] resize-none" />
             </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Reference Number *</label>
-              <input required name="referenceNumber" value={formData.referenceNumber} onChange={handleChange} placeholder="e.g. CPM-1029" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Unit Number *</label>
-              <input required name="unitNumber" value={formData.unitNumber} onChange={handleChange} placeholder="e.g. Apartment 1402" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Parking Spaces *</label>
-              <input required type="number" name="parkingSpaces" value={formData.parkingSpaces} onChange={handleChange} placeholder="e.g. 1" min={0} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Furnishing Status *</label>
-              <select name="furnishingStatus" value={formData.furnishingStatus} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                <option value="NOT_FURNISHED">Unfurnished</option>
-                <option value="SEMI">Semi-Furnished</option>
-                <option value="FULL">Fully Furnished</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Availability *</label>
-              <input required name="availability" value={formData.availability} onChange={handleChange} placeholder="e.g. Vacant, or Date" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-2">Amenities *</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {(AMENITIES_CONFIG[formData.propertyCategory] || AMENITIES_CONFIG.RESIDENTIAL).map(amenity => (
+                  <label key={amenity} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-[#1A3626] rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={amenities.includes(amenity)}
+                      onChange={() => handleAmenityToggle(amenity)}
+                      className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284] rounded focus:ring-[#5CD284]"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{amenity}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description *</label>
-            <textarea required rows={4} name="propertyDescription" value={formData.propertyDescription} onChange={handleChange} placeholder="Describe your property..." className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] resize-none" />
-          </div>
-        </div>
+        {/* Step 3: Media & Documents */}
+        {step === 3 && (
+          <div className="space-y-8 animate-fadeIn">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4">3. Media &amp; Documents</h2>
 
-        {/* Amenities */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4 pt-4">3. Amenities *</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {AMENITIES.map(amenity => (
-              <label key={amenity} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-[#1A3626] rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={amenities.includes(amenity)}
-                  onChange={() => handleAmenityToggle(amenity)}
-                  className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284] rounded focus:ring-[#5CD284]"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{amenity}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+            {/* Images Upload */}
+            <div className="space-y-4">
+              <h3 className="text-base font-bold text-gray-700 dark:text-gray-300">Property Images <span className="text-gray-400 font-normal text-sm">(min {minImages})</span></h3>
+              <div className="border-2 border-dashed border-gray-300 dark:border-[#1A3626] rounded-2xl p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-[#163321]/50 transition-colors" onClick={() => imageInputRef.current?.click()}>
+                <UploadCloud className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">Click to upload images</p>
+                <p className="text-sm text-gray-500">Minimum {minImages} images required for {formData.propertyType}</p>
+                <input type="file" multiple accept="image/*" ref={imageInputRef} className="hidden" onChange={handleImageChange} />
+              </div>
 
-        {/* Images Upload */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4 pt-4">4. Property Images</h2>
-          
-          <div className="border-2 border-dashed border-gray-300 dark:border-[#1A3626] rounded-2xl p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-[#163321]/50 transition-colors" onClick={() => imageInputRef.current?.click()}>
-            <UploadCloud className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 dark:text-gray-300 font-medium mb-1">Click to upload images</p>
-            <p className="text-sm text-gray-500">Minimum {minImages} images required for {formData.propertyType}</p>
-            <input 
-              type="file" 
-              multiple 
-              accept="image/*" 
-              ref={imageInputRef} 
-              className="hidden" 
-              onChange={handleImageChange}
-            />
-          </div>
+              {(existingImages.filter(img => !deletedImages.includes(img._id || img.id || img.public_id)).length > 0 || images.length > 0) && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mt-4">
+                  {existingImages
+                    .filter(img => !deletedImages.includes(img._id || img.id || img.public_id))
+                    .map((img, i) => {
+                      const imgId = img._id || img.id || img.public_id;
+                      const imgSrc = img.url || img;
+                      return (
+                        <div key={`existing-${imgId}-${i}`} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] group">
+                          <Image src={imgSrc} alt="Existing Preview" fill className="object-cover" />
+                          <span className="absolute bottom-1 left-1 bg-gray-900/70 dark:bg-black/70 text-[10px] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">Existing</span>
+                          <button type="button" onClick={() => setDeletedImages(prev => [...prev, imgId])} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
 
-          {/* Combined Image Gallery (Existing + New) */}
-          {(existingImages.filter(img => !deletedImages.includes(img._id || img.id || img.public_id)).length > 0 || images.length > 0) && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 mt-4">
-              {/* Existing Images */}
-              {existingImages
-                .filter(img => !deletedImages.includes(img._id || img.id || img.public_id))
-                .map((img, i) => {
-                  const imgId = img._id || img.id || img.public_id;
-                  const imgSrc = img.url || img;
-                  return (
-                    <div key={`existing-${imgId}-${i}`} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] group">
-                      <Image src={imgSrc} alt="Existing Preview" fill className="object-cover" />
-                      <span className="absolute bottom-1 left-1 bg-gray-900/70 dark:bg-black/70 text-[10px] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                        Existing
-                      </span>
-                      <button 
-                        type="button" 
-                        onClick={() => setDeletedImages(prev => [...prev, imgId])} 
-                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
-                      >
+                  {images.map((file, i) => (
+                    <div key={`new-${i}`} className="relative aspect-square rounded-xl overflow-hidden border border-[#5CD284] group">
+                      <Image src={URL.createObjectURL(file)} alt="New Preview" fill className="object-cover" />
+                      <span className="absolute bottom-1 left-1 bg-[#1A3626] text-[10px] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">New</span>
+                      <div className="absolute bottom-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        {i > 0 && (
+                          <button type="button" onClick={() => { setImages(prev => { const updated = [...prev]; const temp = updated[i]; updated[i] = updated[i - 1]; updated[i - 1] = temp; return updated; }); }} className="bg-black/60 text-white p-1 rounded-md hover:bg-black/80 cursor-pointer">
+                            <ChevronLeft className="w-3 h-3" />
+                          </button>
+                        )}
+                        {i < images.length - 1 && (
+                          <button type="button" onClick={() => { setImages(prev => { const updated = [...prev]; const temp = updated[i]; updated[i] = updated[i + 1]; updated[i + 1] = temp; return updated; }); }} className="bg-black/60 text-white p-1 rounded-md hover:bg-black/80 cursor-pointer">
+                            <ChevronRight className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                      <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
                         <X className="w-3 h-3" />
                       </button>
                     </div>
-                  );
-                })}
-
-              {/* New Images */}
-              {images.map((file, i) => (
-                <div 
-                  key={`new-${i}`} 
-                  className="relative aspect-square rounded-xl overflow-hidden border border-[#5CD284] group"
-                >
-                  <Image src={URL.createObjectURL(file)} alt="New Preview" fill className="object-cover" />
-                  <span className="absolute bottom-1 left-1 bg-[#1A3626] text-[10px] text-white px-2 py-0.5 rounded-md font-bold uppercase tracking-wider">
-                    New
-                  </span>
-                  
-                  {/* Reordering Controls */}
-                  <div className="absolute bottom-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    {i > 0 && (
-                      <button 
-                        type="button" 
-                        onClick={() => {
-                          setImages(prev => {
-                            const updated = [...prev];
-                            const temp = updated[i];
-                            updated[i] = updated[i - 1];
-                            updated[i - 1] = temp;
-                            return updated;
-                          });
-                        }} 
-                        className="bg-black/60 text-white p-1 rounded-md hover:bg-black/80 cursor-pointer"
-                      >
-                        <ChevronLeft className="w-3 h-3" />
-                      </button>
-                    )}
-                    {i < images.length - 1 && (
-                      <button 
-                        type="button" 
-                        onClick={() => {
-                          setImages(prev => {
-                            const updated = [...prev];
-                            const temp = updated[i];
-                            updated[i] = updated[i + 1];
-                            updated[i + 1] = temp;
-                            return updated;
-                          });
-                        }} 
-                        className="bg-black/60 text-white p-1 rounded-md hover:bg-black/80 cursor-pointer"
-                      >
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-
-                  <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
-                    <X className="w-3 h-3" />
-                  </button>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Required Documents Upload */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-[#1A3626] pb-4 pt-4">5. Required Documents</h2>
-          
-          {requiredDocs.length === 0 ? (
-            <p className="text-gray-500">No documents required or unsupported configuration.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {requiredDocs.map((doc: string) => {
-                const existing = getExistingDoc(doc);
-                const isRequired = !existing; // If it doesn't exist, it's required!
-                return (
-                  <div key={doc} className="bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] p-4 rounded-xl flex flex-col justify-between">
-                    <div className="mb-4">
-                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 capitalize">
-                        {doc.replace(/([A-Z])/g, ' $1').trim()} {isRequired ? '*' : ''}
-                      </label>
-                      
-                      {existing && (
-                        <div className="mb-3 p-2.5 bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30 rounded-lg flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider">Already Uploaded</p>
-                            <a 
-                              href={existing.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-xs text-[#1A3626] dark:text-[#c9a14b] font-semibold hover:underline truncate block"
-                            >
-                              {existing.fileName || 'View Document'}
-                            </a>
+            {/* Required Documents */}
+            <div className="space-y-4">
+              <h3 className="text-base font-bold text-gray-700 dark:text-gray-300">Required Documents</h3>
+              {requiredDocs.length === 0 ? (
+                <p className="text-gray-500">No documents required or unsupported configuration.</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {requiredDocs.map((doc: string) => {
+                    const existing = getExistingDoc(doc);
+                    const isRequired = !existing;
+                    return (
+                      <div key={doc} className="bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] p-4 rounded-xl flex flex-col justify-between">
+                        <div className="mb-4">
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 capitalize">
+                            {doc.replace(/([A-Z])/g, ' $1').trim()} {isRequired ? '*' : ''}
+                          </label>
+                          {existing && (
+                            <div className="mb-3 p-2.5 bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/30 rounded-lg flex items-center gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[10px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider">Already Uploaded</p>
+                                <a href={existing.url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1A3626] dark:text-[#c9a14b] font-semibold hover:underline truncate block">
+                                  {existing.fileName || 'View Document'}
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {documents[doc] ? (
+                          <div className="flex items-center justify-between bg-white dark:bg-[#102418] p-2.5 rounded-lg border border-[#5CD284]">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <FileIcon className="w-4 h-4 text-[#5CD284] flex-shrink-0" />
+                              <span className="text-xs truncate">{documents[doc].name}</span>
+                            </div>
+                            <button type="button" onClick={() => { const newDocs = {...documents}; delete newDocs[doc]; setDocuments(newDocs); }} className="cursor-pointer">
+                              <X className="w-4 h-4 text-red-500" />
+                            </button>
                           </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {documents[doc] ? (
-                      <div className="flex items-center justify-between bg-white dark:bg-[#102418] p-2.5 rounded-lg border border-[#5CD284]">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <FileIcon className="w-4 h-4 text-[#5CD284] flex-shrink-0" />
-                          <span className="text-xs truncate">{documents[doc].name}</span>
-                        </div>
-                        <button 
-                          type="button" 
-                          onClick={() => {
-                            const newDocs = {...documents};
-                            delete newDocs[doc];
-                            setDocuments(newDocs);
-                          }}
-                          className="cursor-pointer"
-                        >
-                          <X className="w-4 h-4 text-red-500" />
-                        </button>
+                        ) : (
+                          <input required={isRequired} type="file" accept=".pdf,image/*" onChange={(e) => handleDocumentChange(doc, e)} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer" />
+                        )}
                       </div>
-                    ) : (
-                      <input 
-                        required={isRequired}
-                        type="file" 
-                        accept=".pdf,image/*" 
-                        onChange={(e) => handleDocumentChange(doc, e)}
-                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer"
-                      />
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="pt-6">
-          <button 
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full md:w-auto px-10 py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+        {/* Navigation Controls */}
+        <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-[#1A3626]">
+          <button
+            type="button"
+            onClick={() => { setError(null); setStep(s => s - 1); }}
+            disabled={step === 1}
+            className="px-6 py-3 rounded-xl border border-gray-300 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" /> Submitting Property...
-              </>
-            ) : (
-              <>
-                Submit for Approval <ArrowRight className="w-5 h-5" />
-              </>
-            )}
+            â† Back
           </button>
+
+          {step < 3 ? (
+            <button
+              type="button"
+              onClick={() => { if (validateStep(step)) setStep(s => s + 1); }}
+              className="px-8 py-3 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#091711] font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer"
+            >
+              Next Step <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-10 py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>
+              ) : (
+                <>Save Changes <ArrowRight className="w-5 h-5" /></>
+              )}
+            </button>
+          )}
         </div>
 
       </form>
