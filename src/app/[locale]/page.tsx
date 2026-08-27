@@ -471,7 +471,7 @@ export default function HomePage() {
               const location = details.propertyLocation?.city || "Dubai";
               const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
               const beds = details.propertyBedrooms || 0;
-              const baths = details.propertyBathrooms || 0;
+              const baths = details.propertyWashrooms || 0;
               const getArea = (area: any) => {
                 if (!area) return "N/A";
                 if (typeof area === 'object' && area.value !== undefined) return `${area.value} ${area.unit || 'sqft'}`;
