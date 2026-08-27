@@ -611,9 +611,9 @@ export const content = {
       { title: "سياسة ملفات تعريف الارتباط", href: "#" }
     ],
     contactTitle: "اتصل بنا",
-    address: "الخليج التجاري، برج فيجن، الطابق 24، دبي، الإمارات",
-    phone: "+971 4 000 0000",
-    email: "info@cashmyproperty.ae",
+    address: "الخليج التجاري، برج أوبوس، B601، دبي، الإمارات",
+    phone: "+971 50 240 2661",
+    email: "info@cmpdubai.com",
     copyright: "© 2026 كاش ماي بروبرتي. جميع الحقوق محفوظة."
   },
 

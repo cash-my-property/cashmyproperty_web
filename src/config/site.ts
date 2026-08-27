@@ -21,9 +21,9 @@ export const siteConfig = {
       { title: "Cookie Policy", href: "#" },
     ],
     contact: {
-      address: "Business Bay, Vision Tower, Level 24, Dubai, UAE",
-      phone: "+971 4 000 0000",
-      email: "info@cashmyproperty.ae",
+      address: "Business Bay, Opus Tower B601, Dubai, UAE",
+      phone: "+971 50 240 2661",
+      email: "info@cmpdubai.com",
     },
     socials: {
       facebook: "#",
