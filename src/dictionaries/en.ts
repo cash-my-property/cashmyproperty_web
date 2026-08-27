@@ -508,9 +508,9 @@ export const content = {
       { title: "Cookie Policy", href: "#" }
     ],
     contactTitle: "Contact",
-    address: "Business Bay, Vision Tower, Level 24, Dubai, UAE",
-    phone: "+971 4 000 0000",
-    email: "info@cashmyproperty.ae",
+    address: "Business Bay, Opus Tower B601, Dubai, UAE",
+    phone: "+971 50 240 2661",
+    email: "info@cmpdubai.com",
     copyright: "© 2026 Cash My Property. All rights reserved."
   },
   dashboard: {
