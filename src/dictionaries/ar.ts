@@ -600,9 +600,9 @@ export const content = {
     quickLinksTitle: "روابط سريعة",
     quickLinks: [
       { title: "الرئيسية", href: "/" },
-      { title: "العروض الحية", href: "/auctions" },
-      { title: "قوائم العقارات", href: "/listings" },
-      { title: "الأسئلة الشائعة", href: "#" }
+      { title: "من نحن", href: "/about" },
+      { title: "المدونة", href: "/blog" },
+      { title: "اتصل بنا", href: "/contact" }
     ],
     legalLinksTitle: "قانوني",
     legalLinks: [

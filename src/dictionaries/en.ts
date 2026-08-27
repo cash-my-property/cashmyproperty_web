@@ -497,9 +497,9 @@ export const content = {
     quickLinksTitle: "Quick Links",
     quickLinks: [
       { title: "Home", href: "/" },
-      { title: "Live Offers", href: "/auctions" },
-      { title: "Property Listings", href: "/listings" },
-      { title: "FAQs", href: "#" }
+      { title: "About Us", href: "/about" },
+      { title: "Blog", href: "/blog" },
+      { title: "Contact Us", href: "/contact" }
     ],
     legalLinksTitle: "Legal",
     legalLinks: [

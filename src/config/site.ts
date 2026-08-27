@@ -11,9 +11,9 @@ export const siteConfig = {
   footer: {
     quickLinks: [
       { title: "Home", href: "/" },
-      { title: "Live Offers", href: "/auctions" },
-      { title: "Property Listings", href: "/listings" },
-      { title: "FAQs", href: "#" },
+      { title: "About Us", href: "/about" },
+      { title: "Blog", href: "/blog" },
+      { title: "Contact Us", href: "/contact" },
     ],
     legalLinks: [
       { title: "Privacy Policy", href: "#" },
