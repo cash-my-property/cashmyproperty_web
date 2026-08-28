@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -25,8 +25,7 @@ import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function AboutPage() {
   const { dict } = useDictionary();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const content = dict as any;
+  const content = dict;
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {
@@ -34,23 +33,14 @@ export default function AboutPage() {
   };
 
   // Safe destructuring of sections with fallback data if needed
-  // @ts-ignore
   const hero = content.about?.hero || {};
-  // @ts-ignore
   const featuresSection = content.about?.featuresSection || { items: [] };
-  // @ts-ignore
   const experience = content.about?.experience || { cards: [] };
-  // @ts-ignore
   const founder = content.about?.founder || {};
-  // @ts-ignore
   const cta = content.about?.cta || {};
-  // @ts-ignore
   const howItWorks = content.about?.howItWorks || { steps: [] };
-  // @ts-ignore
   const download = content.about?.download || {};
-  // @ts-ignore
   const deleteAccount = content.about?.deleteAccount || { steps: [], importantPoints: [] };
-  // @ts-ignore
   const faq = content.about?.faq || { questions: [] };
 
   // Feature Section Icon Mapper
@@ -83,7 +73,7 @@ export default function AboutPage() {
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
           style={{
-            backgroundImage: 'url("/hero-bg.svg")'
+            backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80")'
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
@@ -112,7 +102,7 @@ export default function AboutPage() {
           <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5] bg-gray-100 dark:bg-[#102418]">
             <div
               className="absolute inset-0 bg-cover bg-center hover:scale-105 transition-transform duration-700"
-              style={{ backgroundImage: 'url("/property-placeholder.svg")' }}
+              style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")' }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
           </div>
@@ -448,4 +438,3 @@ export default function AboutPage() {
     </main>
   );
 }
-

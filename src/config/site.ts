@@ -17,7 +17,7 @@ export const siteConfig = {
     ],
     legalLinks: [
       { title: "Privacy Policy", href: "#" },
-      { title: "Terms of Service", href: "#" },
+      { title: "Terms of Service", href: "/terms" },
       { title: "Cookie Policy", href: "#" },
     ],
     contact: {

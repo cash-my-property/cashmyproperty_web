@@ -426,6 +426,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 ))}
               </div>
             </div>
+
           </div>
         </div>
 
