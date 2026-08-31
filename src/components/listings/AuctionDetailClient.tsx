@@ -46,6 +46,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
         isFavourited: targetState
       });
       setIsFavourited(targetState);
+      setPropertyInfo((prev: any) => (prev ? { ...prev, isFavourited: targetState } : prev));
       addToast(
         targetState ? "Saved to Favorites" : "Removed from Favorites",
         targetState ? "This property has been bookmarked successfully." : "This property has been removed from your bookmarks.",
@@ -107,14 +108,21 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
       let res;
-      const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
-      if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
-        res = await api.get(`/buyer/auction-details/${id}`);
+      if (isAuthenticated) {
+        try {
+          res = await api.get(`/buyer/auction-details/${id}`);
+        } catch (apiErr) {
+          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        }
       } else {
         res = await axios.get(`${API_URL}/public/property-details/${id}`);
       }
       
-      setPropertyInfo(res.data.data || res.data);
+      const data = res.data.data || res.data;
+      setPropertyInfo(data);
+      if (typeof data?.isFavourited === 'boolean') {
+        setIsFavourited(data.isFavourited);
+      }
     } catch (err) {
       console.error("Error fetching property details client-side", err);
     } finally {
@@ -352,7 +360,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                       ) : (
                         <Heart className={`w-4 h-4 ${isFavourited ? 'fill-rose-500 text-rose-500' : ''}`} />
                       )}
-                      {isFavourited ? 'Saved' : 'Save'}
+                      {isFavourited ? 'Favourited' : 'Add to Favourites'}
                     </button>
                   )}
                 </div>

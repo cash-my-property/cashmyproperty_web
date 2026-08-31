@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2, Share2, AlertTriangle, Heart } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -11,6 +12,7 @@ import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
 import Dirham from "@/components/Dirham";
+import { generateShareToken } from "@/lib/shareToken";
 
 interface PropertyDetailClientProps {
   id: string;
@@ -20,7 +22,9 @@ interface PropertyDetailClientProps {
 
 export default function PropertyDetailClient({ id, initialData, locale }: PropertyDetailClientProps) {
   const { dict } = useDictionary();
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
+  const searchParams = useSearchParams();
+  const st = searchParams?.get('st');
   const contactForm = dict.contact.main.form;
 
   const [activeImage, setActiveImage] = useState(0);
@@ -46,9 +50,10 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
         isFavourited: targetState
       });
       setIsFavourited(targetState);
+      setPropertyInfo((prev: any) => (prev ? { ...prev, isFavourited: targetState } : prev));
       addToast(
         targetState ? "Saved to Favorites" : "Removed from Favorites",
-        targetState ? "This property has been bookmarked successfully." : "This property has been removed from your bookmarks.",
+        targetState ? "This listing has been bookmarked successfully." : "This listing has been removed from your bookmarks.",
         "success"
       );
     } catch (err) {
@@ -69,27 +74,42 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
     // Handle real-time bid updates
     const handleUpdateBid = (data: any) => {
-      console.log("📡 Real-time bid update received:", data);
-      setPropertyInfo((prev: any) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          currentHighestBid: data.bidAmount,
-          bidCounter: data.bidCounter || prev.bidCounter
-        };
-      });
+      if (data.auctionId === id) {
+        console.log("📡 Real-time bid update received:", data);
+        setPropertyInfo((prev: any) => {
+          if (!prev) return prev;
+          const currentBids = prev.bids || [];
+          return {
+            ...prev,
+            currentBidPrice: data.bidAmount,
+            totalBids: (prev.totalBids || 0) + 1,
+            bids: [
+              {
+                _id: data.bidId || Date.now().toString(),
+                amount: data.bidAmount,
+                bidderName: data.bidderName || "Anonymous",
+                createdAt: new Date().toISOString()
+              },
+              ...currentBids
+            ]
+          };
+        });
+      }
     };
 
     // Handle auction end
     const handleAuctionEnded = (data: any) => {
-      console.log("📡 Auction ended event received:", data);
-      setPropertyInfo((prev: any) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          status: "ENDED"
-        };
-      });
+      if (data.auctionId === id) {
+        console.log("📡 Auction ended event received:", data);
+        setPropertyInfo((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            status: "ENDED",
+            winner: data.winner
+          };
+        });
+      }
     };
 
     socket.on("update_bid", handleUpdateBid);
@@ -107,14 +127,26 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
       let res;
-      const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
-      if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
-        res = await api.get(`/buyer/auction-details/${id}`);
+      if (st || isAuthenticated) {
+        try {
+          const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
+          res = await api.get(`/buyer/auction-details/${id}${queryStr}`);
+          if (res.data?.roleWasSwitched) {
+            await fetchProfile();
+            addToast("Role Switched", "Your mode was automatically switched to Buyer mode to view this shared property.", "info");
+          }
+        } catch (apiErr) {
+          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        }
       } else {
         res = await axios.get(`${API_URL}/public/property-details/${id}`);
       }
       
-      setPropertyInfo(res.data.data || res.data);
+      const data = res.data.data || res.data;
+      setPropertyInfo(data);
+      if (typeof data?.isFavourited === 'boolean') {
+        setIsFavourited(data.isFavourited);
+      }
     } catch (err) {
       console.error("Error fetching property details client-side", err);
     } finally {
@@ -328,15 +360,18 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   </div>
                   <button 
                     onClick={() => {
-                      const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+                      const token = generateShareToken(id, user?._id);
+                      const shareUrl = typeof window !== 'undefined' 
+                        ? `${window.location.origin}${window.location.pathname}?st=${token}` 
+                        : '';
                       if (navigator.share) {
                         navigator.share({ title: title, url: shareUrl }).catch(console.error);
                       } else if (shareUrl) {
                         navigator.clipboard.writeText(shareUrl);
-                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
+                        addToast("Link Copied", "Shareable property link copied to clipboard successfully!", "success");
                       }
                     }}
-                    className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
+                    className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold cursor-pointer"
                   >
                     <Share2 className="w-4 h-4" /> Share
                   </button>
@@ -352,7 +387,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                       ) : (
                         <Heart className={`w-4 h-4 ${isFavourited ? 'fill-rose-500 text-rose-500' : ''}`} />
                       )}
-                      {isFavourited ? 'Saved' : 'Save'}
+                      {isFavourited ? 'Favourited' : 'Add to Favourites'}
                     </button>
                   )}
                 </div>

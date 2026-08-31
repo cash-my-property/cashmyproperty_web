@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle, Flame, Tag, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle, Flame, Tag, TrendingUp, History } from "lucide-react";
 import Image from "next/image";
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -35,6 +35,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: "Add Property", href: `/${locale}/dashboard/seller/add-property`, icon: PlusCircle },
     { name: "My Properties", href: `/${locale}/dashboard/seller/properties`, icon: Building },
+    { name: "Sold History", href: `/${locale}/dashboard/seller/sold-history`, icon: History },
     { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-properties`, icon: AlertTriangle },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];

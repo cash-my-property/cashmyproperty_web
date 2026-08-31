@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ShieldCheck, MapPin, ChevronRight, ChevronLeft, CheckCircle2, Bed, Bath, Square, Phone, Mail, Building2, User, Loader2, Share2, MessageCircle, Heart } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -10,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
+import { generateShareToken } from "@/lib/shareToken";
 
 interface SimpleListingDetailClientProps {
   id: string;
@@ -19,7 +21,9 @@ interface SimpleListingDetailClientProps {
 
 export default function SimpleListingDetailClient({ id, initialData, locale }: SimpleListingDetailClientProps) {
   const { dict } = useDictionary();
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
+  const searchParams = useSearchParams();
+  const st = searchParams?.get('st');
   const { addToast } = useSocket();
 
   const [activeImage, setActiveImage] = useState(0);
@@ -27,6 +31,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
   const [isLoading, setIsLoading] = useState(!initialData);
   const [isFavourited, setIsFavourited] = useState(initialData?.isFavourited || false);
   const [isFavouriting, setIsFavouriting] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (propertyInfo) {
@@ -44,6 +49,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
         isFavourited: targetState
       });
       setIsFavourited(targetState);
+      setPropertyInfo((prev: any) => (prev ? { ...prev, isFavourited: targetState } : prev));
       addToast(
         targetState ? "Saved to Favorites" : "Removed from Favorites",
         targetState ? "This listing has been bookmarked successfully." : "This listing has been removed from your bookmarks.",
@@ -62,14 +68,26 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
       let res;
-      const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
-      if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
-        res = await api.get(`/buyer/simpleListingDetails/${id}`);
+      if (st || isAuthenticated) {
+        try {
+          const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
+          res = await api.get(`/buyer/simpleListingDetails/${id}${queryStr}`);
+          if (res.data?.roleWasSwitched) {
+            await fetchProfile();
+            addToast("Role Switched", "Your mode was automatically switched to Buyer mode to view this shared property.", "info");
+          }
+        } catch (apiErr) {
+          res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+        }
       } else {
         res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
       }
       
-      setPropertyInfo(res.data.data || res.data);
+      const data = res.data.data || res.data;
+      setPropertyInfo(data);
+      if (typeof data?.isFavourited === 'boolean') {
+        setIsFavourited(data.isFavourited);
+      }
     } catch (err) {
       console.error("Error fetching simple listing details client-side", err);
     } finally {
@@ -272,15 +290,18 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   </div>
                   <button 
                     onClick={() => {
-                      const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+                      const token = generateShareToken(id, user?._id);
+                      const shareUrl = typeof window !== 'undefined' 
+                        ? `${window.location.origin}${window.location.pathname}?st=${token}` 
+                        : '';
                       if (navigator.share) {
                         navigator.share({ title: title, url: shareUrl }).catch(console.error);
                       } else if (shareUrl) {
                         navigator.clipboard.writeText(shareUrl);
-                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
+                        addToast("Link Copied", "Shareable property link copied to clipboard successfully!", "success");
                       }
                     }}
-                    className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold"
+                    className="flex items-center gap-1.5 hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors bg-gray-100 dark:bg-[#102418]/80 px-3 py-1 rounded-full text-[13px] font-bold cursor-pointer"
                   >
                     <Share2 className="w-4 h-4" /> Share
                   </button>
@@ -296,7 +317,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                       ) : (
                         <Heart className={`w-4 h-4 ${isFavourited ? 'fill-rose-500 text-rose-500' : ''}`} />
                       )}
-                      {isFavourited ? 'Saved' : 'Save'}
+                      {isFavourited ? 'Favourited' : 'Add to Favourites'}
                     </button>
                   )}
                 </div>
@@ -429,54 +450,92 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-2">Interested in this property?</h3>
               <p className="text-[14px] text-gray-500 dark:text-gray-400 mb-6">Contact the agent directly for more information or to arrange a viewing.</p>
+              {/* WhatsApp Button */}
               {propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber ? (
-                <a 
-                  href={`https://wa.me/${(propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setShowLoginModal(true);
+                      return;
+                    }
+                    const waNum = (propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '');
+                    window.open(`https://wa.me/${waNum}`, '_blank');
+                  }}
                   className="w-full py-4 bg-[#25D366] text-white rounded-xl font-bold text-[15px] hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" /> WhatsApp Agent
-                </a>
+                </button>
               ) : null}
 
-              {propertyInfo.sellerInfo?.phone ? (
-                <a 
-                  href={`tel:${propertyInfo.sellerInfo.phone}`}
-                  className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-[15px] hover:opacity-90 transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
-                >
-                  <Phone className="w-4 h-4" /> Call Agent
-                </a>
-              ) : (
-                <button 
-                  onClick={() => addToast("Unavailable", "Agent phone number not available", "warning")}
-                  className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-[15px] hover:opacity-90 transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
-                >
-                  <Phone className="w-4 h-4" /> Call Agent
-                </button>
-              )}
+              {/* Phone Button */}
+              <button 
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    setShowLoginModal(true);
+                    return;
+                  }
+                  if (propertyInfo.sellerInfo?.phone) {
+                    window.location.href = `tel:${propertyInfo.sellerInfo.phone}`;
+                  } else {
+                    addToast("Unavailable", "Agent phone number not available", "warning");
+                  }
+                }}
+                className="w-full py-4 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-[15px] hover:opacity-90 transition-all flex items-center justify-center gap-2 mb-3 shadow-md cursor-pointer"
+              >
+                <Phone className="w-4 h-4" /> Call Agent
+              </button>
               
-              {propertyInfo.sellerInfo?.email ? (
-                <a 
-                  href={`mailto:${propertyInfo.sellerInfo.email}`}
-                  className="w-full py-4 bg-transparent border-2 border-[#1A3626] dark:border-[#c9a14b] text-[#1A3626] dark:text-[#c9a14b] rounded-xl font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#163321]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Mail className="w-4 h-4" /> Email Agent
-                </a>
-              ) : (
-                <button 
-                  onClick={() => addToast("Unavailable", "Agent email not available", "warning")}
-                  className="w-full py-4 bg-transparent border-2 border-[#1A3626] dark:border-[#c9a14b] text-[#1A3626] dark:text-[#c9a14b] rounded-xl font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#163321]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Mail className="w-4 h-4" /> Email Agent
-                </button>
-              )}
+              {/* Email Button */}
+              <button 
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    setShowLoginModal(true);
+                    return;
+                  }
+                  if (propertyInfo.sellerInfo?.email) {
+                    window.location.href = `mailto:${propertyInfo.sellerInfo.email}`;
+                  } else {
+                    addToast("Unavailable", "Agent email not available", "warning");
+                  }
+                }}
+                className="w-full py-4 bg-transparent border-2 border-[#1A3626] dark:border-[#c9a14b] text-[#1A3626] dark:text-[#c9a14b] rounded-xl font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#163321]/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Mail className="w-4 h-4" /> Email Agent
+              </button>
             </div>
 
           </div>
         </div>
 
       </div>
+
+      {/* Login Required Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 dark:border-[#1A3626] text-center">
+            <h3 className="text-[22px] font-bold text-gray-900 dark:text-white mb-2">
+              {detailDict.loginRequired || "Login Required"}
+            </h3>
+            <p className="text-[15px] text-gray-500 dark:text-gray-400 mb-8">
+              {detailDict.loginRequiredDesc || "You need to be logged in to contact the agent. Would you like to log in now?"}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button 
+                onClick={() => setShowLoginModal(false)}
+                className="flex-1 py-3 px-4 rounded-xl border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-[15px] hover:bg-gray-50 dark:hover:bg-[#1A3626]/50 transition-colors cursor-pointer"
+              >
+                {detailDict.stayLoggedOut || "Stay Logged Out"}
+              </button>
+              <Link 
+                href={`/${locale}/login`}
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+              >
+                {detailDict.goToLogin || "Go to Login"}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

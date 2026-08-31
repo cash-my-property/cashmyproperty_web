@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { ShieldAlert } from "lucide-react";
 import { useSocket } from "@/context/SocketContext";
+import { generateShareToken } from "@/lib/shareToken";
 
 export default function MySimpleListingsPage() {
   const { dict, locale } = useDictionary();
@@ -25,6 +26,19 @@ export default function MySimpleListingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+
+  const handleShareProperty = (property: any) => {
+    const propId = property._id || property.propertyId || property.id;
+    const token = generateShareToken(propId, user?._id);
+    const shareUrl = `${window.location.origin}/${locale}/simple-listings/${propId}?st=${token}`;
+
+    if (navigator.share) {
+      navigator.share({ title: property.title || "Property Listing", url: shareUrl }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      addToast("Link Copied", "Shareable property link with access token copied to clipboard!", "success");
+    }
+  };
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -137,12 +151,18 @@ export default function MySimpleListingsPage() {
                   <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.area?.value || 0} {property.area?.unit || "sqft"}</div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
+                <div className="flex items-center gap-1.5 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
                   <button 
                     onClick={() => setViewModalProperty(property)}
-                    className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
                   >
-                    <Eye className="w-4 h-4" /> View
+                    <Eye className="w-3.5 h-3.5" /> View
+                  </button>
+                  <button 
+                    onClick={() => handleShareProperty(property)}
+                    className="flex-1 py-2 text-xs font-semibold text-[#1A3626] dark:text-[#c9a14b] bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5" /> Share
                   </button>
                   {(property.status === 'ACTIVE' || property.status === 'PAUSED') && (
                     <button 
@@ -156,7 +176,7 @@ export default function MySimpleListingsPage() {
                           console.error("Failed to toggle status");
                         }
                       }}
-                      className="flex-1 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
                     >
                       {property.status === 'ACTIVE' ? 'Pause' : 'Activate'}
                     </button>
@@ -164,16 +184,17 @@ export default function MySimpleListingsPage() {
                   {property.status === 'REJECTED' ? (
                     <button
                       onClick={() => router.push(`/${locale}/dashboard/seller/edit-simple-property/${property.id || property._id}`)}
-                      className="flex-1 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 py-2 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center justify-center gap-1 cursor-pointer"
                     >
-                      <Edit className="w-4 h-4" /> Edit & Fix
+                      <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
                   ) : (
                     <button
                       onClick={() => setEditModalProperty(property)}
-                      className="flex-1 py-2 text-sm font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-[#163321] rounded-lg flex items-center justify-center gap-2 cursor-not-allowed"
+                      className="py-2 px-2 text-xs font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-[#163321] rounded-lg flex items-center justify-center gap-1 cursor-not-allowed"
+                      title="Editing locked"
                     >
-                      <Lock className="w-4 h-4" /> Edit
+                      <Lock className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>

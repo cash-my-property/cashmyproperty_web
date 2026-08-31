@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight, Share2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { ShieldAlert } from "lucide-react";
 import { useSocket } from "@/context/SocketContext";
+import { generateShareToken } from "@/lib/shareToken";
 
 export default function MyPropertiesPage() {
   const { dict, locale } = useDictionary();
@@ -25,6 +26,19 @@ export default function MyPropertiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+
+  const handleShareProperty = (property: any) => {
+    const propId = property._id || property.propertyId || property.id;
+    const token = generateShareToken(propId, user?._id);
+    const shareUrl = `${window.location.origin}/${locale}/listings/${propId}?st=${token}`;
+
+    if (navigator.share) {
+      navigator.share({ title: property.title || "Property Listing", url: shareUrl }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      addToast("Link Copied", "Shareable property link with access token copied to clipboard!", "success");
+    }
+  };
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -140,23 +154,30 @@ export default function MyPropertiesPage() {
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
                   <button 
                     onClick={() => setViewModalProperty(property)}
-                    className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Eye className="w-4 h-4" /> View
+                  </button>
+                  <button 
+                    onClick={() => handleShareProperty(property)}
+                    className="flex-1 py-2 text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4" /> Share
                   </button>
                   {property.status === 'REJECTED' ? (
                     <button
                       onClick={() => router.push(`/${locale}/dashboard/seller/edit-property/${property._id || property.propertyId}`)}
-                      className="flex-1 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Edit className="w-4 h-4" /> Edit & Fix
                     </button>
                   ) : (
                     <button
                       onClick={() => setEditModalProperty(property)}
-                      className="flex-1 py-2 text-sm font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-[#163321] rounded-lg flex items-center justify-center gap-2 cursor-not-allowed"
+                      className="py-2 px-2 text-sm font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-[#163321] rounded-lg flex items-center justify-center gap-1 cursor-not-allowed"
+                      title="Editing locked"
                     >
-                      <Lock className="w-4 h-4" /> Edit
+                      <Lock className="w-4 h-4" />
                     </button>
                   )}
                 </div>

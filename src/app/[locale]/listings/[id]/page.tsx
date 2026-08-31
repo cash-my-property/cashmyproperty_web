@@ -1,5 +1,6 @@
 import PropertyDetailClient from "@/components/listings/PropertyDetailClient";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 async function getPropertyData(id: string) {
   try {
@@ -53,10 +54,12 @@ export default async function PropertyDetailPage(props: { params: Promise<{ id: 
   const initialData = await getPropertyData(params.id);
 
   return (
-    <PropertyDetailClient
-      id={params.id}
-      initialData={initialData}
-      locale={params.locale}
-    />
+    <Suspense fallback={null}>
+      <PropertyDetailClient
+        id={params.id}
+        initialData={initialData}
+        locale={params.locale}
+      />
+    </Suspense>
   );
 }

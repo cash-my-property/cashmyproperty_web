@@ -1,5 +1,6 @@
 import SimpleListingDetailClient from "@/components/listings/SimpleListingDetailClient";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 async function getPropertyData(id: string) {
   try {
@@ -53,10 +54,12 @@ export default async function SimpleListingDetailPage(props: { params: Promise<{
   const initialData = await getPropertyData(params.id);
 
   return (
-    <SimpleListingDetailClient
-      id={params.id}
-      initialData={initialData}
-      locale={params.locale}
-    />
+    <Suspense fallback={null}>
+      <SimpleListingDetailClient
+        id={params.id}
+        initialData={initialData}
+        locale={params.locale}
+      />
+    </Suspense>
   );
 }
