@@ -312,7 +312,7 @@ export const content = {
     realtimebids: {
       label: "Live Offers",
       heading: "Realtime Offers",
-      description: "Distress listings currently in an active 7-Day Live Offer. Offer now before the timer runs out.",
+      description: "Properties currently in an active 7-Day Live Offer. Offer now before the timer runs out.",
       viewAllText: "View All Live Offers",
       items: [
         {

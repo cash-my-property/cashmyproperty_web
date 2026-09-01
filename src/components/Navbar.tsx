@@ -49,13 +49,13 @@ export default function Navbar() {
         return [
           { title: "Home", href: "/" },
           { title: "Simple Listings", href: "/listings" },
-          { title: "My Offers", href: "/dashboard/bids" }
+          { title: "Dashboard", href: "/dashboard" }
         ];
       } else {
         return [
           { title: "Home", href: "/" },
-          { title: "Live Offers", href: "/auctions" },
-          { title: "Distress Deals", href: "/auctions" },
+          { title: "Realtime Offers", href: "/auctions" },
+          { title: "Simple Listings", href: "/listings" },
           { title: "Contracts", href: "/dashboard/contracts" }
         ];
       }

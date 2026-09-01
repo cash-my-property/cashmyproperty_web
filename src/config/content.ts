@@ -193,8 +193,8 @@ export const content = {
     },
     realtimeOffers: {
       label: "Live Offers",
-      heading: "Distress Listings",
-      description: "Distress listings currently in an active 7-Day Offer. Make an offer now before the timer runs out.",
+      heading: "Realtime Offers",
+      description: "Properties currently in an active 7-Day Live Offer. Make an offer now before the timer runs out.",
       viewAllText: "View All Offers",
       items: [
         {
