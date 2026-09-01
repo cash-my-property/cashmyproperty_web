@@ -7,6 +7,7 @@ import { useAuth } from './AuthContext';
 import { usePathname } from 'next/navigation';
 import api from '@/lib/api';
 import { Bell, ShieldCheck, CheckCircle2, Tag, X, FileText, AlertTriangle, Building } from 'lucide-react';
+import FcmListener from '@/components/notifications/FcmListener';
 
 interface Toast {
   id: string;
@@ -451,6 +452,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={{ socket, isConnected, joinRoom, leaveRoom, addToast, notifications, markAllAsRead, clearAllNotifications, fetchNotifications, markAsRead, deleteNotification }}>
+      <FcmListener />
       {children}
       
       {/* Toast Notifications Overlay Container */}

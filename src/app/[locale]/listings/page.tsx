@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key } from "lucide-react";
+import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key, Loader2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -24,64 +24,118 @@ export default function ListingsPage() {
 
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
+  const fetchProperties = async (pageNum: number = 1, append: boolean = false) => {
+    try {
+      if (append) {
+        setIsFetchingMore(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      // Sellers are fully blocked from viewing buyer-facing simple listings
+      if (isAuthenticated && isSeller) {
+        setProperties([]);
+        return;
+      }
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', pageNum.toString());
+      queryParams.append('limit', '10');
+
+      if (appliedSearch) {
+        queryParams.append('search', appliedSearch);
+      }
+      if (activeType && activeType !== 'All') {
+        if (activeType === 'Commercial') {
+          queryParams.append('propertyCategory', 'COMMERCIAL');
+        } else {
+          queryParams.append('propertyType', activeType.toUpperCase());
+        }
+      }
+      if (selectedType && selectedType !== 'all') {
+        if (selectedType === 'land') {
+          queryParams.append('propertyType', 'LAND');
+        } else {
+          queryParams.append('propertyCategory', selectedType.toUpperCase());
+        }
+      }
+      if (priceSort) {
+        queryParams.append('sortBy', priceSort === 'asc' ? 'priceLow' : 'priceHigh');
+      }
+
+      const queryString = queryParams.toString();
+
+      let res;
+      if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
+        res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
+      } else {
+        res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
+      }
+
+      const rawData = res.data.data;
+      const newItems = Array.isArray(rawData) ? rawData : (rawData?.data || []);
+      
+      const calculatedTotalPages = typeof rawData === 'object' && rawData?.totalPages 
+        ? rawData.totalPages 
+        : typeof rawData === 'object' && rawData?.totalCount 
+        ? Math.ceil(rawData.totalCount / 10) 
+        : 1;
+
+      setTotalPages(calculatedTotalPages);
+      setPage(pageNum);
+      setHasMore(pageNum < calculatedTotalPages);
+
+      if (append) {
+        setProperties(prev => [
+          ...prev,
+          ...newItems.filter((item: any) => !prev.some(p => (p._id || p.id) === (item._id || item.id)))
+        ]);
+      } else {
+        setProperties(newItems);
+      }
+    } catch (err) {
+      console.error("Error fetching properties", err);
+    } finally {
+      setIsLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+
   useEffect(() => {
     if (authLoading) return;
-    const fetchProperties = async () => {
-      try {
-        setIsLoading(true);
+    setPage(1);
+    fetchProperties(1, false);
+  }, [authLoading, isAuthenticated, buyerType, isSeller, appliedSearch, activeType, selectedType, priceSort]);
 
-        // Sellers are fully blocked from viewing buyer-facing simple listings
-        if (isAuthenticated && isSeller) {
-          setProperties([]);
-          return;
-        }
+  const loadNextPage = () => {
+    if (isFetchingMore || isLoading || !hasMore) return;
+    fetchProperties(page + 1, true);
+  };
 
-        const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-
-        const queryParams = new URLSearchParams();
-        if (appliedSearch) {
-          queryParams.append('search', appliedSearch);
-        }
-        if (activeType && activeType !== 'All') {
-          if (activeType === 'Commercial') {
-            queryParams.append('propertyCategory', 'COMMERCIAL');
-          } else {
-            queryParams.append('propertyType', activeType.toUpperCase());
-          }
-        }
-        if (selectedType && selectedType !== 'all') {
-          if (selectedType === 'land') {
-            queryParams.append('propertyType', 'LAND');
-          } else {
-            queryParams.append('propertyCategory', selectedType.toUpperCase());
-          }
-        }
-        if (priceSort) {
-          queryParams.append('sortBy', priceSort === 'asc' ? 'priceLow' : 'priceHigh');
-        }
-
-        const queryString = queryParams.toString();
-
-        let res;
-        if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
-          res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
-        } else {
-          res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
-        }
-
-        const data = res.data.data;
-        setProperties(Array.isArray(data) ? data : (data?.data || []));
-      } catch (err) {
-        console.error("Error fetching properties", err);
-      } finally {
-        setIsLoading(false);
+  // Scroll Listener for Infinite Scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isFetchingMore || isLoading || !hasMore) return;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const currentScroll = window.innerHeight + window.scrollY;
+      if (currentScroll >= scrollHeight - 600) {
+        loadNextPage();
       }
     };
-    fetchProperties();
-  }, [authLoading, isAuthenticated, buyerType, isSeller, appliedSearch, activeType, selectedType, priceSort]);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [page, hasMore, isFetchingMore, isLoading]);
 
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
@@ -101,14 +155,12 @@ export default function ListingsPage() {
         <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         
         <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center mt-8">
-            {/* placeholder for tagline */}
           <h1 className="text-white text-[40px] sm:text-[56px] font-bold mb-6 leading-[1.1] tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }} dangerouslySetInnerHTML={{ __html: content.hero.headline.replace('\n', '<br/>') }}>
           </h1>
           <p className="text-white/80 text-[16px] sm:text-[18px] max-w-2xl leading-relaxed font-light mb-10">
             {content.hero.subheadline}
           </p>
 
-          {/* Search Bar - Inline Filters */}
           {/* Search Bar & Filters Container */}
           <div className="w-full max-w-4xl flex flex-col gap-4">
             {/* Row 1: Search Input & Search Button */}
@@ -158,11 +210,8 @@ export default function ListingsPage() {
                         key={key} 
                         className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
                         onClick={() => {
-                          setSelectedType(key);
+                          setSelectedType(selectedType === key ? null : key);
                           setActiveDropdown(null);
-                          if (key === 'land') {
-                            setActiveType('All');
-                          }
                         }}
                       >
                         {value as string}
@@ -172,131 +221,88 @@ export default function ListingsPage() {
                 )}
               </div>
 
-              {/* Price Sort Dropdown */}
-              <div className="relative w-[160px] shrink-0">
-                <div 
-                  onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
-                  className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#1A3626] transition-colors border border-gray-100 dark:border-[#1A3626] min-w-0"
+              {/* Sorting Pills */}
+              <div className="flex items-center gap-1.5 bg-white dark:bg-[#102418] p-1 rounded-xl border border-gray-100 dark:border-[#1A3626] shrink-0">
+                <button 
+                  onClick={() => setPriceSort(priceSort === 'asc' ? null : 'asc')}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer ${priceSort === 'asc' ? 'bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626]' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors shrink-0" />
-                    <span className="text-[13.5px] text-gray-600 dark:text-gray-300 font-semibold truncate">
-                      {priceSort === 'asc' ? "Low to High" : priceSort === 'desc' ? "High to Low" : "Sort Price"}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all shrink-0 ${activeDropdown === 'price' ? 'rotate-180' : ''}`} />
-                </div>
-                
-                {activeDropdown === 'price' && (
-                  <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
-                    <div 
-                      className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
-                      onClick={() => { setPriceSort(null); setActiveDropdown(null); }}
-                    >
-                      Default
-                    </div>
-                    <div 
-                      className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
-                      onClick={() => { setPriceSort("asc"); setActiveDropdown(null); }}
-                    >
-                      Price: Low to High
-                    </div>
-                    <div 
-                      className="px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50"
-                      onClick={() => { setPriceSort("desc"); setActiveDropdown(null); }}
-                    >
-                      Price: High to Low
-                    </div>
-                  </div>
-                )}
+                  Price: Low to High
+                </button>
+                <button 
+                  onClick={() => setPriceSort(priceSort === 'desc' ? null : 'desc')}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer ${priceSort === 'desc' ? 'bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626]' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Price: High to Low
+                </button>
               </div>
+
             </div>
           </div>
         </div>
       </section>
 
-      {/* SELLER CTA PANEL — fully blocks sellers from accessing simple listings */}
+      {/* SELLER RESTRICTION BANNER */}
       {isAuthenticated && isSeller && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col lg:flex-row items-center gap-10 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626]">
-            {/* Background glow */}
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#c9a14b]/5 rounded-full blur-[80px] pointer-events-none" />
-
-            {/* Left: Icon Badge */}
-            <div className="relative z-10 w-24 h-24 rounded-3xl bg-[#5CD284]/15 border border-[#5CD284]/30 flex items-center justify-center shrink-0">
-              <Building className="w-12 h-12 text-[#5CD284]" />
-            </div>
-
-            {/* Center: Text */}
-            <div className="relative z-10 flex-1 text-center lg:text-left">
-              <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase block mb-3">
-                Seller Mode Active
-              </span>
-              <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight">
-                Property listings are for buyers only.
-              </h2>
-              <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
-                As a seller, you cannot browse or enquire on simple property listings. Head to your dashboard to manage your own properties and track incoming interest from buyers.
-              </p>
-            </div>
-
-            {/* Right: CTA Buttons */}
-            <div className="relative z-10 flex flex-col gap-3 shrink-0">
-              <Link
-                href={`/${locale}/dashboard/seller/properties`}
-                className="inline-flex items-center justify-center gap-2 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] text-[15px] whitespace-nowrap"
-              >
-                <Key className="w-5 h-5" />
-                My Listings
-              </Link>
-              <Link
-                href={`/${locale}/dashboard`}
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 text-[15px] whitespace-nowrap"
-              >
-                <Home className="w-5 h-5" />
-                Go to Dashboard
-              </Link>
-            </div>
+        <section className="w-full max-w-7xl mx-auto px-6 py-12">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
+            <Building className="w-12 h-12 text-amber-500 mb-4" />
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Mode Active</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
+              You are currently logged in as a Seller. Buyer simple listings are reserved exclusively for buyers.
+            </p>
+            <Link
+              href={`/${locale}/dashboard/seller/simple-listings`}
+              className="px-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl text-sm"
+            >
+              Go to My Simple Listings
+            </Link>
           </div>
         </section>
       )}
 
-      {/* CATEGORY CHIPS — hidden for sellers */}
-      {!(isAuthenticated && isSeller) && (
-      <section className="border-b border-gray-200 dark:border-[#1A3626] bg-white dark:bg-[#091711]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4 flex gap-3 overflow-x-auto global-green-scrollbar">
-          {["All", "Villa", "Apartment", "Penthouse", "Townhouse", "Commercial"].map((type) => (
-            <button 
-              key={type}
-              onClick={() => {
-                setActiveType(type);
-                if (selectedType === 'land') {
-                  setSelectedType('all');
-                }
-              }}
-              className={`whitespace-nowrap px-5 py-2 rounded-full text-[14px] font-bold transition-all duration-300 ${activeType === type ? 'bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-[#102418] dark:text-gray-300 dark:hover:bg-[#163321]'}`}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-      </section>
-      )}
+      {/* SIMPLE LISTINGS GRID */}
+      {(!isAuthenticated || !isSeller) && (
+      <section className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] animate-pulse"></span>
+              <span className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[12px] uppercase">
+                Direct Sale & Rent
+              </span>
+            </div>
+            <h2 className="text-gray-900 dark:text-white text-[32px] sm:text-[40px] font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              Simple Listings
+            </h2>
+          </div>
 
-      {/* LISTINGS GRID — hidden for sellers */}
-      {!(isAuthenticated && isSeller) && (
-      <section className="py-16 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+          {/* Property Category Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {["All", "Apartment", "Villa", "Commercial"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setActiveType(type)}
+                className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+                  activeType === type
+                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
+                    : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Listings Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
-            Array(6).fill(0).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden border border-gray-100 dark:border-[#1A3626] flex flex-col p-2 animate-pulse shadow-sm">
-                <div className="relative h-[240px] rounded-[20px] bg-gray-200 dark:bg-[#163321] w-full" />
-                <div className="p-4 pt-5 flex flex-col flex-1 gap-4">
-                  <div className="flex justify-between items-center gap-4">
-                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-2/3" />
-                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-1/4" />
-                  </div>
+            Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="bg-white dark:bg-[#102418] rounded-[24px] p-2 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4">
+                <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-[20px] w-full" />
+                <div className="p-4 flex flex-col gap-3">
+                  <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
                   <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
                 </div>
               </div>
@@ -377,6 +383,30 @@ export default function ListingsPage() {
           });
         })()}
         </div>
+
+        {/* PAGINATION / INFINITE SCROLL LOADER */}
+        {hasMore && (
+          <div className="flex flex-col items-center justify-center my-12 gap-3">
+            <button
+              onClick={loadNextPage}
+              disabled={isFetchingMore}
+              className="px-8 py-3.5 rounded-2xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm hover:opacity-90 transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {isFetchingMore ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Loading More Properties...</span>
+                </>
+              ) : (
+                <>
+                  <span>Load More Properties</span>
+                  <ChevronDown className="w-4 h-4" />
+                </>
+              )}
+            </button>
+            <span className="text-xs text-gray-500 font-medium">Showing page {page} of {totalPages}</span>
+          </div>
+        )}
       </section>
       )}
 
