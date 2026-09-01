@@ -55,8 +55,8 @@ export default function Navbar() {
         return [
           { title: "Home", href: "/" },
           { title: "Realtime Offers", href: "/auctions" },
-          { title: "Simple Listings", href: "/listings" },
-          { title: "Contracts", href: "/dashboard/contracts" }
+          { title: "Contracts", href: "/dashboard/contracts" },
+          { title: "Dashboard", href: "/dashboard" }
         ];
       }
     }
