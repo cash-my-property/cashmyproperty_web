@@ -28,6 +28,10 @@ export default function RejectedSimplePropertiesPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
   const mainRole = user ? (typeof user.role === 'string' ? user.role.toLowerCase() : (user.role as any)?.main?.toLowerCase()) : '';
   const isSeller = mainRole === 'seller';
   const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
@@ -40,27 +44,73 @@ export default function RejectedSimplePropertiesPage() {
     }
   }, [authLoading, user, isSeller, sellerType, locale, router]);
 
+  const fetchProperties = async (pageNum: number = 1, append: boolean = false) => {
+    if (authLoading || !user || !isSeller || sellerType !== 'SIMPLE') return;
+    try {
+      if (append) {
+        setIsFetchingMore(true);
+      } else {
+        setIsLoading(true);
+      }
+      let url = `/seller/rejectedSimpleListings?page=${pageNum}&limit=10&sortBy=${sortBy}`;
+      if (statusFilter !== "all") {
+        url += `&status=${statusFilter}`;
+      }
+      const response = await api.get(url);
+      const resData = response.data?.result || response.data;
+      const newItems = response.data?.listings || resData?.listings || resData?.data || [];
+
+      const paginationObj = resData?.pagination || response.data?.pagination;
+      const calculatedTotalPages = paginationObj?.totalPages
+        ? Number(paginationObj.totalPages)
+        : paginationObj?.total
+        ? Math.ceil(Number(paginationObj.total) / 10)
+        : 1;
+
+      setTotalPages(calculatedTotalPages);
+      setCurrentPage(pageNum);
+      setHasMore(pageNum < calculatedTotalPages);
+
+      if (append) {
+        setProperties(prev => [
+          ...prev,
+          ...newItems.filter((item: any) => !prev.some(p => (p._id || p.id) === (item._id || item.id)))
+        ]);
+      } else {
+        setProperties(newItems);
+      }
+    } catch {
+      addToast("Error", "Failed to load rejected listings. Please try refreshing.", "warning");
+    } finally {
+      setIsLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+
   useEffect(() => {
     if (authLoading || !user || !isSeller || sellerType !== 'SIMPLE') return;
+    setCurrentPage(1);
+    fetchProperties(1, false);
+  }, [statusFilter, sortBy, authLoading, user?.email, isSeller, sellerType]);
 
-    const fetchProperties = async () => {
-      try {
-        setIsLoading(true);
-        // Pass page, limit, status, and sortBy to bypass cache issues and get precise data
-        let url = `/seller/rejectedSimpleListings?page=${currentPage}&limit=10&sortBy=${sortBy}`;
-        if (statusFilter !== "all") {
-          url += `&status=${statusFilter}`;
-        }
-        const response = await api.get(url);
-        setProperties(response.data?.listings || response.data?.result?.data || response.data?.data || []);
-      } catch {
-        addToast("Error", "Failed to load rejected listings. Please try refreshing.", "warning");
-      } finally {
-        setIsLoading(false);
+  const loadNextPage = () => {
+    if (isFetchingMore || isLoading || !hasMore) return;
+    fetchProperties(currentPage + 1, true);
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isFetchingMore || isLoading || !hasMore) return;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const currentScroll = window.innerHeight + window.scrollY;
+      if (currentScroll >= scrollHeight - 600) {
+        loadNextPage();
       }
     };
-    fetchProperties();
-  }, [currentPage, statusFilter, sortBy, authLoading, user?.email, isSeller, sellerType]);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [currentPage, hasMore, isFetchingMore, isLoading]);
 
   const fetchPropertyDetails = async (property: any) => {
     try {

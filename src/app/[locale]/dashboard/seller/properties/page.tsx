@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight, Share2 } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight, Share2, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
@@ -23,7 +23,10 @@ export default function MyPropertiesPage() {
   const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
   const [editModalProperty, setEditModalProperty] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
 
@@ -40,26 +43,73 @@ export default function MyPropertiesPage() {
     }
   };
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
+  const fetchProperties = async (pageNum: number = 1, append: boolean = false) => {
+    try {
+      if (append) {
+        setIsFetchingMore(true);
+      } else {
         setIsLoading(true);
-        // Pass page, limit, status, and sortBy to bypass cache issues and get precise data
-        let url = `/seller/my-properties?page=${currentPage}&limit=10&sortBy=${sortBy}`;
-        if (statusFilter !== "all") {
-          url += `&status=${statusFilter}`;
-        }
-        const response = await api.get(url);
-        setProperties(response.data?.result?.data || response.data?.data || []);
-      } catch (err: any) {
-        const errorMsg = err?.response?.data?.message || "Failed to load your properties. Please try refreshing.";
-        addToast("Error", errorMsg, "warning");
-      } finally {
-        setIsLoading(false);
+      }
+      let url = `/seller/my-properties?page=${pageNum}&limit=10&sortBy=${sortBy}`;
+      if (statusFilter !== "all") {
+        url += `&status=${statusFilter}`;
+      }
+      const response = await api.get(url);
+      const resData = response.data?.result || response.data;
+      const newItems = resData?.data || [];
+
+      const paginationObj = resData?.pagination || response.data?.pagination || response.data?.result?.pagination;
+      const calculatedTotalPages = paginationObj?.totalPages
+        ? Number(paginationObj.totalPages)
+        : paginationObj?.total
+        ? Math.ceil(Number(paginationObj.total) / 10)
+        : 1;
+
+      setTotalPages(calculatedTotalPages);
+      setCurrentPage(pageNum);
+      setHasMore(pageNum < calculatedTotalPages);
+
+      if (append) {
+        setProperties(prev => [
+          ...prev,
+          ...newItems.filter((item: any) => !prev.some(p => (p._id || p.id) === (item._id || item.id)))
+        ]);
+      } else {
+        setProperties(newItems);
+      }
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.message || "Failed to load your properties. Please try refreshing.";
+      addToast("Error", errorMsg, "warning");
+    } finally {
+      setIsLoading(false);
+      setIsFetchingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchProperties(1, false);
+  }, [statusFilter, sortBy]);
+
+  const loadNextPage = () => {
+    if (isFetchingMore || isLoading || !hasMore) return;
+    fetchProperties(currentPage + 1, true);
+  };
+
+  // Scroll listener for Infinite Scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isFetchingMore || isLoading || !hasMore) return;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const currentScroll = window.innerHeight + window.scrollY;
+      if (currentScroll >= scrollHeight - 600) {
+        loadNextPage();
       }
     };
-    fetchProperties();
-  }, [currentPage, statusFilter, sortBy]);
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [currentPage, hasMore, isFetchingMore, isLoading]);
 
   return (
     <div className="p-4 sm:p-8">
@@ -101,89 +151,118 @@ export default function MyPropertiesPage() {
                 router.push(`/${locale}/dashboard/seller/add-property`);
               }
             }}
-            className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity cursor-pointer"
+            className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#1A3626]/90 transition-colors cursor-pointer"
           >
-            Add Property
+            Add New Property
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {properties.map((property) => (
-            <div key={property._id || property.propertyId} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group">
-              <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711] w-full">
+            <div key={property._id || property.id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#1A3626] shadow-sm hover:shadow-md transition-shadow flex flex-col">
+              <div className="relative h-48 w-full bg-gray-100 dark:bg-[#091711]">
                 {property.image ? (
                   <Image 
                     src={property.image} 
-                    alt={property.title || "Property"}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    alt={property.title || "Property"} 
+                    fill 
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover" 
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Building className="w-10 h-10 text-gray-300" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626]" />
                   </div>
                 )}
-                
-                <div className="absolute top-4 left-4 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] font-bold text-[#1A3626] dark:text-[#c9a14b] uppercase tracking-wider shadow-md flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${property.status === 'REJECTED' ? 'bg-red-500' : property.status === 'AWAITING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {property.status || "PENDING"}
+                <div className="absolute top-3 right-3 flex items-center gap-2">
+                  <button
+                    onClick={() => handleShareProperty(property)}
+                    className="w-8 h-8 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md rounded-full flex items-center justify-center text-gray-700 dark:text-[#c9a14b] shadow-md hover:scale-105 transition-all"
+                    title="Share Private Link"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                    property.status === 'ACTIVE' ? 'bg-green-500 text-white' :
+                    property.status === 'PENDING' || property.status === 'AWAITING' ? 'bg-orange-500 text-white' :
+                    'bg-gray-500 text-white'
+                  }`}>
+                    {property.status || "PENDING"}
+                  </span>
                 </div>
               </div>
 
-              <div className="p-4 pt-5 flex flex-col flex-1">
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">
-                    {property.title}
-                  </h3>
-                  <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap flex items-center gap-1">
-                    <Dirham className="text-[20px]" /> {property.price?.amount?.toLocaleString() || 0}
-                  </span>
-                </div>
-                
-                <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                  <MapPin className="w-4 h-4" />
-                  <span className="line-clamp-1">{property.location || "Dubai"}</span>
-                </p>
-                
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs?.beds || 0}</div>
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs?.washrooms || property.specs?.baths || 0}</div>
-                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.area?.value || 0} {property.area?.unit || "sqft"}</div>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-1 mb-1">{property.title}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1 mb-3">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="truncate">{property.location}</span>
+                  </p>
+
+                  <div className="flex items-center gap-4 text-xs font-semibold text-gray-600 dark:text-gray-300 mb-4">
+                    {property.specs?.beds && (
+                      <span className="flex items-center gap-1"><Bed className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs.beds} Beds</span>
+                    )}
+                    {property.specs?.washrooms && (
+                      <span className="flex items-center gap-1"><Bath className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs.washrooms} Baths</span>
+                    )}
+                    {property.area?.value && (
+                      <span className="flex items-center gap-1"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.area.value} sqft</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-[#1A3626] mt-auto">
-                  <button 
-                    onClick={() => setViewModalProperty(property)}
-                    className="flex-1 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Eye className="w-4 h-4" /> View
-                  </button>
-                  <button 
-                    onClick={() => handleShareProperty(property)}
-                    className="flex-1 py-2 text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <Share2 className="w-4 h-4" /> Share
-                  </button>
-                  {property.status === 'REJECTED' ? (
-                    <button
-                      onClick={() => router.push(`/${locale}/dashboard/seller/edit-property/${property._id || property.propertyId}`)}
-                      className="flex-1 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                <div className="pt-4 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
+                  <div className="text-[#1A3626] dark:text-[#c9a14b] font-bold text-lg">
+                    <Dirham className="mr-1 text-sm" />
+                    {property.price?.amount?.toLocaleString() || 0}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setViewModalProperty(property)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
+                      title="View Details"
                     >
-                      <Edit className="w-4 h-4" /> Edit & Fix
+                      <Eye className="w-4 h-4" />
                     </button>
-                  ) : (
-                    <button
+                    <button 
                       onClick={() => setEditModalProperty(property)}
-                      className="py-2 px-2 text-sm font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-[#163321] rounded-lg flex items-center justify-center gap-1 cursor-not-allowed"
-                      title="Editing locked"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
+                      title="Edit Property"
                     >
-                      <Lock className="w-4 h-4" />
+                      <Edit className="w-4 h-4" />
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* PAGINATION / INFINITE SCROLL LOADER */}
+      {hasMore && (
+        <div className="flex flex-col items-center justify-center my-8 gap-3">
+          <button
+            onClick={loadNextPage}
+            disabled={isFetchingMore}
+            className="px-8 py-3.5 rounded-2xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm hover:opacity-90 transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            {isFetchingMore ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Loading More Properties...</span>
+              </>
+            ) : (
+              <>
+                <span>Load More Properties</span>
+                <ChevronDown className="w-4 h-4" />
+              </>
+            )}
+          </button>
+          <span className="text-xs text-gray-500 font-medium">Showing page {currentPage} of {totalPages}</span>
         </div>
       )}
 
@@ -275,14 +354,13 @@ export default function MyPropertiesPage() {
         </div>
       )}
 
-      {/* Edit Locked Modal — shown for non-REJECTED properties */}
       {editModalProperty && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-[#102418] rounded-3xl w-full max-w-md overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 p-8 text-center border border-gray-100 dark:border-[#1A3626]">
             <div className="w-20 h-20 bg-gray-50 dark:bg-[#163321] rounded-full flex items-center justify-center mx-auto mb-6">
               <Lock className="w-10 h-10 text-gray-400 dark:text-gray-500" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{dict.dashboard.seller.cannotEditTitle}</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{dict.dashboard.seller.cannotEditListingTitle}</h2>
             <p className="text-gray-500 dark:text-gray-400 mb-2 leading-relaxed">
               <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold uppercase mb-3 ${
                 editModalProperty.status === 'ACTIVE' ? 'bg-green-500/10 text-green-600' :
@@ -303,7 +381,7 @@ export default function MyPropertiesPage() {
                 className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 onClick={() => setEditModalProperty(null)}
               >
-                {dict.dashboard.seller.viewRejectedProperties} <ArrowRight className="w-4 h-4" />
+                View Rejected Properties <ArrowRight className="w-4 h-4" />
               </Link>
               <button
                 onClick={() => setEditModalProperty(null)}
