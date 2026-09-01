@@ -401,7 +401,7 @@ export const content = {
         },
         {
           title: "Offer, Win & Close",
-          description: "Place your offers on Distress Listings (7-Day Live Offers) or purchase Simple Listings. Highest buyer wins at the end of the countdown timer!"
+          description: "Place your offers on Realtime Offers (7-Day Live Offers) or purchase Simple Listings. Highest buyer wins at the end of the countdown timer!"
         }
       ]
     },
@@ -419,7 +419,7 @@ export const content = {
         },
         {
           title: "Speed & Liquidity",
-          description: "Our 7-Day Live Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to distress listings."
+          description: "Our 7-Day Live Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to property listings."
         }
       ]
     },
