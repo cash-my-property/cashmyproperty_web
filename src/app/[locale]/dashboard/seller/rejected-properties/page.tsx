@@ -176,9 +176,9 @@ export default function RejectedPropertiesPage() {
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
           <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Regular Seller Mode</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Realtime Seller Mode</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-            You are currently in Simple Seller mode. Please switch to Regular Seller mode to view your rejected regular properties (Live Offers).
+            You are currently in Simple Listing Seller mode. Please switch to Realtime Seller mode to view your rejected regular properties (Live Offers).
           </p>
           <button
             onClick={async () => {
@@ -198,7 +198,7 @@ export default function RejectedPropertiesPage() {
             className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
-            Switch to Regular Seller
+            Switch to Realtime Seller
           </button>
         </div>
       </div>

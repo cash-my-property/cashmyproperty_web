@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Clock, XCircle, FileText, Upload, AlertCircle, Loader2, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Clock, XCircle, FileText, Upload, AlertCircle, Loader2, ShieldAlert, Download } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -206,11 +206,28 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
           { key: 'signedContract', label: 'Signed Contract' },
           { key: 'passportDocument', label: 'Passport Document' },
           { key: 'propertyCheque', label: 'Property Cheque' },
-          { key: 'propertyUndertakingLetter', label: 'Undertaking Letter' },
+          { 
+            key: 'propertyUndertakingLetter', 
+            label: 'Undertaking Letter',
+            templateUrl: '/undertaking-letter.pdf'
+          },
           { key: 'buyerESignature', label: 'E-Signature' }
-        ].map(({ key, label }) => (
+        ].map(({ key, label, templateUrl }) => (
           <div key={key} className="relative">
-            <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-1">{label} *</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300">{label} *</label>
+              {templateUrl && (
+                <a
+                  href={templateUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download="undertaking-letter.pdf"
+                  className="text-xs text-[#1A3626] dark:text-[#c9a14b] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download Template
+                </a>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 dark:border-[#1A3626] rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-[#1A3626]/50 transition-colors">
                 <Upload className="w-4 h-4 text-gray-400" />

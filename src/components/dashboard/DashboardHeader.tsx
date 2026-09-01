@@ -274,8 +274,10 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
               <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 capitalize">
                 {(() => {
                   const currentRole = typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "Buyer";
-                  const currentType = (typeof user?.role === 'object' ? (user.role as any)?.type?.toLowerCase() : 'regular');
-                  return `${currentType} ${currentRole.toLowerCase() === 'seller' ? 'Seller' : 'Buyer'}`;
+                  const currentType = (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+                  const typeLabel = currentType === 'REGULAR' ? 'Realtime' : 'Simple Listing';
+                  const roleLabel = currentRole.toLowerCase() === 'seller' ? 'Seller' : 'Buyer';
+                  return `${typeLabel} ${roleLabel}`;
                 })()}
               </span>
             </div>
@@ -289,7 +291,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
           </div>
           
           {/* Dropdown menu */}
-          <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-2 w-48 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden">
+          <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-2 w-56 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden">
             <div className="p-1 flex flex-col gap-0.5">
               <Link href={`/${locale}/dashboard/settings`} className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2">
                 <User className="w-4 h-4" /> Profile Settings
@@ -320,7 +322,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                       className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                     >
                       {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} 
-                      Switch to {currentType === 'REGULAR' ? 'Simple Seller' : 'Regular Seller'}
+                      Switch to {currentType === 'REGULAR' ? 'Simple Listing Seller' : 'Realtime Seller'}
                     </button>
                   );
                 }
@@ -333,7 +335,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                       className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                     >
                       {isSwitching ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} 
-                      Switch to {currentType === 'REGULAR' ? 'Simple Buyer' : 'Regular Buyer'}
+                      Switch to {currentType === 'REGULAR' ? 'Simple Listing Buyer' : 'Realtime Buyer'}
                     </button>
                   );
                 }

@@ -119,7 +119,7 @@ export default function SellerSoldHistoryPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Access Restricted</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed text-sm">
-            Sold History is exclusively available for Regular Sellers. Simple Sellers and Buyers cannot view auction deal histories.
+            Sold History is exclusively available for Realtime Sellers. Simple Listing Sellers and Buyers cannot view auction deal histories.
           </p>
           <button
             onClick={() => router.push(`/${locale}/dashboard`)}
