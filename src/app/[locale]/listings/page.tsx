@@ -83,12 +83,16 @@ export default function ListingsPage() {
       }
 
       const rawData = res.data.data;
+      const paginationObj = res.data.pagination || res.data.data?.pagination || (typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : null);
+
       const newItems = Array.isArray(rawData) ? rawData : (rawData?.data || []);
       
-      const calculatedTotalPages = typeof rawData === 'object' && rawData?.totalPages 
-        ? rawData.totalPages 
-        : typeof rawData === 'object' && rawData?.totalCount 
-        ? Math.ceil(rawData.totalCount / 10) 
+      const calculatedTotalPages = paginationObj?.totalPages 
+        ? Number(paginationObj.totalPages) 
+        : paginationObj?.total 
+        ? Math.ceil(Number(paginationObj.total) / 10) 
+        : typeof rawData === 'object' && !Array.isArray(rawData) && rawData?.totalPages 
+        ? Number(rawData.totalPages) 
         : 1;
 
       setTotalPages(calculatedTotalPages);

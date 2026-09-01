@@ -167,14 +167,17 @@ export default function AuctionsListingPage() {
 
       const liveRaw = liveRes.data.data;
       const upcomingRaw = upcomingRes.data.data;
+      const paginationObj = liveRes.data.pagination || liveRes.data.data?.pagination || (typeof liveRaw === 'object' && !Array.isArray(liveRaw) ? liveRaw : null);
 
       const newLiveItems = Array.isArray(liveRaw) ? liveRaw : (liveRaw?.data || []);
       const newUpcomingItems = Array.isArray(upcomingRaw) ? upcomingRaw : (upcomingRaw?.data || []);
 
-      const calculatedTotalPages = typeof liveRaw === 'object' && liveRaw?.totalPages 
-        ? liveRaw.totalPages 
-        : typeof liveRaw === 'object' && liveRaw?.totalCount 
-        ? Math.ceil(liveRaw.totalCount / 10) 
+      const calculatedTotalPages = paginationObj?.totalPages 
+        ? Number(paginationObj.totalPages) 
+        : paginationObj?.total 
+        ? Math.ceil(Number(paginationObj.total) / 10) 
+        : typeof liveRaw === 'object' && !Array.isArray(liveRaw) && liveRaw?.totalPages 
+        ? Number(liveRaw.totalPages) 
         : 1;
 
       setTotalPages(calculatedTotalPages);
