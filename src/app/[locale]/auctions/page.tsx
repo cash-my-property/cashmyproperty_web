@@ -26,6 +26,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
+import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 
 export default function AuctionsListingPage() {
   const { dict, locale } = useDictionary();
@@ -257,117 +258,18 @@ export default function AuctionsListingPage() {
             {content.hero.subheadline}
           </p>
 
-          {/* Search Bar & Filters Container */}
-          <div className="w-full max-w-4xl flex flex-col gap-4">
-            {/* Row 1: Search Input & Search Button */}
-            <div className="w-full bg-white dark:bg-[#102418] p-2 rounded-2xl shadow-2xl flex flex-row gap-2 border border-gray-100 dark:border-[#1A3626] items-center">
-              <div className="flex-1 flex items-center gap-3 px-4 py-3 bg-gray-50 dark:bg-[#091711]/50 rounded-xl">
-                <Search className="w-5 h-5 text-gray-400 shrink-0" />
-                <input 
-                  type="text" 
-                  placeholder={content.hero.searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') setAppliedSearch(searchQuery); }}
-                  className="w-full bg-transparent border-none outline-none text-[15px] text-gray-800 dark:text-gray-200 placeholder:text-gray-400"
-                />
-              </div>
-              
-              <button 
-                onClick={() => setAppliedSearch(searchQuery)}
-                className="bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-8 py-3.5 rounded-xl font-bold text-[14px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap"
-              >
-                <Filter className="w-4 h-4 shrink-0" />
-                {content.hero.searchButton}
-              </button>
-            </div>
-
-            {/* Row 2: Filter Dropdowns Grouped Together */}
-            <div className="flex flex-wrap items-center justify-center gap-3 bg-white/5 dark:bg-[#102418]/20 p-2 rounded-2xl border border-white/10 backdrop-blur-md">
-              {/* Type Dropdown */}
-              <div className="relative w-[160px] shrink-0">
-                <div 
-                  onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
-                  className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#1A3626] transition-colors border border-gray-100 dark:border-[#1A3626] min-w-0"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Building className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors shrink-0" />
-                    <span className="text-[13.5px] text-gray-600 dark:text-gray-300 font-semibold truncate">
-                      {selectedType ? (dict.home.hero.filters.types as Record<string, string>)[selectedType] : content.hero.filters.type}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all shrink-0 ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
-                </div>
-                
-                {activeDropdown === 'type' && (
-                  <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
-                    {Object.entries(dict.home.hero.filters.types).map(([key, value]) => (
-                      <div 
-                        key={key} 
-                        className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                        onClick={() => {
-                          setSelectedType(selectedType === key ? null : key);
-                          setActiveDropdown(null);
-                        }}
-                      >
-                        {value as string}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Status Dropdown */}
-              <div className="relative w-[160px] shrink-0">
-                <div 
-                  onClick={() => setActiveDropdown(activeDropdown === 'status' ? null : 'status')}
-                  className="flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-[#102418] rounded-xl cursor-pointer group hover:bg-gray-100 dark:hover:bg-[#1A3626] transition-colors border border-gray-100 dark:border-[#1A3626] min-w-0"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Clock className="w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-colors shrink-0" />
-                    <span className="text-[13.5px] text-gray-600 dark:text-gray-300 font-semibold truncate">
-                      {selectedStatus === "All" ? "All Status" : selectedStatus}
-                    </span>
-                  </div>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-[#5CD284] transition-all shrink-0 ${activeDropdown === 'status' ? 'rotate-180' : ''}`} />
-                </div>
-                
-                {activeDropdown === 'status' && (
-                  <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200">
-                    {["All", "LIVE", "UPCOMING"].map((status) => (
-                      <div 
-                        key={status} 
-                        className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedStatus === status ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                        onClick={() => {
-                          setSelectedStatus(status);
-                          setActiveDropdown(null);
-                        }}
-                      >
-                        {status === "All" ? "All Status" : status}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Sorting Pills */}
-              <div className="flex items-center gap-1.5 bg-white dark:bg-[#102418] p-1 rounded-xl border border-gray-100 dark:border-[#1A3626] shrink-0">
-                <button 
-                  onClick={() => setPriceSort(priceSort === 'asc' ? null : 'asc')}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer ${priceSort === 'asc' ? 'bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626]' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
-                >
-                  Price: Low to High
-                </button>
-                <button 
-                  onClick={() => setPriceSort(priceSort === 'desc' ? null : 'desc')}
-                  className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all cursor-pointer ${priceSort === 'desc' ? 'bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626]' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}
-                >
-                  Price: High to Low
-                </button>
-              </div>
-
-            </div>
-          </div>
+          {/* Upgraded Hero Search Bar Widget */}
+          <HeroSearchWidget 
+            initialTab="BUY"
+            onSearch={(filters) => {
+              setAppliedSearch(filters.query);
+              if (filters.propertyType !== "ALL") {
+                setSelectedType(filters.propertyType.toLowerCase());
+              } else {
+                setSelectedType(null);
+              }
+            }}
+          />
         </div>
       </section>
 

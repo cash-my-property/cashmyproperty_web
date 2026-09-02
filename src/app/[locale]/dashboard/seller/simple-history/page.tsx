@@ -6,6 +6,7 @@ import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X } 
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
+import PropertyDetailModal from "@/components/modals/PropertyDetailModal";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -151,90 +152,10 @@ export default function SimpleListingHistoryPage() {
 
       {/* View Property Modal */}
       {viewModalProperty && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#102418] rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-[#1A3626]">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Property Details</h2>
-              <button onClick={() => setViewModalProperty(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-full transition-colors">
-                <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {viewModalProperty.image ? (
-                  <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden shadow-sm">
-                    <Image 
-                      src={viewModalProperty.image} 
-                      alt={viewModalProperty.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="relative h-48 sm:h-64 w-full rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                    <Building className="w-12 h-12 text-gray-300" />
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{viewModalProperty.title}</h3>
-                  <p className="text-[#1A3626] dark:text-[#5CD284] text-xl font-bold">AED {viewModalProperty.price?.amount?.toLocaleString() || 0}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-gray-50 dark:bg-[#163321]/50 p-4 rounded-2xl">
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Status</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.status || "PENDING"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Property ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.propertyId || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
-                    <p className="font-semibold text-gray-900 dark:text-white line-clamp-1">{viewModalProperty.location}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Area</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.area?.value || 0} {viewModalProperty.area?.unit || "sqft"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Bedrooms</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.specs?.beds || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Washrooms</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{viewModalProperty.specs?.washrooms || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Date Added</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">{new Date(viewModalProperty.createdAt).toLocaleDateString()}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Description</h4>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {viewModalProperty.description || "No description provided."}
-                  </p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-6 border-t border-gray-100 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] flex justify-end">
-              <button 
-                onClick={() => setViewModalProperty(null)}
-                className="px-6 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <PropertyDetailModal 
+          property={viewModalProperty} 
+          onClose={() => setViewModalProperty(null)} 
+        />
       )}
 
       {/* Edit Property Modal */}

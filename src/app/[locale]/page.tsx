@@ -9,6 +9,7 @@ import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 import Image from "next/image";
 import Dirham from "@/components/Dirham";
+import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 
 export default function HomePage() {
   const { dict, locale } = useDictionary();
@@ -250,120 +251,17 @@ export default function HomePage() {
             {home.hero.subheadline}
           </p>
 
-          {/* Search Bar */}
-          <div className="w-full max-w-4xl bg-white/10 dark:bg-[#102418]/60 backdrop-blur-xl p-3 sm:p-4 rounded-3xl border border-white/20 shadow-2xl flex flex-col gap-3 transition-all">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="flex-1 flex items-center bg-white dark:bg-[#091711] rounded-full px-5 py-4 w-full border border-transparent focus-within:border-[#5CD284] transition-colors">
-                <Search className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
-                <input 
-                  type="text" 
-                  placeholder={home.hero.searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') setAppliedSearch(searchQuery); }}
-                  className="w-full bg-transparent border-none outline-none text-gray-900 dark:text-white placeholder:text-gray-400 text-[15px]"
-                />
-              </div>
-              <button 
-                onClick={() => setAppliedSearch(searchQuery)}
-                className="w-full sm:w-auto px-10 py-4 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(92,210,132,0.3)] hover:shadow-[0_0_30px_rgba(92,210,132,0.5)] shrink-0 cursor-pointer"
-              >
-                {home.hero.searchButton}
-              </button>
-            </div>
-            
-            {/* Filters Row */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Type Filter */}
-                <div className="relative">
-                  <div 
-                    onClick={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
-                    className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <Building className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'type' || (selectedType && selectedType !== 'all') ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
-                      <span className="text-[13.5px] font-semibold">
-                        {selectedType ? (home.hero.filters.types as Record<string, string>)[selectedType] : home.hero.filters.type}
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'type' ? 'rotate-180' : ''}`} />
-                  </div>
-                  {activeDropdown === 'type' && (
-                    <div className="absolute top-full mt-2 w-full sm:min-w-[200px] left-0 bg-white dark:bg-[#091711] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200 max-h-[220px] overflow-y-auto">
-                      {Object.entries(home.hero.filters.types).map(([key, value]) => (
-                        <div 
-                          key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedType === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                          onClick={() => { setSelectedType(key); setActiveDropdown(null); }}
-                        >
-                          {value as string}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Price Filter */}
-                <div className="relative">
-                  <div 
-                    onClick={() => setActiveDropdown(activeDropdown === 'price' ? null : 'price')}
-                    className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <span className={`text-[14px] font-bold opacity-60 transition-colors ${activeDropdown === 'price' || (selectedPrice && selectedPrice !== 'all') ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`}>د.إ</span>
-                      <span className="text-[13.5px] font-semibold">
-                        {selectedPrice ? (home.hero.filters.prices as Record<string, string>)[selectedPrice] : home.hero.filters.price}
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'price' ? 'rotate-180' : ''}`} />
-                  </div>
-                  {activeDropdown === 'price' && (
-                    <div className="absolute top-full mt-2 w-full sm:min-w-[200px] left-0 sm:left-1/2 sm:-translate-x-1/2 bg-white dark:bg-[#091711] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200 max-h-[220px] overflow-y-auto">
-                      {Object.entries(home.hero.filters.prices).map(([key, value]) => (
-                        <div 
-                          key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedPrice === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                          onClick={() => { setSelectedPrice(key); setActiveDropdown(null); }}
-                        >
-                          {value as string}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Sort Filter */}
-                <div className="relative">
-                  <div 
-                    onClick={() => setActiveDropdown(activeDropdown === 'sort' ? null : 'sort')}
-                    className="bg-white/70 dark:bg-[#091711]/70 hover:bg-white dark:hover:bg-[#091711] transition-all duration-300 rounded-xl px-4 py-3.5 sm:py-3 flex items-center justify-between cursor-pointer border border-transparent hover:border-white/30 backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-2.5 text-gray-700 dark:text-gray-300">
-                      <ArrowDownUp className={`w-4 h-4 opacity-60 transition-colors ${activeDropdown === 'sort' || (selectedSort && selectedSort !== 'newest') ? 'text-[#1A3626] dark:text-[#c9a14b] opacity-100' : ''}`} />
-                      <span className="text-[13.5px] font-semibold">
-                        {selectedSort ? (home.hero.filters.sortOptions as Record<string, string>)[selectedSort] : home.hero.filters.sort}
-                      </span>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${activeDropdown === 'sort' ? 'rotate-180' : ''}`} />
-                  </div>
-                  {activeDropdown === 'sort' && (
-                    <div className="absolute top-full mt-2 w-full sm:min-w-[200px] left-0 sm:left-auto sm:right-0 bg-white dark:bg-[#091711] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-50 py-1.5 animate-in fade-in zoom-in-95 duration-200 max-h-[220px] overflow-y-auto">
-                      {Object.entries(home.hero.filters.sortOptions).map(([key, value]) => (
-                        <div 
-                          key={key} 
-                          className={`px-4 py-3 text-[13.5px] font-medium transition-colors cursor-pointer ${selectedSort === key ? 'bg-green-50/80 dark:bg-[#163321]/80 text-[#1A3626] dark:text-[#c9a14b]' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]/50'}`}
-                          onClick={() => { setSelectedSort(key); setActiveDropdown(null); }}
-                        >
-                          {value as string}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Upgraded Hero Search Bar Widget */}
+          <HeroSearchWidget 
+            onSearch={(filters) => {
+              setAppliedSearch(filters.query);
+              if (filters.propertyType !== "ALL") {
+                setSelectedType(filters.propertyType.toLowerCase());
+              } else {
+                setSelectedType(null);
+              }
+            }}
+          />
         </div>
 
         {/* Bottom fade out to background */}

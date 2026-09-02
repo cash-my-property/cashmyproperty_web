@@ -222,13 +222,13 @@ export default function RoleSwitchModal({ isOpen, onClose }: RoleSwitchModalProp
                     {activeTab === 'BUYER' ? 'Simple Listing Buyer' : 'Simple Listing Seller'}
                   </span>
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    Fixed Price / Rent
+                    Direct Sale & Rent
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                   {activeTab === 'BUYER' 
-                    ? "Browse direct sale and rental properties, view fixed asking prices, and download undertaking letters."
-                    : "List properties with fixed asking price or rental terms for direct buyer inquiries and standard transactions."}
+                    ? "Browse direct sale and rental properties, view listing details, and download undertaking letters."
+                    : "List properties for direct sale or rental terms for direct buyer inquiries and standard transactions."}
                 </p>
               </div>
             </div>
