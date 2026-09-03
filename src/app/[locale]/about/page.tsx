@@ -19,7 +19,8 @@ import {
   Quote,
   Target,
   Eye,
-  Info
+  Info,
+  BarChart3
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 
@@ -51,6 +52,7 @@ export default function AboutPage() {
       case 2: return <Users className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
       case 3: return <ShieldCheck className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
       case 4: return <Bell className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
+      case 5: return <BarChart3 className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
       default: return <Award className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
     }
   };

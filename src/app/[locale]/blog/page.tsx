@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { ArrowRight, Calendar, Tag } from "lucide-react";
 import { content } from "@/config/content";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function BlogPage() {
+  const { locale } = useDictionary();
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
@@ -51,7 +53,7 @@ export default function BlogPage() {
         {/* POSTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {content.blog.main.posts.map((post) => (
-            <Link key={post.id} href="#" className="group flex flex-col bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] hover:-translate-y-1 transition-all duration-300">
+            <Link key={post.id} href={`/${locale}/blog/${post.slug || post.id}`} className="group flex flex-col bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] hover:-translate-y-1 transition-all duration-300">
               {/* Fake image placeholder for the blog card */}
               <div className="w-full h-[240px] bg-gray-200 dark:bg-[#163321] relative overflow-hidden">
                 <div 

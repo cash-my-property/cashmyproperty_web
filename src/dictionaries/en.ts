@@ -98,6 +98,10 @@ export const content = {
         {
           title: "Instant Alerts & Notifications",
           description: "Receive real-time alerts for new offers, listing activity, and important updates."
+        },
+        {
+          title: "Smart Analytics & Price Insights",
+          description: "Leverage real-time market data, historical transaction trends, and competitive price intelligence to make data-driven decisions."
         }
       ]
     },

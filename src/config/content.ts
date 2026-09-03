@@ -109,6 +109,7 @@ export const content = {
       posts: [
         {
           id: 1,
+          slug: "future-of-digital-real-estate-offers-dubai",
           title: "The Future of Digital Real Estate Offers in Dubai",
           date: "August 4, 2026",
           category: "Market Trends",
@@ -116,6 +117,7 @@ export const content = {
         },
         {
           id: 2,
+          slug: "understanding-brn-verification-cash-my-property",
           title: "Understanding BRN Verification on Cash My Property",
           date: "July 28, 2026",
           category: "Platform Updates",
@@ -123,6 +125,7 @@ export const content = {
         },
         {
           id: 3,
+          slug: "top-neighborhoods-real-estate-investment-dubai-2026",
           title: "Top 5 Neighborhoods for Investment in 2026",
           date: "July 15, 2026",
           category: "Investment Guide",

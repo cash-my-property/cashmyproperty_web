@@ -52,15 +52,13 @@ export default function Navbar() {
       if (buyerType === 'SIMPLE') {
         return [
           { title: "Home", href: "/" },
-          { title: "Simple Listings", href: "/listings" },
-          { title: "Dashboard", href: "/dashboard" }
+          { title: "Simple Listings", href: "/listings" }
         ];
       } else {
         return [
           { title: "Home", href: "/" },
           { title: "Realtime Offers", href: "/auctions" },
-          { title: "Contracts", href: "/dashboard/contracts" },
-          { title: "Dashboard", href: "/dashboard" }
+          { title: "Contracts", href: "/dashboard/contracts" }
         ];
       }
     }

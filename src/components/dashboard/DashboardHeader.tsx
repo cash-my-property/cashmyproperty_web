@@ -2,24 +2,20 @@
 
 import { useDictionary } from "@/components/DictionaryProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Bell, User, Search, Globe, ChevronDown, LogOut, RefreshCw, Loader2, Check, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Bell, Globe, ChevronDown, RefreshCw, Menu, Check, Trash2, Sparkles, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-import api from "@/lib/api";
 import { useState } from "react";
 import RoleSwitchModal from "@/components/modals/RoleSwitchModal";
 
 export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
-  const { dict, locale } = useDictionary();
-  const content = dict.dashboard.header;
+  const { locale } = useDictionary();
   const router = useRouter();
-  const { user, logout, fetchProfile } = useAuth();
+  const { user } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [roleModalTarget, setRoleModalTarget] = useState<"BUYER" | "SELLER">("BUYER");
 
   const switchLanguage = (newLocale: string) => {
     if (newLocale === locale) return;
@@ -38,72 +34,87 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
     router.refresh();
   };
 
-  const openRoleModal = (target: "BUYER" | "SELLER") => {
-    setRoleModalTarget(target);
-    setRoleModalOpen(true);
-  };
+  const currentRole = typeof user?.role === 'string' ? user.role.toUpperCase() : (user?.role as any)?.main?.toUpperCase() || "BUYER";
+  const currentType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const isSeller = currentRole === "SELLER";
 
-  const currentRole = typeof user?.role === 'string' ? user.role : (user?.role as any)?.main || "buyer";
-  const isSeller = currentRole.toLowerCase() === "seller";
+  const typeLabel = currentType === 'REGULAR' ? 'Realtime' : 'Simple';
+  const roleLabel = isSeller ? 'Seller' : 'Buyer';
+  const currentModeLabel = `${typeLabel} ${roleLabel}`;
+
+  const userName = user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User";
+  const firstName = userName.split(' ')[0] || "User";
 
   return (
     <>
-      <header className="h-20 bg-white dark:bg-[#102418] border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between px-8 sticky top-0 z-40 transition-colors">
+      <header className="h-16 sm:h-20 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between px-3 sm:px-6 lg:px-8 sticky top-0 z-40 transition-colors gap-2">
         
-        {/* Mobile Menu Button */}
-        {onMenuClick && (
-          <button 
-            onClick={onMenuClick}
-            className="lg:hidden p-2 -ml-2 mr-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-lg transition-colors"
-          >
-            <ChevronDown className="w-5 h-5" />
-          </button>
-        )}
-
-        {/* Search */}
-        <div className="flex-1 max-w-md hidden md:block">
-          <div className="relative">
-            <Search className="w-4 h-4 text-gray-400 absolute ltr:left-3.5 rtl:right-3.5 top-1/2 -translate-y-1/2" />
-            <input 
-              type="text" 
-              placeholder={(content as any).searchPlaceholder || "Search properties..."}
-              className="w-full ltr:pl-10 ltr:pr-4 rtl:pr-10 rtl:pl-4 py-2 bg-gray-50 dark:bg-[#163321]/50 border border-gray-200 dark:border-[#1A3626] rounded-xl text-[13px] text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
-            />
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex items-center gap-4 ltr:ml-auto rtl:mr-auto">
-          
-          {/* Quick Become Role Button */}
-          {isSeller ? (
-            <button
-              onClick={() => openRoleModal("BUYER")}
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] hover:bg-emerald-500/20 transition-all cursor-pointer shadow-sm hover:scale-105"
+        {/* 1. LEFT ZONE: Mobile Drawer Toggle & User Greeting */}
+        <div className="flex items-center gap-2.5 sm:gap-4 shrink-0 max-w-[50%] sm:max-w-none">
+          {onMenuClick && (
+            <button 
+              onClick={onMenuClick}
+              className="lg:hidden p-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-xl transition-colors cursor-pointer shrink-0"
+              aria-label="Toggle Navigation Menu"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Become Buyer</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => openRoleModal("SELLER")}
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-xs border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-[#c9a14b] hover:bg-amber-500/20 transition-all cursor-pointer shadow-sm hover:scale-105"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Become Seller</span>
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
 
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-xs sm:text-base md:text-lg font-bold text-gray-900 dark:text-white flex items-center gap-1.5 truncate">
+              <span className="truncate">Welcome back, {firstName}</span>
+              <span className="hidden sm:inline">👋</span>
+            </h1>
+            <div className="hidden sm:flex items-center gap-2 text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5">
+              <LayoutDashboard className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
+              <span>Dashboard Control Panel</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. CENTER ZONE: Fills Empty Space on Laptop / Desktop Screens gracefully */}
+        <div className="hidden md:flex items-center justify-center flex-1 max-w-md mx-6">
+          <div className="w-full bg-gray-50/90 dark:bg-[#163321]/50 border border-gray-200/80 dark:border-[#1A3626] rounded-full px-4 py-2 flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#5CD284] animate-pulse" />
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Current Mode:</span>
+              <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">{currentModeLabel}</span>
+            </div>
+            
+            <button
+              onClick={() => setRoleModalOpen(true)}
+              className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] hover:opacity-90 transition-all cursor-pointer shadow-xs flex items-center gap-1"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Switch</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3. RIGHT ZONE: Action Controls (Optimized for Mobile & Laptop) */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          
+          {/* Mobile Mode Switch Button (Visible on Mobile only when Center Zone is hidden) */}
+          <button
+            onClick={() => setRoleModalOpen(true)}
+            className="md:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-full font-bold text-[11px] bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b] border border-[#1A3626]/20 dark:border-[#c9a14b]/30 hover:bg-[#1A3626]/20 transition-all cursor-pointer shrink-0"
+            title="Switch Mode"
+          >
+            <Sparkles className="w-3 h-3 shrink-0" />
+            <span className="truncate max-w-[75px] xs:max-w-[100px]">{currentModeLabel}</span>
+          </button>
+
           {/* Theme Toggle */}
-          <div className="scale-90">
+          <div className="scale-85 sm:scale-90 shrink-0">
             <ThemeToggle />
           </div>
 
           {/* Language Selector */}
-          <div className="relative group cursor-pointer">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#163321] text-gray-700 dark:text-gray-300 transition-colors">
-              <Globe className="w-4 h-4" />
-              <span className="font-semibold text-xs uppercase">{locale}</span>
+          <div className="relative group cursor-pointer shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-[#163321] text-gray-700 dark:text-gray-300 transition-colors text-xs font-bold">
+              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="uppercase text-[11px] sm:text-xs">{locale}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </div>
             <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-1 w-32 bg-white dark:bg-[#102418] rounded-xl shadow-lg border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden p-1 z-50">
@@ -113,14 +124,15 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
           </div>
 
           {/* Notifications Center */}
-          <div className="relative flex items-center">
+          <div className="relative flex items-center shrink-0">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-xl transition-colors cursor-pointer"
+              className="relative p-1.5 sm:p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-xl transition-colors cursor-pointer"
+              aria-label="Notifications"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
               {notifications.some(n => !n.read) && (
-                <span className="absolute top-1.5 ltr:right-1.5 rtl:left-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+                <span className="absolute top-1 ltr:right-1 rtl:left-1 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
               )}
             </button>
 
@@ -130,7 +142,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                   className="fixed inset-0 z-30" 
                   onClick={() => setShowNotifications(false)}
                 />
-                <div className="absolute top-[135%] ltr:right-0 rtl:left-0 mt-2 w-80 bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 transform ltr:origin-top-right rtl:origin-top-left scale-100 transition-all overflow-hidden flex flex-col max-h-[420px]">
+                <div className="absolute top-[135%] ltr:right-0 rtl:left-0 mt-2 w-72 sm:w-80 bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 transform ltr:origin-top-right rtl:origin-top-left scale-100 transition-all overflow-hidden flex flex-col max-h-[420px]">
                   <div className="px-4 py-3 border-b border-gray-50 dark:border-[#1A3626] flex items-center justify-between bg-gray-50/50 dark:bg-[#102418]/50">
                     <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
                     {notifications.length > 0 && (
@@ -219,58 +231,6 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                 </div>
               </>
             )}
-          </div>
-
-          {/* Profile Dropdown */}
-          <div className="relative group cursor-pointer">
-            <div className="flex items-center gap-3 pl-2 border-l border-gray-200 dark:border-[#1A3626]">
-              <div className="flex flex-col items-end">
-                <span className="text-[13px] font-bold text-gray-900 dark:text-white leading-none capitalize">
-                  {user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User"}
-                </span>
-                <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 capitalize mt-0.5">
-                  {(() => {
-                    const currentType = (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
-                    const typeLabel = currentType === 'REGULAR' ? 'Realtime' : 'Simple Listing';
-                    const roleLabel = isSeller ? 'Seller' : 'Buyer';
-                    return `${typeLabel} ${roleLabel}`;
-                  })()}
-                </span>
-              </div>
-              {user?.picture ? (
-                <img src={user.picture} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-[#1A3626]/20 dark:border-[#c9a14b]/30 group-hover:scale-105 transition-transform" />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-[#1A3626]/10 dark:bg-[#c9a14b]/20 border border-[#1A3626]/20 dark:border-[#c9a14b]/30 flex items-center justify-center text-[#1A3626] dark:text-[#c9a14b] group-hover:scale-105 transition-transform">
-                  <User className="w-4 h-4" />
-                </div>
-              )}
-            </div>
-            
-            {/* Dropdown menu */}
-            <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-2 w-56 bg-white dark:bg-[#102418] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden">
-              <div className="p-1.5 flex flex-col gap-0.5">
-                <Link href={`/${locale}/dashboard/settings`} className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2">
-                  <User className="w-4 h-4" /> Profile Settings
-                </Link>
-                
-                <button 
-                  onClick={() => openRoleModal(isSeller ? "BUYER" : "SELLER")}
-                  className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-[#1A3626] dark:hover:text-[#c9a14b] hover:bg-gray-50 dark:hover:bg-[#163321] flex items-center gap-2 cursor-pointer"
-                >
-                  <RefreshCw className="w-4 h-4" /> 
-                  Switch to {isSeller ? "Buyer" : "Seller"} Mode
-                </button>
-
-                <div className="h-px bg-gray-100 dark:bg-[#163321] my-1" />
-
-                <button 
-                  onClick={logout}
-                  className="w-full text-start px-3 py-2.5 rounded-lg text-[13px] font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" /> {(content as any).logout || "Logout"}
-                </button>
-              </div>
-            </div>
           </div>
 
         </div>
