@@ -1,7 +1,7 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { User, Lock, Bell, Camera, Loader2, Trash2 } from "lucide-react";
+import { User, Lock, Bell, Camera, Loader2, Trash2, AlertTriangle, AlertCircle } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -10,7 +10,7 @@ import Image from "next/image";
 export default function SettingsPage() {
   const { dict } = useDictionary();
   const content = dict.dashboard.settings;
-  const { user, fetchProfile } = useAuth();
+  const { user, fetchProfile, logout } = useAuth();
   
   const [activeTab, setActiveTab] = useState('personal');
 
@@ -34,9 +34,12 @@ export default function SettingsPage() {
   const [securityMessage, setSecurityMessage] = useState({ type: "", text: "" });
   
   // Delete account states
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteReason, setDeleteReason] = useState("");
+  const [deleteReasonPreset, setDeleteReasonPreset] = useState("");
+  const [customReason, setCustomReason] = useState("");
+  const [confirmDeleteChecked, setConfirmDeleteChecked] = useState(false);
   const [isSubmittingDelete, setIsSubmittingDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteBlockers, setDeleteBlockers] = useState<string[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -118,18 +121,42 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!deleteReason.trim()) return;
+    const finalReason = deleteReasonPreset === "Other reason (please specify below)" 
+      ? customReason.trim() 
+      : (deleteReasonPreset || customReason.trim());
+
+    if (!finalReason) {
+      setDeleteError("Please select or specify a reason for deleting your account.");
+      return;
+    }
+
+    if (!confirmDeleteChecked) {
+      setDeleteError("Please check the confirmation box before deleting your account.");
+      return;
+    }
+
     setIsSubmittingDelete(true);
-    setSecurityMessage({ type: "", text: "" });
+    setDeleteError("");
+    setDeleteBlockers([]);
+
     try {
       await api.delete('/auth/delete-account', {
-        data: { reason: deleteReason }
+        data: { reason: finalReason }
       });
-      // Force logout and redirect
-      window.location.href = `/${document.documentElement.lang || 'en'}/login`;
+
+      // Clear auth context & cookies
+      await logout();
+      const locale = document.documentElement.lang || 'en';
+      window.location.href = `/${locale}/login`;
     } catch (error: any) {
-      setSecurityMessage({ type: "error", text: error.response?.data?.message || "Failed to delete account." });
       setIsSubmittingDelete(false);
+      const data = error.response?.data;
+      if (data?.code === 'DELETE_BLOCKED' && Array.isArray(data?.blockers) && data.blockers.length > 0) {
+        setDeleteBlockers(data.blockers);
+        setDeleteError(data.message || "Account cannot be deleted. Please resolve all pending issues first.");
+      } else {
+        setDeleteError(data?.message || "Failed to delete account. Please try again.");
+      }
     }
   };
 
@@ -148,7 +175,7 @@ export default function SettingsPage() {
         <div className="w-full lg:w-64 space-y-2 shrink-0">
           <button 
             onClick={() => setActiveTab('personal')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] cursor-pointer ${
               activeTab === 'personal' 
                 ? 'bg-[#1A3626] dark:bg-[#c9a14b]/10 text-white dark:text-[#c9a14b]' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#102418]'
@@ -158,7 +185,7 @@ export default function SettingsPage() {
           </button>
           <button 
             onClick={() => setActiveTab('security')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] cursor-pointer ${
               activeTab === 'security' 
                 ? 'bg-[#1A3626] dark:bg-[#c9a14b]/10 text-white dark:text-[#c9a14b]' 
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#102418]'
@@ -168,10 +195,10 @@ export default function SettingsPage() {
           </button>
           <button 
             onClick={() => setActiveTab('delete')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-semibold text-[14px] ${
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-semibold text-[14px] cursor-pointer ${
               activeTab === 'delete' 
-                ? 'bg-red-600/10 text-red-600 dark:text-red-500' 
-                : 'text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-950/10 hover:text-red-600'
+                ? 'bg-red-600 text-white dark:bg-red-600 dark:text-white shadow-md' 
+                : 'text-gray-600 dark:text-gray-400 hover:bg-red-500/10 dark:hover:bg-red-500/20 hover:text-red-600 dark:hover:text-red-400 border border-transparent hover:border-red-200 dark:hover:border-red-900/40'
             }`}
           >
             <Trash2 className="w-4 h-4" /> {content.tabs.deleteAccount}
@@ -328,18 +355,103 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'delete' && (
-            <div className="space-y-6 animate-in fade-in duration-500 max-w-md">
-              <div>
-                <h3 className="text-lg font-bold text-red-600 dark:text-red-500">{content.tabs.deleteAccount}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Once you delete your account, there is no going back. Please be certain.
-                </p>
+            <div className="space-y-6 animate-in fade-in duration-500 max-w-xl">
+              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-base font-bold text-red-700 dark:text-red-400">
+                    {content.tabs.deleteAccount}
+                  </h3>
+                  <p className="text-xs text-red-600/90 dark:text-red-300/80 mt-1 leading-relaxed">
+                    Deleting your account is permanent. Your active session will be terminated and your profile data will be permanently archived/deleted according to RERA regulations.
+                  </p>
+                </div>
               </div>
-              <div className="pt-2">
-                <button 
-                  className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-[14px] tracking-wide transition-all cursor-pointer shadow-sm hover:shadow-md"
+
+              {deleteError && (
+                <div className="p-4 rounded-xl bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 text-sm space-y-2">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                    <span>{deleteError}</span>
+                  </div>
+                  {deleteBlockers.length > 0 && (
+                    <ul className="list-disc list-inside text-xs space-y-1 pt-1 pl-2 text-red-700 dark:text-red-300">
+                      {deleteBlockers.map((blocker, idx) => (
+                        <li key={idx}>{blocker}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <label className="text-[13px] font-bold text-gray-800 dark:text-gray-200 block">
+                  Why are you deleting your account? <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-2.5">
+                  {[
+                    { id: "REASON_1", label: "I am no longer using Cash My Property" },
+                    { id: "REASON_2", label: "I created a duplicate or secondary account" },
+                    { id: "REASON_3", label: "Privacy or security concerns" },
+                    { id: "OTHER", label: "Other reason (please specify below)" },
+                  ].map((item) => (
+                    <label
+                      key={item.id}
+                      onClick={() => setDeleteReasonPreset(item.label)}
+                      className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all cursor-pointer text-sm font-medium ${
+                        deleteReasonPreset === item.label
+                          ? "bg-red-50/60 dark:bg-red-950/20 border-red-500 text-red-900 dark:text-red-200"
+                          : "bg-gray-50 dark:bg-[#102418] border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="deleteReason"
+                        checked={deleteReasonPreset === item.label}
+                        onChange={() => setDeleteReasonPreset(item.label)}
+                        className="text-red-600 focus:ring-red-500"
+                      />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+
+                {(deleteReasonPreset === "Other reason (please specify below)" || !deleteReasonPreset) && (
+                  <div className="pt-2">
+                    <textarea
+                      rows={3}
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                      placeholder="Please provide details on why you are deleting your account..."
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-red-500 transition-colors text-sm text-gray-900 dark:text-white"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 border-t border-gray-100 dark:border-[#1A3626]">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={confirmDeleteChecked}
+                    onChange={(e) => setConfirmDeleteChecked(e.target.checked)}
+                    className="mt-1 rounded text-red-600 focus:ring-red-500"
+                  />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
+                    I understand that this action is irreversible and I want to permanently delete my account and access.
+                  </span>
+                </label>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-4">
+                <button
+                  type="button"
+                  onClick={handleDeleteAccount}
+                  disabled={isSubmittingDelete || !confirmDeleteChecked}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-[14px] tracking-wide transition-all cursor-pointer shadow-sm hover:shadow-md"
                 >
-                  Delete Account
+                  {isSubmittingDelete && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Confirm Delete Account
                 </button>
               </div>
             </div>
@@ -349,3 +461,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

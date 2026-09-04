@@ -46,14 +46,15 @@ export default function AboutPage() {
 
   // Feature Section Icon Mapper
   const getFeatureIcon = (index: number) => {
+    const iconClass = "w-6 h-6 text-[#1A3626] dark:text-[#c9a14b] group-hover:text-white dark:group-hover:text-[#060F0B] transition-colors duration-300";
     switch (index) {
-      case 0: return <Award className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
-      case 1: return <Zap className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
-      case 2: return <Users className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
-      case 3: return <ShieldCheck className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
-      case 4: return <Bell className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
-      case 5: return <BarChart3 className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
-      default: return <Award className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />;
+      case 0: return <Award className={iconClass} />;
+      case 1: return <Zap className={iconClass} />;
+      case 2: return <Users className={iconClass} />;
+      case 3: return <ShieldCheck className={iconClass} />;
+      case 4: return <Bell className={iconClass} />;
+      case 5: return <BarChart3 className={iconClass} />;
+      default: return <Award className={iconClass} />;
     }
   };
 
@@ -174,10 +175,8 @@ export default function AboutPage() {
                 key={idx}
                 className="flex flex-col bg-white dark:bg-[#102418] p-8 rounded-3xl border border-gray-100 dark:border-[#1A3626] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group"
               >
-                <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#5CD284] dark:group-hover:bg-[#c9a14b] transition-all duration-300">
-                  <span className="group-hover:text-white dark:group-hover:text-[#102418] transition-colors">
-                    {getFeatureIcon(idx)}
-                  </span>
+                <div className="w-14 h-14 bg-green-50 dark:bg-[#c9a14b]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#1A3626] dark:group-hover:bg-[#c9a14b] transition-all duration-300">
+                  {getFeatureIcon(idx)}
                 </div>
                 <h3 className="text-[19px] font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">
                   {item.title}

@@ -184,8 +184,12 @@ export default function FavoritesPage() {
             // Extract details depending on listing type (regular/auctions have details nested in propertyDetails)
             const details = isRegular ? (item.propertyDetails || {}) : item;
             
+            const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
+            const formattedLocation = (() => {
+              const words = rawLocation.trim().split(/\s+/);
+              return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
+            })();
             const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
-            const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
             const price = isRegular
               ? (item.currentHighestBid || details.propertyPrice?.amount || details.propertyPrice || 0)
               : (details.propertyPrice?.amount || details.propertyPrice || 0);
@@ -237,8 +241,8 @@ export default function FavoritesPage() {
                     {details.propertyTitle || "Untitled Property"}
                   </h3>
                   
-                  <p className="text-gray-500 dark:text-gray-400 text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                    <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {location}
+                  <p title={rawLocation} className="text-gray-500 dark:text-gray-400 text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
+                    <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" /> <span className="truncate">{formattedLocation}</span>
                   </p>
 
                   <div className="mt-auto pt-4 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">

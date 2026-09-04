@@ -166,20 +166,20 @@ export const content = {
     },
     deleteAccount: {
       title: "Delete Your Account",
-      description: "At Cash My Property, we respect your privacy and give you full control over your data. You can permanently delete your account at any time directly from the app by following the steps below.",
+      description: "At Cash My Property, we respect your privacy and give you full control over your data. You can permanently delete your account at any time directly from the website by following the steps below.",
       howToDeleteTitle: "How to Delete",
       steps: [
-        "Open the Cash My Property (CMP) app",
-        "Navigate to your Profile section",
-        "Tap the Delete Account option (top right corner)",
-        "Confirm your request by selecting Yes on the confirmation popup",
-        "Once confirmed, your account deletion request will be processed."
+        "Open the Cash My Property (CMP) website and log in to your account",
+        "Navigate to your Dashboard and open the Settings page",
+        "Click on the 'Delete Account' tab on the left sidebar",
+        "Select a reason for deletion, check the confirmation box, and click 'Confirm Delete Account'",
+        "Once confirmed, your account will be permanently deleted and you will be logged out."
       ],
       importantTitle: "Important Information",
       importantPoints: [
         "Account deletion is permanent and cannot be undone",
         "All associated data, including profile details and activity history, will be removed",
-        "Any active transactions may be affected or cancelled"
+        "Any active transactions or contracts may be affected or cancelled"
       ],
       helpTitle: "Need Help?",
       helpText: "Experiencing issues while trying to delete your account? Our support team is always here to assist you.",
@@ -203,7 +203,7 @@ export const content = {
         },
         {
           q: "How can I delete my account?",
-          a: "You can delete your account directly from the app: Profile -> tap 'Delete Account' in the top-right corner -> confirm."
+          a: "You can delete your account directly from the website: Log in -> go to Dashboard -> Settings -> click 'Delete Account' tab -> confirm."
         },
         {
           q: "What data is removed upon account deletion?",

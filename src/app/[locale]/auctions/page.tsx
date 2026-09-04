@@ -357,7 +357,11 @@ export default function AuctionsListingPage() {
               return filteredItems.map((item: any) => {
                 const details = item.propertyDetails || {};
                 const title = details.propertyTitle || "Untitled Property";
-                const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
+                const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
+                const formattedLocation = (() => {
+                  const words = rawLocation.trim().split(/\s+/);
+                  return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
+                })();
                 const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
                 const beds = details.propertyBedrooms || 0;
                 const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
@@ -438,8 +442,8 @@ export default function AuctionsListingPage() {
                       <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {priceValue}</span>
                     </div>
                     
-                    <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                      <MapPin className="w-4 h-4" /> {location}
+                    <p title={rawLocation} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
+                      <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedLocation}</span>
                     </p>
                     
                     <div className="flex items-center gap-4 mb-5">

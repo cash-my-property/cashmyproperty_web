@@ -3,7 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Head from "next/head";
+import Script from "next/script";
 import { 
   Calendar, 
   Clock, 
@@ -82,7 +82,8 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen pt-20 sm:pt-24">
       
       {/* GOOGLE CRAWLER SCHEMA.ORG JSON-LD FOR SEARCH ENGINE OPTIMIZATION */}
-      <script
+      <Script
+        id="json-ld-blog"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />

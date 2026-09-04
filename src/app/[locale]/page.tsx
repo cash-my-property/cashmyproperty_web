@@ -398,8 +398,15 @@ export default function HomePage() {
                   timeDisplay = 'Ended';
                 }
               }
+
               const priceValue = highestBid ? highestBid.toLocaleString() : fallbackPrice.toLocaleString();
               const type = details.propertyType || "Property";
+
+              const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
+              const formattedLocation = (() => {
+                const words = rawLocation.trim().split(/\s+/);
+                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
+              })();
 
               return (
               <Link href={`/${locale}/listings/${item._id}`} key={item._id} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer">
@@ -449,14 +456,14 @@ export default function HomePage() {
                     <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {priceValue}</span>
                   </div>
                   
-                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                    <MapPin className="w-4 h-4" /> {location}
+                  <p title={rawLocation} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
+                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedLocation}</span>
                   </p>
                   
                   <div className="flex items-center gap-4 mb-5">
                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
+                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-[#c9a14b]"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
                   </div>
                   
                   <div className="flex items-center justify-between mb-5">
@@ -477,8 +484,8 @@ export default function HomePage() {
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
+                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Plan</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyPlan || "Ready"}</span>
                     </div>
                   </div>
                 </div>
@@ -495,21 +502,22 @@ export default function HomePage() {
 
       {/* 3. SIMPLE LISTINGS */}
       {!(isAuthenticated && isSeller) && !(isAuthenticated && isBuyer && buyerType === 'REGULAR') && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200/50 dark:border-[#1A3626]/50">
+        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-3 uppercase">
-              {home.simpleListings.label}
+            <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] inline-block"></span>
+              Direct Sale & Rent
             </p>
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              {home.simpleListings.heading}
+              Simple Listings
             </h2>
             <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
-              {home.simpleListings.description}
+              Explore direct properties for rent or purchase with verified details and direct agent contact.
             </p>
           </div>
           <Link href={`/${locale}/listings`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:opacity-80 transition-opacity">
-            {home.simpleListings.viewAll} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            View All Listings <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
@@ -528,10 +536,14 @@ export default function HomePage() {
               </div>
             ))
           ) : simpleLiveProperties.length > 0 ? (
-            simpleLiveProperties.map((item) => {
+            simpleLiveProperties.slice(0, 6).map((item) => {
               const details = item.propertyDetails || item || {};
               const title = item.title || details.propertyTitle || "Untitled Property";
-              const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai");
+              const rawSimpleLoc = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
+              const formattedSimpleLoc = (() => {
+                const words = rawSimpleLoc.trim().split(/\s+/);
+                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawSimpleLoc;
+              })();
               const image = item.image || details.propertyImages?.[0]?.url || "/property-placeholder.svg";
               const beds = item.specs?.beds || details.propertyBedrooms || 0;
               const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
@@ -560,8 +572,8 @@ export default function HomePage() {
                     <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}</span>
                   </div>
                   
-                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                    <MapPin className="w-4 h-4" /> {location}
+                  <p title={rawSimpleLoc} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
+                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedSimpleLoc}</span>
                   </p>
                   
                   <div className="flex items-center gap-4 mb-5">

@@ -52,7 +52,8 @@ export default function Navbar() {
       if (buyerType === 'SIMPLE') {
         return [
           { title: "Home", href: "/" },
-          { title: "Simple Listings", href: "/listings" }
+          { title: "Simple Listings", href: "/listings" },
+          { title: "Find Sellers", href: "/sellers" }
         ];
       } else {
         return [
