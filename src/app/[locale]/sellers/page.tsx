@@ -433,12 +433,12 @@ export default function FindSellersPage() {
 
                 {/* Card Action Footer CTAs */}
                 <div className="pt-4 border-t border-gray-100 dark:border-[#1A3626] flex items-center gap-3">
-                  <button
-                    onClick={() => handleOpenProfileModal(agent)}
-                    className="flex-1 py-3 px-4 rounded-2xl border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                  <Link
+                    href={`/${locale}/sellers/${agent._id}`}
+                    className="flex-1 py-3 px-4 rounded-2xl border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 text-center"
                   >
                     <span>View Profile</span>
-                  </button>
+                  </Link>
 
                   <Link
                     href={`/${locale}/listings`}

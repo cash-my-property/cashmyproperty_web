@@ -1,7 +1,7 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { Tag, Heart, Building2, TrendingUp, Clock, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Tag, Heart, Building2, TrendingUp, Clock, ChevronRight, CheckCircle2, UserCheck } from "lucide-react";
 import Link from "next/link";
 
 import { useState, useEffect } from "react";
@@ -129,24 +129,31 @@ export default function DashboardOverviewPage() {
 
   const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
   const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   let stats = [
-    { label: content.stats.activeBids, value: activeBidsCount, icon: Tag, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: content.stats.wonAuctions, value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
-    { label: content.stats.savedProperties, value: "0", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10" },
+    { label: content.stats.activeBids, value: activeBidsCount, icon: Tag, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/dashboard/bids` },
+    { label: content.stats.wonAuctions, value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/dashboard/bids` },
+    { label: content.stats.savedProperties, value: "0", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/favorites` },
   ];
 
-  if (role === 'seller' && sellerType === 'SIMPLE' && quota) {
+  if (role === 'buyer' && buyerType === 'SIMPLE') {
     stats = [
-      { label: "Active Listings", value: `${quota.activeQuota?.used || 0} / ${quota.activeQuota?.limit || 0}`, icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10" },
-      { label: "Total Quota Used", value: `${quota.totalQuota?.used || 0} / ${quota.totalQuota?.limit || 0}`, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
-      { label: "Tier", value: quota.tier || "SIMPLE", icon: CheckCircle2, color: "text-rose-500", bg: "bg-rose-500/10" },
+      { label: "Simple Listings", value: "Browse", icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/listings` },
+      { label: "Verified Sellers", value: "Directory", icon: UserCheck, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/sellers` },
+      { label: content.stats.savedProperties, value: "Saved", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/favorites` },
+    ];
+  } else if (role === 'seller' && sellerType === 'SIMPLE' && quota) {
+    stats = [
+      { label: "Active Listings", value: `${quota.activeQuota?.used || 0} / ${quota.activeQuota?.limit || 0}`, icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/dashboard/seller/simple-listings` },
+      { label: "Total Quota Used", value: `${quota.totalQuota?.used || 0} / ${quota.totalQuota?.limit || 0}`, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/dashboard/seller/simple-listings` },
+      { label: "Tier", value: quota.tier || "SIMPLE", icon: CheckCircle2, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/seller/simple-listings` },
     ];
   } else if (role === 'seller' && sellerType === 'REGULAR') {
     stats = [
-      { label: "Received Offers", value: activeBidsCount, icon: Tag, color: "text-blue-500", bg: "bg-blue-500/10" },
-      { label: "Active Listings", value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10" },
-      { label: "Total Properties", value: propertiesCount, icon: Building2, color: "text-rose-500", bg: "bg-rose-500/10" },
+      { label: "Received Offers", value: activeBidsCount, icon: Tag, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/dashboard/seller/properties` },
+      { label: "Active Listings", value: wonAuctionsCount, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/dashboard/seller/properties` },
+      { label: "Total Properties", value: propertiesCount, icon: Building2, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/seller/properties` },
     ];
   }
 
@@ -169,7 +176,7 @@ export default function DashboardOverviewPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] flex items-center gap-4 hover:shadow-md transition-shadow">
+          <Link key={i} href={stat.href || `/${locale}/dashboard`} className="bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
               <stat.icon className="w-6 h-6" />
             </div>
@@ -177,7 +184,7 @@ export default function DashboardOverviewPage() {
               <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</p>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</h3>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -185,7 +192,7 @@ export default function DashboardOverviewPage() {
       <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
         <div className="p-6 border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{content.recentActivity}</h2>
-          <Link href={`/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:underline flex items-center gap-1">
+          <Link href={role === 'buyer' && buyerType === 'SIMPLE' ? `/${locale}/sellers` : `/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:underline flex items-center gap-1">
             {content.viewAll} <ChevronRight className="w-4 h-4" />
           </Link>
         </div>

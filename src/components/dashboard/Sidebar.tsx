@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle, Flame, Tag, TrendingUp, History } from "lucide-react";
+import { LayoutDashboard, Heart, Settings, LogOut, ChevronRight, FileText, Building, PlusCircle, ListOrdered, X, AlertTriangle, Flame, Tag, TrendingUp, History, UserCheck } from "lucide-react";
 import Image from "next/image";
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -26,7 +26,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const simpleBuyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: "Simple Listings", href: `/${locale}/listings`, icon: Building },
-    { name: "My Offers", href: `/${locale}/dashboard/bids`, icon: Tag },
+    { name: "Find Sellers", href: `/${locale}/sellers`, icon: UserCheck },
     { name: content.favorites || "Favorites", href: `/${locale}/dashboard/favorites`, icon: Heart },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
