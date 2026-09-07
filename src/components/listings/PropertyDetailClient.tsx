@@ -31,6 +31,7 @@ import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
+import PropertyMapCard from "@/components/listings/PropertyMapCard";
 
 interface PropertyDetailClientProps {
   id: string;
@@ -364,26 +365,33 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             )}
           </div>
 
-          {/* Title, Actions & Pricing Header */}
-          <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-6">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              <div className="space-y-2 max-w-2xl">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          {/* Title, Actions & Pricing Header Card */}
+          <div className="bg-white dark:bg-[#102418] rounded-[32px] p-6 sm:p-8 lg:p-9 shadow-xl border border-gray-200/80 dark:border-[#1A3626] space-y-6 relative overflow-hidden">
+            {/* Top Accent Line */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#c9a14b]" />
+
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
+              <div className="space-y-2.5 max-w-2xl">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
                   {title}
                 </h1>
                 
-                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                  <div className="p-1 rounded-md bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b]">
+                    <MapPin className="w-4 h-4" />
+                  </div>
                   <span>{location}</span>
                 </div>
               </div>
 
-              {/* Price Banner */}
-              <div className="shrink-0 bg-gradient-to-br from-[#1A3626]/5 to-[#1A3626]/10 dark:from-[#163321] dark:to-[#102418] px-6 py-4 rounded-2xl border border-[#1A3626]/10 dark:border-[#1A3626]">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">
+              {/* High-End Price Banner */}
+              <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#c9a14b]/30 shadow-xl relative overflow-hidden group/price">
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
+                <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#5CD284] animate-pulse" />
                   {propertyInfo.currentHighestOffer ? 'Highest Live Bid' : 'Starting Price'}
                 </p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#c9a14b] tabular-nums flex items-center gap-1.5">
+                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] dark:text-[#c9a14b] tabular-nums flex items-center gap-2">
                   <Dirham className="text-xl sm:text-2xl" /> {priceValue}
                 </p>
               </div>
@@ -404,7 +412,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                     addToast("Link Copied", "Shareable property link copied to clipboard successfully!", "success");
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#163321] hover:bg-gray-200 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200/50 dark:border-[#1A3626]"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
               >
                 <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
                 <span>Share Property</span>
@@ -414,7 +422,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 <button 
                   onClick={handleToggleFavourite}
                   disabled={isFavouriting}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#163321] hover:bg-gray-200 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200/50 dark:border-[#1A3626]"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
                 >
                   {isFavouriting ? (
                     <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
@@ -427,68 +435,92 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             </div>
 
             {/* Featured Key Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4">
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Building2 className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
-                <div>
-                  <p className="text-[11px] text-gray-400 font-medium">Property Type</p>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white uppercase">{type}</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] flex items-center justify-center shrink-0">
-                  <Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" />
-                </div>
-                <div>
-                  <p className="text-[11px] text-gray-400 font-medium">Bedrooms</p>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{beds} Beds</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate" title={type}>{type}</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] flex items-center justify-center shrink-0">
-                  <Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
-                <div>
-                  <p className="text-[11px] text-gray-400 font-medium">Washrooms</p>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{baths} Baths</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
+                    {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds} Beds`}
+                  </p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] flex items-center justify-center shrink-0">
-                  <Square className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
-                <div>
-                  <p className="text-[11px] text-gray-400 font-medium">Built Up Area</p>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{sqft} sqft</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Washrooms</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
+                    {Number(baths) === 1 ? "1 Bath" : `${baths} Baths`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Square className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Built Up Area</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${sqft} sqft`}>{sqft} sqft</p>
                 </div>
               </div>
             </div>
 
             {/* Additional Info Cards */}
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Additional Information</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Information</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {details.listingPurpose && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.listingPurpose.toLowerCase()}</span>
+                  </div>
+                )}
                 {details.propertyCategory && (
-                  <div className="flex justify-between items-center p-3.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Category</span>
-                    <span className="text-xs font-bold text-gray-900 dark:text-white">{details.propertyCategory}</span>
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyCategory.toLowerCase()}</span>
+                  </div>
+                )}
+                {details.furnishingStatus && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
+                      {details.furnishingStatus === "NOT_FURNISHED" ? "Not Furnished" : details.furnishingStatus === "SEMI" ? "Semi Furnished" : details.furnishingStatus.replace('_', ' ')}
+                    </span>
                   </div>
                 )}
                 {details.propertyPlan && (
-                  <div className="flex justify-between items-center p-3.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Property Plan</span>
-                    <span className="text-xs font-bold text-gray-900 dark:text-white">{details.propertyPlan}</span>
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyPlan.toLowerCase().replace('_', ' ')}</span>
+                  </div>
+                )}
+                {details.unitNumber && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Unit Number</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate">{details.unitNumber}</span>
                   </div>
                 )}
                 {details.trakheesiNumber && (
-                  <div className="flex justify-between items-center p-3.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626]">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Trakheesi Permit</span>
-                    <span className="text-xs font-bold text-gray-900 dark:text-white font-mono">{details.trakheesiNumber}</span>
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Trakheesi Permit</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate">{details.trakheesiNumber}</span>
                   </div>
                 )}
               </div>
@@ -496,7 +528,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
             {/* Property Description */}
             <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Property Description</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Property Overview</h3>
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                 {description}
               </p>
@@ -504,12 +536,12 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
             {/* Features & Amenities */}
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Features & Amenities</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Features & Amenities</h3>
               <div className="flex flex-wrap gap-2.5">
                 {features.map((feature: string, idx: number) => (
                   <span 
                     key={idx} 
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-100 dark:border-emerald-500/20"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
                     <span>{feature}</span>
@@ -562,6 +594,13 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </button>
               </div>
             )}
+
+            {/* Google Map Location Card (Square Shape) */}
+            <PropertyMapCard 
+              coordinates={details.propertyCoordinates || propertyInfo.propertyCoordinates || details.locationCoordinates || propertyInfo.locationCoordinates} 
+              location={location} 
+              title={title} 
+            />
           </div>
         </div>
 
