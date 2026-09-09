@@ -2,12 +2,13 @@ import { MetadataRoute } from 'next';
 import { content } from '@/config/content';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://cashmyproperty.com';
+  const baseUrl = 'https://cmpdubai.com';
   const locales = ['en', 'ar'];
 
   const staticPages = [
     '',
     '/about',
+    '/guide',
     '/listings',
     '/auctions',
     '/blog',

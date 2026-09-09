@@ -84,7 +84,7 @@ export default function SimpleListingHistoryPage() {
               if (user && user.isVerified === false) {
                 setShowVerificationError(true);
               } else {
-                router.push(`/${locale}/dashboard/seller/add-property`);
+                router.push(`/${locale}/dashboard/seller/add-simple-property`);
               }
             }}
             className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity cursor-pointer"

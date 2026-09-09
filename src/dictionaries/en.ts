@@ -1713,5 +1713,249 @@ export const content = {
     s4Desc: "You have the right to decide whether to accept or reject cookies. You can set or amend your web browser controls to accept or refuse cookies. If you choose to reject cookies, you may still use our platform though your access to some functionality and areas may be restricted.",
     s5Title: "5. Updates to This Policy",
     s5Desc: "We may update this Cookie Policy from time to time in order to reflect, for example, changes to the cookies we use or for other operational, legal, or regulatory reasons. Please re-visit this Cookie Policy regularly to stay informed about our use of cookies and related technologies."
+  },
+  guide: {
+    heroTag: "COMPREHENSIVE PLATFORM GUIDE",
+    title: "How to Use Cash My Property",
+    subtitle: "Your step-by-step master guide to buying, selling, live auctions, contract signing, and role permissions across the UAE's premier real estate portal.",
+    searchPlaceholder: "Search guides, bidding, BRN verification, role switching...",
+    quickNavTitle: "Select a Guide Topic",
+    tabs: {
+      gettingStarted: "1. Account & Verification",
+      roleSwitcher: "2. Roles & Permissions",
+      buyerSimple: "3. Buyer - Simple Listings",
+      buyerRealtime: "4. Buyer - Live Bidding",
+      sellerSimple: "5. Seller - Simple Listings",
+      sellerRealtime: "6. Seller - Live Auctions"
+    },
+    gettingStarted: {
+      title: "Account Setup & Verification",
+      subtitle: "How to create an account, validate your BRN, submit Emirates ID, and complete OTP verification.",
+      steps: [
+        {
+          num: "01",
+          title: "Choose Your Account Type",
+          desc: "Register as a Whitelisted Broker using your RERA Broker Registration Number (BRN) or as a Regular User. Whitelisted Brokers get instant auto-filling of licensed credentials.",
+          tip: "Ensure your BRN is active with RERA Dubai / DLD before registering."
+        },
+        {
+          num: "02",
+          title: "Auto-Fill with RERA BRN",
+          desc: "Type your BRN into the BRN field on the registration page. Our system instantly verifies your Whitelist status with DLD databases, auto-populating your official name, email, phone, and card dates.",
+          tip: "If your BRN is already registered, the system will highlight the field and prompt you to log in."
+        },
+        {
+          num: "03",
+          title: "Upload Required Documents",
+          desc: "Upload a legible PDF or Image of your Emirates ID (front & back) and specify your issue and expiry dates. All uploaded documents undergo strict compliance review.",
+          tip: "Accepted file formats: PDF, PNG, JPG, JPEG (Max 5MB)."
+        },
+        {
+          num: "04",
+          title: "OTP Email Verification",
+          desc: "After submitting registration, a 6-digit OTP code is sent to your registered email. Enter the OTP code on the verification page to activate your account.",
+          tip: "Check your spam or junk folder if the OTP email does not arrive within 60 seconds."
+        }
+      ]
+    },
+    roleSwitcher: {
+      title: "Role Switcher & Access Rights",
+      subtitle: "Understand how Buyer and Seller modes work and how to switch roles seamlessly from the top navigation bar.",
+      intro: "CashMyProperty uses strict role isolation to protect marketplace integrity. Sellers are focused on listing management and cannot browse buyer deals, while Buyers enjoy curated property feeds based on their buyer type.",
+      switchStepsTitle: "How to Switch Your Active Role:",
+      steps: [
+        "Click your profile icon or the 'Switch Role' button in the top navigation bar.",
+        "Select your desired mode: Buyer Mode or Seller Mode.",
+        "Confirm your switch in the Role Switcher Modal.",
+        "Your navigation bar, dashboard links, and accessible features will instantly update to match your active mode."
+      ]
+    },
+    matrix: {
+      title: "Platform Feature Access Matrix",
+      subtitle: "Detailed breakdown of accessible features according to your active role & tier.",
+      headers: {
+        feature: "Platform Feature",
+        simpleBuyer: "Simple Buyer",
+        realtimeBuyer: "Realtime Buyer",
+        simpleSeller: "Simple Seller",
+        realtimeSeller: "Realtime Seller"
+      },
+      rows: [
+        { feature: "Browse Simple Listings & Search", sb: "Yes", rb: "No", ss: "No (Redirected)", rs: "No (Redirected)" },
+        { feature: "Contact Verified Agents (WhatsApp/Call/Email)", sb: "Yes", rb: "No", ss: "No", rs: "No" },
+        { feature: "Browse Live Distress Auctions", sb: "No", rb: "Yes", ss: "No (Redirected)", rs: "No (Redirected)" },
+        { feature: "Digital Undertaking Letter / MOA Signing", sb: "No", rb: "Yes", ss: "No", rs: "No" },
+        { feature: "Place Real-Time Live Bids & Countdown Access", sb: "No", rb: "Yes", ss: "No", rs: "No" },
+        { feature: "Add Simple Property Listing", sb: "No", rb: "No", ss: "Yes", rs: "No" },
+        { feature: "Add Realtime Distress Auction Listing", sb: "No", rb: "No", ss: "No", rs: "Yes" },
+        { feature: "Track Admin Verification Status", sb: "No", rb: "No", ss: "Yes", rs: "Yes" },
+        { feature: "View Live Incoming Buyer Bids & Accept Offers", sb: "No", rb: "No", ss: "No", rs: "Yes" },
+        { feature: "Sellers Directory & Agent Detailed Profiles (/sellers)", sb: "Yes", rb: "No", ss: "No", rs: "No" }
+      ]
+    },
+    buyerSimple: {
+      title: "Buyer Guide - Simple Listings",
+      subtitle: "How to search, filter, evaluate properties, contact verified agents, and save your favourite listings.",
+      steps: [
+        {
+          num: "01",
+          title: "Search & Filter Properties",
+          desc: "Use the Hero Search Widget or the All Listings page (`/simple-listings`) to filter properties by City (Dubai, Abu Dhabi, etc.), Property Category (Residential, Commercial), Purpose (Sale, Rent), and Price Range.",
+          tip: "Use the left filter drawer on mobile for fast capsule filtering."
+        },
+        {
+          num: "02",
+          title: "Inspect Property Details & Specifications",
+          desc: "Click any listing card to view high-resolution photo galleries, key specifications (Bedrooms, Washrooms, Built-up Area), property description, unit number, and Trakheesi permit details.",
+          tip: "Hover over key spec cards to view full text titles."
+        },
+        {
+          num: "03",
+          title: "Interactive Google Map Location",
+          desc: "Scroll to the Property Map Card on the right side of the detail page to view exact property coordinates, live map iframe, and get direct driving directions on Google Maps.",
+          tip: "Click 'Open in Google Maps' to open navigation on your phone."
+        },
+        {
+          num: "04",
+          title: "Direct Agent Contact Options",
+          desc: "Connect directly with verified listing agents using 1-click action buttons: Direct WhatsApp chat, Direct SIM Call (`tel:`), or Direct Email.",
+          tip: "View the agent's full profile to check their active listings & track record."
+        },
+        {
+          num: "05",
+          title: "Save Favourites & Share Links",
+          desc: "Click the Heart icon to add listings to your Saved Favourites (`/dashboard/favorites`). Click 'Share Property' to generate a secure shareable link token.",
+          tip: "Shareable links allow non-registered colleagues to view property details."
+        }
+      ]
+    },
+    buyerRealtime: {
+      title: "Buyer Guide - Live Bidding & Realtime Distress Offers",
+      subtitle: "How to participate in live property auctions, sign digital Undertaking Letters, and win distress deals.",
+      steps: [
+        {
+          num: "01",
+          title: "Browse Live Bids & Countdown Timers",
+          desc: "Navigate to the Realtime Auctions portal (`/auctions`). Inspect live auction cards featuring live countdown timers (Days, Hours, Minutes), current highest bid, and starting prices.",
+          tip: "Listings marked with a green pulse dot are actively accepting live bids."
+        },
+        {
+          num: "02",
+          title: "Sign Digital Undertaking Letter (MOA)",
+          desc: "Before placing your first bid, click 'Sign Contract / Undertaking'. Review the official legal terms, fill in your passport/Emirates ID details, and sign the digital MOA contract.",
+          tip: "Once approved, your contract status turns to SIGNED & APPROVED."
+        },
+        {
+          num: "03",
+          title: "Place Real-Time Live Bids",
+          desc: "Enter your bid amount in the Buyer Action Sidebar. Our WebSocket engine updates the highest bid across all connected users instantly without page refreshes.",
+          tip: "Bids must exceed the current highest bid by the minimum bid increment."
+        },
+        {
+          num: "04",
+          title: "Instant Web Push & Bell Notifications",
+          desc: "Receive real-time notifications when another buyer outbids you, when an auction timer is extended, or when the seller accepts your offer.",
+          tip: "Enable FCM Web Push Notifications in your browser for instant alerts."
+        },
+        {
+          num: "05",
+          title: "Auction Completion & Winning Offer",
+          desc: "When the countdown expires, if your bid is the highest accepted offer, you will receive official confirmation and transaction instructions in your Dashboard (`/dashboard/bids`).",
+          tip: "Track signed contracts in `/dashboard/contracts`."
+        }
+      ]
+    },
+    sellerSimple: {
+      title: "Seller Guide - Simple Listings",
+      subtitle: "How to submit simple listings, track verification status, monitor view analytics, and update details.",
+      steps: [
+        {
+          num: "01",
+          title: "Add a Simple Property Listing",
+          desc: "Switch to Seller Mode and navigate to 'Add Simple Property' (`/dashboard/seller/add-simple-property`). Enter title, location, category, purpose, price, bedrooms, washrooms, area, and upload property photos.",
+          tip: "High-resolution photos increase buyer inquiries by up to 3x."
+        },
+        {
+          num: "02",
+          title: "Track Admin Verification Status",
+          desc: "Submissions are instantly sent to the CMP compliance team. Track verification status on your Seller Dashboard (`/dashboard/seller/simple-listings`): PENDING, VERIFIED, ACTIVE, or REJECTED.",
+          tip: "If a listing is rejected, click to view exact admin rejection notes and re-submit."
+        },
+        {
+          num: "03",
+          title: "Monitor Listing Analytics & Enquiries",
+          desc: "View listing performance, total views, and inquiry activity directly on your Seller Analytics dashboard.",
+          tip: "Keep your contact information updated in Profile Settings."
+        },
+        {
+          num: "04",
+          title: "Edit & Update Properties",
+          desc: "Easily edit pricing, photos, or description anytime from your My Properties table (`/dashboard/seller/properties`).",
+          tip: "Changes to active listings undergo quick security re-validation."
+        }
+      ]
+    },
+    sellerRealtime: {
+      title: "Seller Guide - Live Auctions & Distress Offers",
+      subtitle: "How to launch live distress auctions, set reserve prices, track incoming live bids, and accept winning offers.",
+      steps: [
+        {
+          num: "01",
+          title: "Create a Realtime Distress Auction",
+          desc: "Navigate to 'Add Realtime Property' (`/dashboard/seller/add-property`). Specify property details, starting price, reserve price, auction start time, and auction end duration.",
+          tip: "Setting an attractive starting price creates competitive bidding momentum."
+        },
+        {
+          num: "02",
+          title: "Admin Approval & Live Activation",
+          desc: "CMP compliance verifies property title deed, Trakheesi permit, and seller authorization. Once approved, the auction goes live on the public `/auctions` portal.",
+          tip: "You will receive an instant notification when your auction goes live."
+        },
+        {
+          num: "03",
+          title: "Monitor Live Incoming Buyer Bids",
+          desc: "Watch live buyer bids populate in real time on your Seller Auction Dashboard (`/dashboard/seller/auctions`). View bidder counters and live bid progression.",
+          tip: "All bidders are verified and signed under legal Undertaking Letters."
+        },
+        {
+          num: "04",
+          title: "Accept Offer & Complete Transaction",
+          desc: "Accept the winning bid at auction close or accept a strong offer before auction end. Once accepted, CMP initiates contract execution and transfer coordination.",
+          tip: "Review completed deals in `/dashboard/seller/sold-history`."
+        }
+      ]
+    },
+    faqs: {
+      title: "Frequently Asked Questions",
+      subtitle: "Quick answers to common questions about Cash My Property.",
+      list: [
+        {
+          q: "Why can't I browse property listings while in Seller Mode?",
+          a: "Sellers on CMP have dedicated tools to manage listings and track offers. To maintain strict role isolation and prevent confusion, browsing buyer feeds is reserved for Buyer Mode. Simply click 'Switch Role' in the top navigation bar to switch to Buyer Mode anytime."
+        },
+        {
+          q: "What is the difference between a Simple Listing and a Realtime Distress Auction?",
+          a: "Simple Listings are standard property classifieds where buyers contact agents directly via WhatsApp/Call/Email. Realtime Distress Auctions are time-bound live bidding events where verified buyers sign digital MOA contracts and place competitive live bids."
+        },
+        {
+          q: "How does RERA BRN Auto-Fill work during signup?",
+          a: "When you enter your RERA Broker Registration Number (BRN), our backend checks the official DLD database. If your BRN is whitelisted, your licensed name, phone, email, and card dates are automatically populated and locked for compliance."
+        },
+        {
+          q: "What is the Undertaking Letter / MOA requirement for Realtime Bids?",
+          a: "To ensure 100% serious bidders, CMP requires buyers to sign a digital Undertaking Letter before placing bids. This ensures all bids are legally binding and protects sellers from non-serious offers."
+        },
+        {
+          q: "How do I switch languages or toggle Dark Mode?",
+          a: "Use the Globe icon in the Navbar to switch between English and Arabic (with full RTL support). Click the Sun/Moon icon to toggle between Light Mode and CMP Signature Dark Mode."
+        }
+      ]
+    },
+    cta: {
+      title: "Ready to Experience the Future of UAE Real Estate?",
+      subtitle: "Join thousands of verified buyers, sellers, and real estate brokers on Cash My Property today.",
+      buyerButton: "Explore Live Auctions",
+      sellerButton: "List a Property Now"
+    }
   }
 };

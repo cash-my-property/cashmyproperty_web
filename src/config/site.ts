@@ -4,6 +4,7 @@ export const siteConfig = {
   url: "https://cashmyproperty.ae",
   mainNav: [
     { title: "Home", href: "/" },
+    { title: "How it Works", href: "/guide" },
     { title: "About Us", href: "/about" },
     { title: "Blog", href: "/blog" },
     { title: "Contact", href: "/contact" },
@@ -11,6 +12,7 @@ export const siteConfig = {
   footer: {
     quickLinks: [
       { title: "Home", href: "/" },
+      { title: "How it Works", href: "/guide" },
       { title: "About Us", href: "/about" },
       { title: "Blog", href: "/blog" },
       { title: "Contact Us", href: "/contact" },

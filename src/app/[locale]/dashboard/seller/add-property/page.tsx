@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import api from "@/lib/api";
 import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 
 // Recreated Document Config from backend
@@ -73,16 +74,29 @@ const AMENITIES_CONFIG: Record<string, string[]> = {
   ]
 };
 
+const DRAFT_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
 export default function AddPropertyPage() {
   const { locale } = useDictionary();
   const router = useRouter();
-  
+  const { user } = useAuth();
+  const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === "object" ? (user.role as any)?.type?.toUpperCase() : "REGULAR");
+  const userId = (user as any)?._id || (user as any)?.id || user?.email || "guest";
+  const DRAFT_STORAGE_KEY = `cmp_draft_realtime_seller_${userId}`;
+
+  useEffect(() => {
+    if (user && sellerType === "SIMPLE") {
+      router.replace(`/${locale}/dashboard/seller/add-simple-property`);
+    }
+  }, [user, sellerType, locale, router]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [draftRestored, setDraftRestored] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     propertyTitle: "",
     propertyCategory: "RESIDENTIAL",
     propertyPlan: "READY",
@@ -95,13 +109,78 @@ export default function AddPropertyPage() {
     propertyBuiltUpArea: "",
     propertyDescription: "",
     trakheesiNumber: ""
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const [amenities, setAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [documents, setDocuments] = useState<Record<string, File>>({});
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // 1. Restore draft on mount if within 1 hour and matches formType
+  useEffect(() => {
+    try {
+      // Purge legacy non-scoped keys if any exist
+      localStorage.removeItem("cmp_draft_realtime_property");
+
+      const savedDraftStr = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (savedDraftStr) {
+        const draft = JSON.parse(savedDraftStr);
+        const now = Date.now();
+        if (
+          draft.formType === "REALTIME_AUCTION" &&
+          draft.savedAt && 
+          (now - draft.savedAt < DRAFT_EXPIRY_MS)
+        ) {
+          if (draft.formData) setFormData(draft.formData);
+          if (draft.amenities) setAmenities(draft.amenities);
+          if (draft.step) setStep(draft.step);
+          setDraftRestored(true);
+        } else {
+          // Expired (> 1 hour) or wrong formType
+          localStorage.removeItem(DRAFT_STORAGE_KEY);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to restore property draft", err);
+    }
+  }, [DRAFT_STORAGE_KEY]);
+
+  // 2. Auto-save draft on state change (1 hour expiry window)
+  useEffect(() => {
+    try {
+      const hasContent = Object.entries(formData).some(
+        ([key, val]) => typeof val === "string" && val.trim() !== "" && val !== "RESIDENTIAL" && val !== "READY" && val !== "APARTMENT" && val !== "1"
+      );
+      if (hasContent || amenities.length > 0) {
+        const draftPayload = {
+          formType: "REALTIME_AUCTION",
+          userId,
+          savedAt: Date.now(),
+          formData,
+          amenities,
+          step
+        };
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftPayload));
+      }
+    } catch (err) {
+      console.error("Failed to auto-save property draft", err);
+    }
+  }, [formData, amenities, step, DRAFT_STORAGE_KEY, userId]);
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+      setFormData(initialFormData);
+      setAmenities([]);
+      setStep(1);
+      setDraftRestored(false);
+    } catch (err) {
+      console.error("Failed to clear draft", err);
+    }
+  };
 
   const validateStep = (currentStep: number) => {
     if (currentStep === 1) {
@@ -322,6 +401,7 @@ export default function AddPropertyPage() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
       setIsSuccess(true);
       setTimeout(() => {
         router.push(`/${locale}/dashboard/seller/properties`);
@@ -403,6 +483,22 @@ export default function AddPropertyPage() {
           ))}
         </div>
       </div>
+
+      {draftRestored && (
+        <div className="mb-6 sm:mb-8 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-700 dark:text-[#5CD284] font-medium text-sm flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#5CD284] shrink-0" />
+            <span>Form draft restored from your active session (saved within the last 1 hour).</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={clearDraft}
+            className="text-xs text-rose-500 hover:underline font-bold px-2 py-1 bg-rose-500/10 rounded-lg shrink-0 ml-4"
+          >
+            Clear Draft
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 sm:mb-8 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400 font-medium text-sm flex items-start justify-between">
