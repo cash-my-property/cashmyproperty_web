@@ -39,7 +39,7 @@ export default function Navbar() {
         return [
           { title: "Home", href: "/" },
           { title: "Add Simple Listing", href: "/dashboard/seller/add-simple-property" },
-          { title: "Verification Status", href: "/dashboard/seller/simple-listings" },
+          { title: "Listings", href: "/dashboard/seller/simple-listings" },
           { title: "Analytics", href: "/dashboard" }
         ];
       } else {
