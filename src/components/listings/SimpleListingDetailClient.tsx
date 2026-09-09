@@ -29,9 +29,14 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
+import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
-import PropertyMapCard from "@/components/listings/PropertyMapCard";
+
+const PropertyMapCard = dynamic(() => import("@/components/listings/PropertyMapCard"), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-3xl bg-gray-100 dark:bg-[#102418] animate-pulse border border-gray-200 dark:border-[#1A3626]" />
+});
 
 interface SimpleListingDetailClientProps {
   id: string;

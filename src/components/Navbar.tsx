@@ -10,7 +10,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-import RoleSwitchModal from "@/components/modals/RoleSwitchModal";
+import dynamic from "next/dynamic";
+
+const RoleSwitchModal = dynamic(() => import("@/components/modals/RoleSwitchModal"), {
+  ssr: false,
+});
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -186,7 +190,7 @@ export default function Navbar() {
                       className="relative w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors cursor-pointer"
                     >
                       <Bell className="w-4 h-4" />
-                      {notifications.some(n => !n.read) && (
+                      {notifications.some((n: any) => !n.read) && (
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
                       )}
                     </button>
@@ -202,7 +206,7 @@ export default function Navbar() {
                             <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
                             {notifications.length > 0 && (
                               <div className="flex gap-2.5 items-center">
-                                {notifications.some(n => !n.read) && (
+                                {notifications.some((n: any) => !n.read) && (
                                   <button 
                                     onClick={() => {
                                       markAllAsRead();
@@ -233,7 +237,7 @@ export default function Navbar() {
                                 <p className="text-[12px] text-gray-400 font-medium">You don't have any notifications yet</p>
                               </div>
                             ) : (
-                              notifications.map((notif) => (
+                              notifications.map((notif: any) => (
                                 <div 
                                   key={notif.id} 
                                   onClick={() => {
@@ -332,7 +336,7 @@ export default function Navbar() {
                   className="relative p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418]/50 rounded-full transition-colors cursor-pointer"
                 >
                   <Bell className="w-5 h-5" />
-                  {notifications.some(n => !n.read) && (
+                  {notifications.some((n: any) => !n.read) && (
                     <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
                   )}
                 </button>
@@ -348,7 +352,7 @@ export default function Navbar() {
                         <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
                         {notifications.length > 0 && (
                           <div className="flex gap-2.5 items-center">
-                            {notifications.some(n => !n.read) && (
+                            {notifications.some((n: any) => !n.read) && (
                               <button 
                                 onClick={() => {
                                   markAllAsRead();
@@ -379,7 +383,7 @@ export default function Navbar() {
                             <p className="text-[12px] text-gray-400 font-medium">You don't have any notifications yet</p>
                           </div>
                         ) : (
-                          notifications.map((notif) => (
+                          notifications.map((notif: any) => (
                             <div 
                               key={notif.id} 
                               onClick={() => {
