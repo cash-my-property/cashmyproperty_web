@@ -311,16 +311,49 @@ export default function AddSimplePropertyPage() {
     setAmenities(prev => prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]);
   };
 
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const ALLOWED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setImages(prev => [...prev, ...newFiles]);
+      const validFiles: File[] = [];
+      let hasInvalid = false;
+
+      newFiles.forEach(file => {
+        const type = file.type.toLowerCase();
+        const name = file.name.toLowerCase();
+        const isValid = ALLOWED_IMAGE_TYPES.includes(type) || /\.(jpg|jpeg|png|webp)$/i.test(name);
+        if (isValid) {
+          validFiles.push(file);
+        } else {
+          hasInvalid = true;
+        }
+      });
+
+      if (hasInvalid) {
+        setError("Invalid file type detected. Only JPG, JPEG, PNG, and WEBP image formats are supported for property images.");
+      } else {
+        setError(null);
+      }
+
+      setImages(prev => [...prev, ...validFiles]);
     }
   };
 
   const handleDocumentChange = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setDocuments(prev => ({ ...prev, [docName]: e.target.files![0] }));
+      const file = e.target.files[0];
+      const type = file.type.toLowerCase();
+      const name = file.name.toLowerCase();
+      const isValid = ALLOWED_DOC_TYPES.includes(type) || /\.(pdf|jpg|jpeg|png|webp)$/i.test(name);
+      
+      if (!isValid) {
+        setError(`Invalid file type for document. Only PDF, JPG, JPEG, PNG, and WEBP formats are supported.`);
+        return;
+      }
+      setError(null);
+      setDocuments(prev => ({ ...prev, [docName]: file }));
     }
   };
 
@@ -744,7 +777,7 @@ export default function AddSimplePropertyPage() {
                 <input 
                   type="file" 
                   multiple 
-                  accept="image/*" 
+                  accept="image/jpeg,image/jpg,image/png,image/webp" 
                   ref={imageInputRef} 
                   className="hidden" 
                   onChange={handleImageChange}
