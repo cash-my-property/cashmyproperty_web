@@ -17,6 +17,8 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [brnLocked, setBrnLocked] = useState(false);
+  const [brnError, setBrnError] = useState("");
+  const [brnSuccess, setBrnSuccess] = useState("");
 
   // Form Fields
   const [brokerNumber, setBrokerNumber] = useState("");
@@ -37,51 +39,73 @@ export default function SignupPage() {
   // Auto-fetch on BRN change with debounce
   useEffect(() => {
     const fetchBrnData = async () => {
-      if (brokerNumber.length < 4) return;
+      if (!brokerNumber || brokerNumber.trim().length < 3) {
+        setBrnError("");
+        setBrnSuccess("");
+        if (brnLocked) setBrnLocked(false);
+        return;
+      }
       
       setIsFetchingBRN(true);
-      setError("");
+      setBrnError("");
+      setBrnSuccess("");
       
       try {
-        // Hit the actual testing backend
-        const response = await api.get(`/auth/check-existence?brokerNumber=${brokerNumber}`);
+        const response = await api.get(`/auth/check-existence?brokerNumber=${encodeURIComponent(brokerNumber.trim())}`);
         console.log("BRN API Response:", response.data);
         
-        // If data is returned
-        if (response.data && response.data.broker) {
-          const { broker } = response.data;
-          const { firstName, lastName, email, phone, brokerCardIssueDate, brokerCardExpiryDate } = broker;
-          
-          console.log("Destructured Broker Data:", { firstName, lastName, email, phone, brokerCardIssueDate, brokerCardExpiryDate });
-          
-          setFirstName(firstName || "");
-          setLastName(lastName || "");
-          setEmail(email || "");
-          setPhone(phone || "");
-          
-          if (brokerCardIssueDate && typeof brokerCardIssueDate === 'string') {
-            setBrokerCardIssue(brokerCardIssueDate.split('T')[0]); 
+        if (response.data) {
+          const resData = response.data;
+
+          // Case 1: Already registered user with this BRN
+          if (resData.exists === true) {
+            const msg = resData.message || "Broker number is already registered.";
+            setBrnError(msg);
+            setError(msg);
+            setBrnLocked(false);
+            return;
+          }
+
+          // Case 2: BRN is not whitelisted / authorized
+          if (resData.whitelisted === false) {
+            const msg = resData.message || "Broker number is not authorized for signup.";
+            setBrnError(msg);
+            setError(msg);
+            setBrnLocked(false);
+            return;
           }
           
-          if (brokerCardExpiryDate && typeof brokerCardExpiryDate === 'string') {
-            setBrokerCardExpiry(brokerCardExpiryDate.split('T')[0]); 
-          }
-          
-          // Lock if we got real data
-          setBrnLocked(true);
-        } else {
-          // Fallback mock if you want to see the UI lock for testing specifically
-          if (brokerNumber === "12345") {
-            setFirstName("Ali");
-            setLastName("Khan");
-            setEmail("ali.khan@example.com");
-            setPhone("501234567");
-            setBrnLocked(true); 
+          // Case 3: Whitelisted & Available for signup
+          if (resData.broker) {
+            const { broker } = resData;
+            const { firstName, lastName, email, phone, brokerCardIssueDate, brokerCardExpiryDate } = broker;
+            
+            setFirstName(firstName || "");
+            setLastName(lastName || "");
+            setEmail(email || "");
+            setPhone(phone || "");
+            
+            if (brokerCardIssueDate && typeof brokerCardIssueDate === 'string') {
+              setBrokerCardIssue(brokerCardIssueDate.split('T')[0]); 
+            }
+            
+            if (brokerCardExpiryDate && typeof brokerCardExpiryDate === 'string') {
+              setBrokerCardExpiry(brokerCardExpiryDate.split('T')[0]); 
+            }
+            
+            setBrnLocked(true);
+            setBrnError("");
+            setError("");
+            setBrnSuccess("Broker details verified & auto-filled successfully.");
           }
         }
       } catch (err: any) {
         console.error("Failed to fetch BRN details", err);
-        // Do not block signup if validation fails, just let them type manually
+        const serverMsg = err.response?.data?.message;
+        if (serverMsg) {
+          setBrnError(serverMsg);
+          setError(serverMsg);
+        }
       } finally {
         setIsFetchingBRN(false);
       }
@@ -89,13 +113,17 @@ export default function SignupPage() {
 
     const timeoutId = setTimeout(() => {
       fetchBrnData();
-    }, 1000); // 1s debounce
+    }, 600); // 600ms debounce
 
     return () => clearTimeout(timeoutId);
   }, [brokerNumber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (brnError) {
+      setError(brnError);
+      return;
+    }
     setIsLoading(true);
     setError("");
 
@@ -191,13 +219,31 @@ export default function SignupPage() {
                   onChange={(e) => {
                     setBrokerNumber(e.target.value);
                     if (brnLocked) setBrnLocked(false); // Unlock if they change BRN
+                    if (brnError) setBrnError("");
+                    if (brnSuccess) setBrnSuccess("");
                   }}
-                  className="w-full px-4 py-3 pl-10 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                  className={`w-full px-4 py-3 pl-10 rounded-lg text-[14px] focus:outline-none transition-colors ${
+                    brnError
+                      ? 'bg-red-50/50 dark:bg-red-900/10 border-2 border-red-500 text-red-900 dark:text-red-300'
+                      : brnSuccess
+                      ? 'bg-emerald-50/30 dark:bg-[#163321]/30 border border-emerald-500 text-emerald-900 dark:text-emerald-300'
+                      : 'bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:border-[#1A3626] dark:focus:border-[#c9a14b]'
+                  }`}
                   required
                 />
                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
-              <p className="text-[11px] text-gray-500 mt-1.5">Enter your BRN to auto-fill your details.</p>
+              {brnError ? (
+                <p className="text-[12px] text-red-600 dark:text-red-400 font-semibold mt-1.5 flex items-center gap-1.5">
+                  <span>⚠️</span> {brnError}
+                </p>
+              ) : brnSuccess ? (
+                <p className="text-[12px] text-emerald-600 dark:text-[#5CD284] font-semibold mt-1.5 flex items-center gap-1.5">
+                  <span>✓</span> {brnSuccess}
+                </p>
+              ) : (
+                <p className="text-[11px] text-gray-500 mt-1.5">Enter your BRN to auto-fill your details.</p>
+              )}
             </div>
 
             {/* Name Fields (Auto-filled & Locked) */}
