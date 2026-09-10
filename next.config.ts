@@ -38,7 +38,15 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
+        source: "/:locale(en|ar)/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/.well-known/assetlinks.json",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
+        source: "/:locale(en|ar)/.well-known/assetlinks.json",
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
     ];

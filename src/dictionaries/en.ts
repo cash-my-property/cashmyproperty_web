@@ -632,6 +632,7 @@ export const content = {
   navbar: {
     links: [
       { title: "Home", href: "/" },
+      { title: "Find Sellers", href: "/sellers" },
       { title: "About Us", href: "/about" },
       { title: "Blog", href: "/blog" },
       { title: "Contact", href: "/contact" }

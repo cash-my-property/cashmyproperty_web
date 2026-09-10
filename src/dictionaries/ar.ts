@@ -596,6 +596,7 @@ export const content = {
   navbar: {
     links: [
       { title: "الرئيسية", href: "/" },
+      { title: "دليل البائعين", href: "/sellers" },
       { title: "من نحن", href: "/about" },
       { title: "المدونة", href: "/blog" },
       { title: "اتصل بنا", href: "/contact" }
