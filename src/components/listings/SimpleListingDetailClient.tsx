@@ -147,41 +147,6 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
     );
   }
 
-  if (!authLoading && isAuthenticated && isSeller) {
-    return (
-      <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] items-center justify-center gap-8 px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col items-center gap-6 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626] max-w-lg w-full text-center">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-[#5CD284]/10 rounded-full blur-[80px] pointer-events-none" />
-          <div className="relative z-10 w-20 h-20 rounded-3xl bg-[#5CD284]/15 border border-[#5CD284]/30 flex items-center justify-center">
-            <Building2 className="w-10 h-10 text-[#5CD284]" />
-          </div>
-          <div className="relative z-10">
-            <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Seller Mode Active</p>
-            <h2 className="text-white text-[28px] font-bold mb-3 leading-tight">Access Restricted</h2>
-            <p className="text-white/65 text-[15px] leading-relaxed">
-              Property detail pages are exclusively for buyers. As a seller, you can only manage and track your own listed properties.
-            </p>
-          </div>
-          <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full justify-center">
-            <Link
-              href={`/${locale}/dashboard/seller/simple-listings`}
-              className="inline-flex items-center justify-center gap-2 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] text-[15px]"
-            >
-              <Building2 className="w-5 h-5" />
-              My Simple Listings
-            </Link>
-            <Link
-              href={`/${locale}/dashboard`}
-              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 text-[15px]"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   const detailDict = dict.listings?.detail || {};
 
   if (!propertyInfo) {
@@ -489,19 +454,45 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             
             <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-4">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">Interested in this property?</h3>
+
+              {/* Seller / Agent Profile Card */}
+              {propertyInfo.sellerInfo && (
+                <div className="flex items-center gap-3.5 p-3.5 bg-gray-50 dark:bg-[#163321] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 bg-gray-200 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626]">
+                    <Image
+                      src={propertyInfo.sellerInfo.thumbnail || "/placeholder-avatar.png"}
+                      alt={propertyInfo.sellerInfo.name || "Agent"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                        {propertyInfo.sellerInfo.name || "Real Estate Agent"}
+                      </h4>
+                      {propertyInfo.sellerInfo.isVerified && (
+                        <ShieldCheck className="w-4 h-4 text-[#5CD284] shrink-0" />
+                      )}
+                    </div>
+                    {propertyInfo.sellerInfo.phone && (
+                      <p className="text-xs text-[#1A3626] dark:text-[#5CD284] font-bold font-mono mt-0.5">
+                        {propertyInfo.sellerInfo.phone}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                 Contact the seller directly to request details, schedule a viewing, or negotiate terms.
               </p>
 
               <div className="space-y-3 pt-2">
                 {/* WhatsApp Button */}
-                {propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber ? (
+                {(propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber) && (
                   <button
                     onClick={() => {
-                      if (!isAuthenticated) {
-                        setShowLoginModal(true);
-                        return;
-                      }
                       const waNum = (propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '');
                       window.open(`https://wa.me/${waNum}`, '_blank');
                     }}
@@ -509,35 +500,29 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   >
                     <MessageCircle className="w-4 h-4" /> WhatsApp Agent
                   </button>
-                ) : null}
+                )}
 
                 {/* Phone Button */}
                 <button 
                   onClick={() => {
-                    if (!isAuthenticated) {
-                      setShowLoginModal(true);
-                      return;
-                    }
-                    if (propertyInfo.sellerInfo?.phone) {
-                      window.location.href = `tel:${propertyInfo.sellerInfo.phone}`;
+                    const phone = propertyInfo.sellerInfo?.phone || propertyInfo.phone;
+                    if (phone) {
+                      window.location.href = `tel:${phone}`;
                     } else {
                       addToast("Unavailable", "Agent phone number not available", "warning");
                     }
                   }}
                   className="w-full py-3.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
                 >
-                  <Phone className="w-4 h-4" /> Call Agent
+                  <Phone className="w-4 h-4" /> Call Agent {propertyInfo.sellerInfo?.phone ? `(${propertyInfo.sellerInfo.phone})` : ''}
                 </button>
                 
                 {/* Email Button */}
                 <button 
                   onClick={() => {
-                    if (!isAuthenticated) {
-                      setShowLoginModal(true);
-                      return;
-                    }
-                    if (propertyInfo.sellerInfo?.email) {
-                      window.location.href = `mailto:${propertyInfo.sellerInfo.email}`;
+                    const email = propertyInfo.sellerInfo?.email || propertyInfo.email;
+                    if (email) {
+                      window.location.href = `mailto:${email}`;
                     } else {
                       addToast("Unavailable", "Agent email not available", "warning");
                     }
