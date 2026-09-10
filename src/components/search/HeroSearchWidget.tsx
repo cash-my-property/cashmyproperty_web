@@ -97,12 +97,13 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     const timer = setTimeout(async () => {
       try {
         setIsFetchingSuggestions(true);
-        const listingPurpose = activeTab === "RENT" ? "RENT" : "SALE";
+        const tabParam = activeTab === "NEW_PROJECTS" ? "ALL" : activeTab;
+        const listingPurpose = activeTab === "RENT" ? "RENT" : activeTab === "BUY" ? "SALE" : undefined;
         const res = await api.get("/public/search-suggestions", {
           params: {
             q: searchQuery.trim(),
-            tab: activeTab,
-            listingPurpose,
+            tab: tabParam,
+            ...(listingPurpose ? { listingPurpose } : {}),
             limit: 5,
           },
         });
@@ -143,6 +144,8 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
   const handleTabClick = (tabKey: string) => {
     setActiveTab(tabKey);
+    setSuggestions({ locations: [], properties: [], agents: [], companies: [] });
+    setShowDropdown(false);
   };
 
   const getSearchPlaceholder = () => {

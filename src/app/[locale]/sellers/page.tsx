@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { 
   Search, 
   Star, 
@@ -40,9 +41,9 @@ interface Agent {
   _id: string;
   name: string;
   thumbnail?: string;
-  officeName?: string;
-  designation?: string;
-  nationality?: string;
+  officeName?: string | null;
+  designation?: string | null;
+  nationality?: string | null;
   languages?: string[];
   brokerNumber?: string;
   phone?: string;
@@ -64,17 +65,30 @@ interface AgentSummary {
 
 interface AgentProperty {
   _id: string;
+  sellerId?: string;
   listingId: string;
   listingPurpose: string;
   propertyCategory: string;
+  propertyPlan?: string;
   propertyType: string;
   propertyTitle: string;
+  whatsappNumber?: string;
   propertyLocation: string;
-  propertyPrice?: { amount: number; currency: string };
+  propertyDescription?: string;
+  propertyPrice?: { 
+    amount: number; 
+    downPayment?: number;
+    currency: string 
+  };
   propertyArea?: { value: number; unit: string };
   propertyBedrooms?: string;
   propertyBathrooms?: string;
-  propertyImages?: { url: string }[];
+  permitNumber?: string;
+  rentalPeriod?: string;
+  availability?: string;
+  propertyImages?: { url: string; public_id?: string; _id?: string }[];
+  isFavourited?: boolean;
+  createdAt?: string;
 }
 
 interface AgentTrackRecord {
@@ -101,12 +115,23 @@ interface AgentDetailPayload {
 
 export default function FindSellersPage() {
   const { locale } = useDictionary();
+  const searchParams = useSearchParams();
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPurpose, setSelectedPurpose] = useState<"ALL" | "SALE" | "RENT">("ALL");
   const [selectedSortBy, setSelectedSortBy] = useState<string>("mostListings");
   const [page, setPage] = useState<number>(1);
+
+  // Sync URL Search Parameters
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || searchParams.get("location") || "";
+    const urlPurpose = searchParams.get("purpose") || searchParams.get("listingPurpose");
+    if (urlSearch) setSearchQuery(urlSearch);
+    if (urlPurpose === "SALE" || urlPurpose === "RENT") {
+      setSelectedPurpose(urlPurpose as "SALE" | "RENT");
+    }
+  }, [searchParams]);
 
   // Dynamic Data State
   const [agents, setAgents] = useState<Agent[]>([]);
