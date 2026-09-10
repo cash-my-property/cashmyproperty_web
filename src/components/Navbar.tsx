@@ -46,7 +46,7 @@ export default function Navbar() {
         return [
           { title: "Home", href: "/" },
           { title: "Add Property", href: "/dashboard/seller/add-property" },
-          { title: "Verification Status", href: "/dashboard/seller/properties" },
+          { title: "Listings", href: "/dashboard/seller/properties" },
           { title: "Analytics", href: "/dashboard" }
         ];
       }
