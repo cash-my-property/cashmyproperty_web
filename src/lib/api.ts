@@ -35,8 +35,9 @@ api.interceptors.response.use(
 
     // Check if the error status is 401 and the request has not been retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Avoid refreshing token if the failed request was an auth action (login, signup, refresh, verify, reset, forgot)
+      // Avoid refreshing token for public endpoints or auth actions
       if (
+        originalRequest.url?.includes('/public/') ||
         originalRequest.url?.includes('/auth/login') ||
         originalRequest.url?.includes('/auth/signup') ||
         originalRequest.url?.includes('/auth/refresh') ||

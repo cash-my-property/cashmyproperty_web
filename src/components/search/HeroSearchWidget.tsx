@@ -2,17 +2,19 @@
 
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Search, ChevronDown, Check, X, SlidersHorizontal } from "lucide-react";
+import { Search, ChevronDown, Check, X, SlidersHorizontal, MapPin, Building, User, Building2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
+import api from "@/lib/api";
 
 interface HeroSearchWidgetProps {
   onSearch?: (filters: any) => void;
   initialTab?: string;
   variant?: "HERO" | "DRAWER";
+  showTabs?: boolean;
 }
 
-export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant = "HERO" }: HeroSearchWidgetProps) {
+export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant = "HERO", showTabs = true }: HeroSearchWidgetProps) {
   const router = useRouter();
   const { locale } = useDictionary();
 
@@ -28,6 +30,15 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
   // Search Input State
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<{
+    locations: string[];
+    properties: string[];
+    agents: string[];
+    companies: string[];
+  }>({ locations: [], properties: [], agents: [], companies: [] });
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState<boolean>(false);
 
   // Drawer Animation States (for 60fps silky open AND exit transition)
   const [isDrawerVisible, setIsDrawerVisible] = useState<boolean>(false);
@@ -63,25 +74,100 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close inline dropdowns on outside click
+  // Close inline dropdowns & autocomplete on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setActiveDropdown(null);
+        setShowDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 300ms Debounce Hook for Real-time Autocomplete Suggestions API
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 1 || selectedLocation) {
+      setSuggestions({ locations: [], properties: [], agents: [], companies: [] });
+      setShowDropdown(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsFetchingSuggestions(true);
+        const listingPurpose = activeTab === "RENT" ? "RENT" : "SALE";
+        const res = await api.get("/public/search-suggestions", {
+          params: {
+            q: searchQuery.trim(),
+            tab: activeTab,
+            listingPurpose,
+            limit: 5,
+          },
+        });
+
+        if (res.data?.success && res.data?.suggestions) {
+          setSuggestions({
+            locations: res.data.suggestions.locations || [],
+            properties: res.data.suggestions.properties || [],
+            agents: res.data.suggestions.agents || [],
+            companies: res.data.suggestions.companies || [],
+          });
+          setShowDropdown(true);
+        }
+      } catch (err) {
+        console.error("Autocomplete search error:", err);
+      } finally {
+        setIsFetchingSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, activeTab, selectedLocation]);
+
+  const handleSelectSuggestion = (item: string, type: "location" | "property" | "agent") => {
+    if (type === "location") {
+      setSelectedLocation(item);
+      setSearchQuery(item);
+    } else if (type === "agent") {
+      setSelectedLocation(null);
+      setSearchQuery(item);
+      router.push(`/${locale}/sellers?search=${encodeURIComponent(item)}`);
+    } else {
+      setSelectedLocation(null);
+      setSearchQuery(item);
+    }
+    setShowDropdown(false);
+  };
+
   const handleTabClick = (tabKey: string) => {
     setActiveTab(tabKey);
+  };
+
+  const getSearchPlaceholder = () => {
+    if (!showTabs) return "City, community or building";
+    switch (activeTab) {
+      case "RENT":
+        return "Search properties for rent (City, community, building)...";
+      case "BUY":
+        return "Search properties for buy / auctions (City, community, building)...";
+      case "NEW_PROJECTS":
+        return "Search new off-plan projects (Project name, community)...";
+      case "TRANSACTIONS":
+        return "Search property transactions (Building, community, area)...";
+      case "AGENTS":
+        return "Search agents & agencies (Name, area, language)...";
+      default:
+        return "City, community or building";
+    }
   };
 
   const handleExecuteSearch = () => {
     const filterPayload = {
       tab: activeTab,
       query: searchQuery,
+      location: selectedLocation,
       category: selectedCategory,
       propertyType: selectedPropertyType,
       bedrooms: selectedBeds,
@@ -92,19 +178,50 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       amenities: selectedAmenities,
     };
 
-    if (onSearch) {
+    const params = new URLSearchParams();
+
+    // Pass location or free text search
+    if (selectedLocation) {
+      params.append("location", selectedLocation);
+    } else if (searchQuery) {
+      params.append("search", searchQuery);
+    }
+
+    // Pass listingPurpose
+    if (activeTab === "RENT") {
+      params.append("listingPurpose", "RENT");
+    } else if (activeTab === "BUY") {
+      params.append("listingPurpose", "SALE");
+    } else if (activeTab === "NEW_PROJECTS") {
+      params.append("propertyPlan", "OFF_PLAN");
+    }
+
+    if (selectedPropertyType !== "ALL") params.append("propertyType", selectedPropertyType);
+    if (selectedCategory) params.append("propertyCategory", selectedCategory);
+    if (selectedBeds !== "ANY") params.append("bedrooms", selectedBeds);
+    if (selectedBaths !== "ANY") params.append("bathrooms", selectedBaths);
+    if (minPrice) params.append("minPrice", minPrice);
+    if (maxPrice) params.append("maxPrice", maxPrice);
+    if (selectedRentalPeriod) params.append("rentalPeriod", selectedRentalPeriod);
+
+    if (showTabs) {
+      if (activeTab === "AGENTS") {
+        router.push(`/${locale}/sellers?${params.toString()}`);
+      } else if (activeTab === "BUY") {
+        router.push(`/${locale}/auctions?${params.toString()}`);
+      } else if (activeTab === "RENT") {
+        router.push(`/${locale}/listings?${params.toString()}`);
+      } else if (activeTab === "NEW_PROJECTS") {
+        router.push(`/${locale}/listings?${params.toString()}`);
+      } else if (activeTab === "TRANSACTIONS") {
+        params.append("type", "TRANSACTIONS");
+        router.push(`/${locale}/listings?${params.toString()}`);
+      } else {
+        router.push(`/${locale}/listings?${params.toString()}`);
+      }
+    } else if (onSearch) {
       onSearch(filterPayload);
     } else {
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("search", searchQuery);
-      if (selectedPropertyType !== "ALL") params.append("propertyType", selectedPropertyType);
-      if (selectedCategory) params.append("category", selectedCategory);
-      if (selectedBeds !== "ANY") params.append("bedrooms", selectedBeds);
-      if (selectedBaths !== "ANY") params.append("bathrooms", selectedBaths);
-      if (minPrice) params.append("minPrice", minPrice);
-      if (maxPrice) params.append("maxPrice", maxPrice);
-      if (selectedRentalPeriod) params.append("rentalPeriod", selectedRentalPeriod);
-
       const targetPath = activeTab === "BUY" ? `/${locale}/auctions` : `/${locale}/listings`;
       router.push(`${targetPath}?${params.toString()}`);
     }
@@ -184,28 +301,30 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-4 relative z-50" ref={containerRef}>
       
-      {/* 1. Top Category Tabs Pill Bar */}
-      <div className="bg-white/95 dark:bg-[#091711]/95 backdrop-blur-xl p-1.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 dark:border-[#1A3626] flex items-center justify-center gap-1 sm:gap-2 flex-wrap relative z-50">
-        {[
-          { label: "Rent", key: "RENT" },
-          { label: "Buy", key: "BUY" },
-          { label: "New projects", key: "NEW_PROJECTS" },
-          { label: "Transactions", key: "TRANSACTIONS" },
-          { label: "Agents", key: "AGENTS" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => handleTabClick(tab.key)}
-            className={`px-5 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer ${
-              activeTab === tab.key
-                ? "bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] shadow-md scale-105"
-                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* 1. Top Category Tabs Pill Bar (Rendered ONLY when showTabs is true) */}
+      {showTabs && (
+        <div className="bg-white/95 dark:bg-[#091711]/95 backdrop-blur-xl p-1.5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-100 dark:border-[#1A3626] flex items-center justify-center gap-1 sm:gap-2 flex-wrap relative z-50">
+          {[
+            { label: "Rent", key: "RENT" },
+            { label: "Buy", key: "BUY" },
+            { label: "New projects", key: "NEW_PROJECTS" },
+            { label: "Transactions", key: "TRANSACTIONS" },
+            { label: "Agents", key: "AGENTS" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => handleTabClick(tab.key)}
+              className={`px-5 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                activeTab === tab.key
+                  ? "bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] shadow-md scale-105"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 2. Main Capsule Search Bar Card */}
       <div className="w-full bg-white dark:bg-[#102418] rounded-[32px] p-3 sm:p-4 shadow-2xl border border-gray-100 dark:border-[#1A3626] flex flex-col gap-3.5 relative z-40">
@@ -213,21 +332,150 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         {/* Search Input, Filters Trigger Button & Emerald Green Search Button */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           
-          {/* Main Input Field */}
-          <div className="flex-1 flex items-center bg-gray-50/90 dark:bg-[#091711] rounded-full px-5 py-3.5 w-full border border-gray-200/80 dark:border-[#1A3626] focus-within:border-[#5CD284] transition-all">
-            <Search className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
-            <input
-              type="text"
-              placeholder="City, community or building"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleExecuteSearch(); }}
-              className="w-full bg-transparent border-none outline-none text-gray-900 dark:text-white placeholder:text-gray-400 text-sm sm:text-base font-medium"
-            />
+          {/* Main Input Field with Autocomplete Suggestions Dropdown */}
+          <div className="flex-1 relative w-full">
+            <div className="flex items-center bg-gray-50/90 dark:bg-[#091711] rounded-full px-5 py-3.5 w-full border border-gray-200/80 dark:border-[#1A3626] focus-within:border-[#5CD284] transition-all">
+              <Search className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
+              <input
+                type="text"
+                placeholder={getSearchPlaceholder()}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSelectedLocation(null);
+                }}
+                onFocus={() => {
+                  if (suggestions.locations.length > 0 || suggestions.properties.length > 0) {
+                    setShowDropdown(true);
+                  }
+                }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleExecuteSearch(); }}
+                className="w-full bg-transparent border-none outline-none text-gray-900 dark:text-white placeholder:text-gray-400 text-sm sm:text-base font-medium"
+              />
+              {isFetchingSuggestions && (
+                <Loader2 className="w-4 h-4 text-gray-400 animate-spin ml-2 shrink-0" />
+              )}
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedLocation(null);
+                    setSuggestions({ locations: [], properties: [], agents: [], companies: [] });
+                    setShowDropdown(false);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-white ml-2 p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Categorized Autocomplete Dropdown */}
+            {showDropdown && (
+              suggestions.locations.length > 0 ||
+              suggestions.properties.length > 0 ||
+              suggestions.agents.length > 0 ||
+              suggestions.companies.length > 0
+            ) && (
+              <div className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3">
+                {/* Locations Section */}
+                {suggestions.locations.length > 0 && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase px-3 pt-1 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
+                      <span>Locations</span>
+                    </span>
+                    {suggestions.locations.map((loc, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectSuggestion(loc, 'location')}
+                        className="px-3.5 py-2.5 hover:bg-gray-100/80 dark:hover:bg-[#163321] cursor-pointer flex items-center justify-between rounded-xl text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                          <span className="truncate">{loc}</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-[#091711] px-2 py-0.5 rounded-full shrink-0 ml-2">Location</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Properties / Projects Section */}
+                {suggestions.properties.length > 0 && (
+                  <div className="flex flex-col gap-1 pt-2 border-t border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-[10px] font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase px-3 pt-1 flex items-center gap-1.5">
+                      <Building className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
+                      <span>Properties & Projects</span>
+                    </span>
+                    {suggestions.properties.map((prop, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectSuggestion(prop, 'property')}
+                        className="px-3.5 py-2.5 hover:bg-gray-100/80 dark:hover:bg-[#163321] cursor-pointer flex items-center justify-between rounded-xl text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Building className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                          <span className="truncate">{prop}</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-[#091711] px-2 py-0.5 rounded-full shrink-0 ml-2">Property</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Agents Section */}
+                {suggestions.agents.length > 0 && (
+                  <div className="flex flex-col gap-1 pt-2 border-t border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-[10px] font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase px-3 pt-1 flex items-center gap-1.5">
+                      <User className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
+                      <span>Agents</span>
+                    </span>
+                    {suggestions.agents.map((agent, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectSuggestion(agent, 'agent')}
+                        className="px-3.5 py-2.5 hover:bg-gray-100/80 dark:hover:bg-[#163321] cursor-pointer flex items-center justify-between rounded-xl text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <User className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                          <span className="truncate">{agent}</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-[#091711] px-2 py-0.5 rounded-full shrink-0 ml-2">Agent</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Companies Section */}
+                {suggestions.companies.length > 0 && (
+                  <div className="flex flex-col gap-1 pt-2 border-t border-gray-100 dark:border-[#1A3626]">
+                    <span className="text-[10px] font-black tracking-widest text-gray-400 dark:text-gray-500 uppercase px-3 pt-1 flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
+                      <span>Agencies & Companies</span>
+                    </span>
+                    {suggestions.companies.map((comp, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => handleSelectSuggestion(comp, 'agent')}
+                        className="px-3.5 py-2.5 hover:bg-gray-100/80 dark:hover:bg-[#163321] cursor-pointer flex items-center justify-between rounded-xl text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Building2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                          <span className="truncate">{comp}</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-[#091711] px-2 py-0.5 rounded-full shrink-0 ml-2">Agency</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {/* Filters Trigger Button (Opens Left Slide-over Banner/Drawer) */}
+            {/* Filters Trigger Button (Opens Right Slide-over Banner/Drawer) */}
             <button
               type="button"
               onClick={openDrawer}

@@ -136,7 +136,7 @@ export default function FindSellersPage() {
         params.purpose = selectedPurpose;
       }
 
-      const res = await api.get("/buyer/agents", { params });
+      const res = await api.get("/public/agents", { params });
       if (res.data?.success) {
         setAgents(res.data.data || []);
         if (res.data.pagination) {
@@ -161,7 +161,7 @@ export default function FindSellersPage() {
     setIsModalLoading(true);
 
     try {
-      const res = await api.get(`/buyer/agents/${agent._id}`);
+      const res = await api.get(`/public/agents/${agent._id}`);
       if (res.data?.data) {
         setModalDetails(res.data.data);
       }

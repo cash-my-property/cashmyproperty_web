@@ -165,7 +165,7 @@ export default function SellerDetailPage() {
     if (!agentId) return;
     setIsAgentLoading(true);
     try {
-      const res = await api.get(`/buyer/agents/${agentId}`);
+      const res = await api.get(`/public/agents/${agentId}`);
       if (res.data?.data) {
         setAgent(res.data.data.agent || null);
         setSummary(res.data.data.summary || null);
@@ -214,7 +214,7 @@ export default function SellerDetailPage() {
       if (purpose !== "ALL") queryParams.listingPurpose = purpose;
       if (category !== "ALL") queryParams.propertyCategory = category;
 
-      const res = await api.get(`/buyer/agents/${agentId}/listings`, { params: queryParams });
+      const res = await api.get(`/public/agents/${agentId}/listings`, { params: queryParams });
       if (res.data?.success) {
         setProperties(res.data.data || []);
         if (res.data.pagination) {
@@ -249,7 +249,7 @@ export default function SellerDetailPage() {
       if (dealType !== "ALL") queryParams.dealType = dealType;
       if (search.trim()) queryParams.search = search.trim();
 
-      const res = await api.get(`/buyer/agents/${agentId}/track-record`, { params: queryParams });
+      const res = await api.get(`/public/agents/${agentId}/track-record`, { params: queryParams });
       if (res.data?.success) {
         setTrackRecords(res.data.data || []);
         if (res.data.pagination) {

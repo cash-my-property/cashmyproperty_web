@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { 
   Search, 
   MapPin, 
@@ -30,6 +31,7 @@ import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 
 export default function AuctionsListingPage() {
   const { dict, locale } = useDictionary();
+  const searchParams = useSearchParams();
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const content = dict.home;
   const realtimeOffers = dict.home.realtimebids.items;
@@ -41,6 +43,7 @@ export default function AuctionsListingPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
+  const [appliedLocation, setAppliedLocation] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
@@ -53,6 +56,14 @@ export default function AuctionsListingPage() {
   const [hasMore, setHasMore] = useState(false);
 
   const { socket, addToast } = useSocket();
+
+  // Read URL search params on mount or param change
+  useEffect(() => {
+    const urlLocation = searchParams.get("location");
+    const urlSearch = searchParams.get("search");
+    if (urlLocation) setAppliedLocation(urlLocation);
+    if (urlSearch) setAppliedSearch(urlSearch);
+  }, [searchParams]);
 
   // Listen to socket events for real-time price and auction updates
   useEffect(() => {
@@ -134,12 +145,28 @@ export default function AuctionsListingPage() {
       queryParams.append('page', pageNum.toString());
       queryParams.append('limit', '10');
 
-      if (appliedSearch) {
-        queryParams.append('search', appliedSearch);
-      }
+      // Add URL params if present
+      const paramLocation = searchParams.get('location') || appliedLocation;
+      const paramSearch = searchParams.get('search') || appliedSearch;
+      const paramCategory = searchParams.get('category') || searchParams.get('propertyCategory');
+      const paramType = searchParams.get('propertyType');
+      const paramMinPrice = searchParams.get('minPrice');
+      const paramMaxPrice = searchParams.get('maxPrice');
+      const paramPlan = searchParams.get('propertyPlan');
+
+      if (paramLocation) queryParams.append('location', paramLocation);
+      if (paramSearch) queryParams.append('search', paramSearch);
+      if (paramCategory) queryParams.append('category', paramCategory);
+      if (paramPlan) queryParams.append('propertyPlan', paramPlan);
+      if (paramMinPrice) queryParams.append('minPrice', paramMinPrice);
+      if (paramMaxPrice) queryParams.append('maxPrice', paramMaxPrice);
+
       if (activeType && activeType !== 'All') {
         queryParams.append('propertyType', activeType.toUpperCase());
+      } else if (paramType) {
+        queryParams.append('propertyType', paramType.toUpperCase());
       }
+
       if (selectedType && selectedType !== 'all') {
         if (selectedType === 'land') {
           queryParams.append('propertyType', 'LAND');
@@ -261,6 +288,7 @@ export default function AuctionsListingPage() {
           {/* Upgraded Hero Search Bar Widget */}
           <HeroSearchWidget 
             initialTab="BUY"
+            showTabs={false}
             onSearch={(filters) => {
               setAppliedSearch(filters.query);
               if (filters.propertyType !== "ALL") {

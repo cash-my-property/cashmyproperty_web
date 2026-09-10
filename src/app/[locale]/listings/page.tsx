@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key, Loader2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -13,6 +14,7 @@ import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
+  const searchParams = useSearchParams();
   const content = dict.home;
 
   // Filter state
@@ -21,6 +23,7 @@ export default function ListingsPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
+  const [appliedLocation, setAppliedLocation] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -32,6 +35,14 @@ export default function ListingsPage() {
 
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+
+  // Read URL search params on mount or param change
+  useEffect(() => {
+    const urlLocation = searchParams.get("location");
+    const urlSearch = searchParams.get("search");
+    if (urlLocation) setAppliedLocation(urlLocation);
+    if (urlSearch) setAppliedSearch(urlSearch);
+  }, [searchParams]);
 
   const fetchProperties = async (pageNum: number = 1, append: boolean = false) => {
     try {
@@ -53,16 +64,34 @@ export default function ListingsPage() {
       queryParams.append('page', pageNum.toString());
       queryParams.append('limit', '10');
 
-      if (appliedSearch) {
-        queryParams.append('search', appliedSearch);
-      }
+      // Add URL params if present
+      const paramLocation = searchParams.get('location') || appliedLocation;
+      const paramSearch = searchParams.get('search') || appliedSearch;
+      const paramPurpose = searchParams.get('listingPurpose');
+      const paramCategory = searchParams.get('propertyCategory');
+      const paramType = searchParams.get('propertyType');
+      const paramMinPrice = searchParams.get('minPrice');
+      const paramMaxPrice = searchParams.get('maxPrice');
+      const paramPlan = searchParams.get('propertyPlan');
+
+      if (paramLocation) queryParams.append('location', paramLocation);
+      if (paramSearch) queryParams.append('search', paramSearch);
+      if (paramPurpose) queryParams.append('listingPurpose', paramPurpose);
+      if (paramCategory) queryParams.append('propertyCategory', paramCategory);
+      if (paramPlan) queryParams.append('propertyPlan', paramPlan);
+      if (paramMinPrice) queryParams.append('minPrice', paramMinPrice);
+      if (paramMaxPrice) queryParams.append('maxPrice', paramMaxPrice);
+
       if (activeType && activeType !== 'All') {
         if (activeType === 'Commercial') {
           queryParams.append('propertyCategory', 'COMMERCIAL');
         } else {
           queryParams.append('propertyType', activeType.toUpperCase());
         }
+      } else if (paramType) {
+        queryParams.append('propertyType', paramType.toUpperCase());
       }
+
       if (selectedType && selectedType !== 'all') {
         if (selectedType === 'land') {
           queryParams.append('propertyType', 'LAND');
@@ -169,6 +198,7 @@ export default function ListingsPage() {
           {/* Upgraded Hero Search Bar Widget */}
           <HeroSearchWidget 
             initialTab="RENT"
+            showTabs={false}
             onSearch={(filters) => {
               setAppliedSearch(filters.query);
               if (filters.propertyType !== "ALL") {
