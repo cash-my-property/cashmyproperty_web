@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.cashmyproperty",
+      "sha256_cert_fingerprints": [
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+        "02:04:50:20:ED:3A:83:2F:72:F5:80:DF:51:12:A4:9A:29:9A:1E:8C:9E:57:E0:75:8D:7A:97:C4:A8:22:2B:37",
+        "E7:3D:3B:40:6D:7A:36:AB:8C:F4:12:39:B0:B8:75:13:DF:12:E9:2C:EE:5A:AE:95:26:68:33:86:88:FE:4F:9F"
+      ]
+    }
+  }
+]

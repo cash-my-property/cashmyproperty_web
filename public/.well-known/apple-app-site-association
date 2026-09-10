@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "9HHW6835H6.com.cashmyproperty",
+        "paths": [
+          "/property/*",
+          "/login",
+          "/public-property/*",
+          "/simple-property/*",
+          "/public-simple-property/*"
+        ]
+      }
+    ]
+  }
+} 
