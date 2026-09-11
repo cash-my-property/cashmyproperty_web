@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import Image from "next/image";
+import { compressImage } from "@/utils/imageCompressor";
 
 export default function SettingsPage() {
   const { dict } = useDictionary();
@@ -104,11 +105,13 @@ export default function SettingsPage() {
     setProfileMessage({ type: "", text: "" });
 
     try {
+      const compressedFile = await compressImage(file, 800, 800, 0.85);
       const formData = new FormData();
-      formData.append("profilePicture", file);
+      formData.append("profilePicture", compressedFile);
 
       await api.put('/auth/uploadProfilePicture', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 60000
       });
       setProfileMessage({ type: "success", text: "Profile picture updated successfully!" });
       fetchProfile();

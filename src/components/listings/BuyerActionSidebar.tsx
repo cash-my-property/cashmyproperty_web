@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { CheckCircle2, Clock, XCircle, FileText, Upload, AlertCircle, Loader2, ShieldAlert, Download } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { compressImage } from "@/utils/imageCompressor";
 
 interface BuyerActionSidebarProps {
   auctionId: string;
@@ -14,7 +15,7 @@ interface BuyerActionSidebarProps {
 }
 
 export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, currentValue, onBidSuccess, onContractSubmitted, onBidOptimistic }: BuyerActionSidebarProps) {
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [bidAmount, setBidAmount] = useState("");
   const [isBidding, setIsBidding] = useState(false);
@@ -47,14 +48,22 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
 
     try {
       setIsSubmitting(true);
+      if (refreshSession) {
+        await refreshSession().catch(() => {});
+      }
+
       const formData = new FormData();
       formData.append('auctionId', auctionId);
-      Object.entries(files).forEach(([key, file]) => {
-        if (file) formData.append(key, file);
-      });
+      for (const [key, file] of Object.entries(files)) {
+        if (file) {
+          const optimizedFile = file.type?.startsWith('image/') ? await compressImage(file) : file;
+          formData.append(key, optimizedFile);
+        }
+      }
 
       await api.post('/buyer/sign-contract', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 180000
       });
       
       setSuccessMessage("Contract submitted successfully!");

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import { compressImageFiles } from "@/utils/imageCompressor";
 
 // Recreated Document Config from backend
 // Recreated Document Config from backend simpleListingRule.js
@@ -86,7 +87,7 @@ const DRAFT_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 export default function AddSimplePropertyPage() {
   const { locale } = useDictionary();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
   const sellerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === "object" ? (user.role as any)?.type?.toUpperCase() : "REGULAR");
   const userId = (user as any)?._id || (user as any)?.id || user?.email || "guest";
   const DRAFT_STORAGE_KEY = `cmp_draft_simple_seller_${userId}`;
@@ -463,8 +464,9 @@ export default function AddSimplePropertyPage() {
       // Amenities array (Joi allows ["A", "B"] or repeated keys, we will send multiple keys)
       amenities.forEach(a => payload.append('propertyAmenities', a));
 
-      // Append images
-      images.forEach(img => {
+      // Compress images before appending to prevent heavy payloads & Nginx 504 timeouts
+      const compressedImages = await compressImageFiles(images);
+      compressedImages.forEach(img => {
         payload.append('propertyImages', img);
       });
 
@@ -473,8 +475,14 @@ export default function AddSimplePropertyPage() {
         payload.append(docName, file);
       });
 
+      // Pre-refresh session right before uploading FormData to ensure token is 100% active
+      if (refreshSession) {
+        await refreshSession().catch(() => {});
+      }
+
       await api.post('/seller/addSimpleListing', payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 180000 // 3 minutes timeout for heavy file uploads
       });
       
       localStorage.removeItem(DRAFT_STORAGE_KEY);

@@ -5,7 +5,9 @@ import api from "@/lib/api";
 import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import { compressImageFiles } from "@/utils/imageCompressor";
 
 // Recreated Document Config from backend
 const PROPERTY_DOC_CONFIG: any = {
@@ -80,6 +82,7 @@ export default function EditPropertyPage() {
   const params = useParams();
   const { locale } = useDictionary();
   const router = useRouter();
+  const { refreshSession } = useAuth();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -337,8 +340,9 @@ export default function EditPropertyPage() {
       // Amenities array (Joi allows ["A", "B"] or repeated keys, we will send multiple keys)
       amenities.forEach(a => payload.append('propertyAmenities', a));
 
-      // Append images
-      images.forEach(img => {
+      // Compress newly attached images before appending
+      const compressedImages = await compressImageFiles(images);
+      compressedImages.forEach(img => {
         payload.append('propertyImages', img);
       });
 
@@ -350,8 +354,14 @@ export default function EditPropertyPage() {
       payload.append('deletedImages', JSON.stringify(deletedImages));
       payload.append('imagesToRemove', JSON.stringify(deletedImages));
       payload.append('deletedDocs', JSON.stringify(deletedDocs));
+
+      if (refreshSession) {
+        await refreshSession().catch(() => {});
+      }
+
       await api.patch(`/seller/editRejectedProperty/${params.id}`, payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 180000
       });
       
       setIsSuccess(true);
