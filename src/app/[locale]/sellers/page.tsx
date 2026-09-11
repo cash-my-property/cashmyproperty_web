@@ -377,10 +377,13 @@ export default function FindSellersPage() {
                     
                     <div className="flex items-center gap-4 min-w-0 flex-1">
                       {/* Avatar */}
-                      <div className="relative shrink-0">
-                        <img 
+                      <div className="relative shrink-0 w-16 h-16 sm:w-18 sm:h-18">
+                        <Image 
                           src={agent.thumbnail || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"} 
                           alt={agent.name}
+                          width={72}
+                          height={72}
+                          loading="eager"
                           className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-[#1A3626]/20 dark:border-[#c9a14b]/30 group-hover:scale-105 transition-transform"
                         />
                         {agent.isVerified && (

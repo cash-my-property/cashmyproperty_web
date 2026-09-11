@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key, Loader2 } from "lucide-react";
+import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key, Loader2, CheckCircle2, Heart, Phone, MessageCircle } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -283,7 +283,7 @@ export default function ListingsPage() {
               return <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">No properties match the selected filters.</div>;
             }
 
-            return filteredProperties.map((item) => {
+            return filteredProperties.map((item, idx) => {
               const details = item.propertyDetails || item || {};
               const title = item.title || details.propertyTitle || "Untitled Property";
               const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
@@ -299,39 +299,47 @@ export default function ListingsPage() {
               const type = details.propertyType || "Property";
 
               return (
-              <Link href={`/${locale}/simple-listings/${item._id || item.id}`} key={item._id || item.id} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer">
+              <Link 
+                href={`/${locale}/simple-listings/${item._id || item.id}`} 
+                key={item._id || item.id} 
+                className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer"
+              >
                 <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711]">
                   <Image
                     src={image}
                     alt={title}
                     fill
+                    priority={idx < 3}
+                    loading={idx < 3 ? undefined : "lazy"}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                     <span className="w-2 h-2 rounded-full bg-[#5CD284]"></span> ACTIVE
+                  <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {item.status || "Active"}
                   </div>
                 </div>
-                
+
                 <div className="p-4 pt-5 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}</span>
+                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
+                      <Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}
+                    </span>
                   </div>
                   
-                  <p title={rawLocation} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedLocation}</span>
+                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                    <MapPin className="w-4 h-4" /> {formattedLocation}
                   </p>
                   
                   <div className="flex items-center gap-4 mb-5">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Square className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="px-5 py-2.5 w-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                      View Details
+                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
+                      <Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
+                      <Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
+                      <Square className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}
                     </div>
                   </div>
 

@@ -22,6 +22,7 @@ interface AuthContextType {
   login: (token: string, userData: User) => void;
   logout: () => void;
   fetchProfile: () => Promise<void>;
+  refreshSession: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,6 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const mainRole = getUserMainRole(user);
   const isBuyer = mainRole === 'buyer';
   const isSeller = mainRole === 'seller';
+
+  const refreshSession = async (): Promise<boolean> => {
+    try {
+      await api.post('/auth/refresh');
+      return true;
+    } catch (err) {
+      console.error("Manual session refresh failed", err);
+      return false;
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -64,6 +75,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   }, []);
+
+  // Proactive Silent Background Token Refresh (every 5 minutes)
+  // Prevents Access Token from ever expiring while user is active on page
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshInterval = setInterval(async () => {
+      try {
+        await api.post('/auth/refresh');
+      } catch (err) {
+        console.error("Background token refresh failed", err);
+      }
+    }, 5 * 60 * 1000); // 5 minutes (well before token expiry)
+
+    return () => clearInterval(refreshInterval);
+  }, [user]);
 
   const login = (token: string, userData: User) => {
     Cookies.set('token', token, { expires: 7 }); // 7 days
@@ -112,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, isBuyer, isSeller, login, logout, fetchProfile }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, isBuyer, isSeller, login, logout, fetchProfile, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

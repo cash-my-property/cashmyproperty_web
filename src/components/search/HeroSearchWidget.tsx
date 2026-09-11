@@ -185,6 +185,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
     // Pass location or free text search
     if (selectedLocation) {
+      params.append("propertyLocation", selectedLocation);
       params.append("location", selectedLocation);
     } else if (searchQuery) {
       params.append("search", searchQuery);
@@ -217,8 +218,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       } else if (activeTab === "NEW_PROJECTS") {
         router.push(`/${locale}/listings?${params.toString()}`);
       } else if (activeTab === "TRANSACTIONS") {
-        params.append("type", "TRANSACTIONS");
-        router.push(`/${locale}/listings?${params.toString()}`);
+        router.push(`/${locale}/transactions?${params.toString()}`);
       } else {
         router.push(`/${locale}/listings?${params.toString()}`);
       }

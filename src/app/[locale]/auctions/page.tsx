@@ -19,7 +19,11 @@ import {
   Maximize, 
   Home, 
   Key, 
-  Loader2 
+  Loader2,
+  CheckCircle2,
+  Heart,
+  Phone,
+  MessageCircle
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -362,8 +366,7 @@ export default function AuctionsListingPage() {
                 <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-[20px] w-full" />
                 <div className="p-4 flex flex-col gap-3">
                   <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2" />
-                  <div className="h-10 bg-gray-200 dark:bg-[#163321] rounded-xl w-full mt-2" />
+                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
                 </div>
               </div>
             ))
@@ -423,63 +426,52 @@ export default function AuctionsListingPage() {
                 const priceValue = highestBid ? highestBid.toLocaleString() : fallbackPrice.toLocaleString();
 
                 return (
-                <Link href={`/${locale}/auctions/${item._id}`} key={item._id} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer">
+                <Link 
+                  href={`/${locale}/auctions/${item._id}`} 
+                  key={item._id} 
+                  className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer"
+                >
                   <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711]">
                     <Image
                       src={image}
                       alt={title}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    
-                    {/* Badges */}
-                    <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                       <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {item.status || 'ACTIVE'}
+                    <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
+                      {item.status || "Live Offer"}
                     </div>
-                    
-                    <div className="absolute top-4 right-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
-                       <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
-                    </div>
-
-                    <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
-                       PID-{item.PID || item._id.substring(0,8).toUpperCase()}
-                    </div>
-
-                    <div 
-                      className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors"
-                      onClick={(e) => { 
-                        e.preventDefault(); 
-                        e.stopPropagation(); 
-                        const shareUrl = `${window.location.origin}/${locale}/auctions/${item._id}`;
-                        if (navigator.share) {
-                          navigator.share({ title: title, url: shareUrl }).catch(console.error);
-                        } else {
-                          navigator.clipboard.writeText(shareUrl);
-                          addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
-                        }
-                      }}
-                    >
-                       <Share2 className="w-4 h-4" />
+                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
                     </div>
                   </div>
-                  
+
                   <div className="p-4 pt-5 flex flex-col flex-1">
                     <div className="flex items-start justify-between gap-4 mb-2">
                       <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                      <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {priceValue}</span>
+                      <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
+                        <Dirham className="mr-1 text-[20px]" /> {priceValue}
+                      </span>
                     </div>
                     
-                    <p title={rawLocation} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                      <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedLocation}</span>
+                    <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
+                      <MapPin className="w-4 h-4" /> {formattedLocation}
                     </p>
                     
                     <div className="flex items-center gap-4 mb-5">
-                       <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                       <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                       <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
+                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
+                        <Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
+                        <Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
+                        <Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}
+                      </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mb-5">
                       <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
                       <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
@@ -504,8 +496,8 @@ export default function AuctionsListingPage() {
                     </div>
                   </div>
                 </Link>
-              );
-              })
+                );
+              });
             })()
           )}
         </div>
