@@ -93,7 +93,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
       let res;
-      if (st || isAuthenticated) {
+      if (isAuthenticated) {
         try {
           const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
           res = await api.get(`/buyer/simpleListingDetails/${id}${queryStr}`);
