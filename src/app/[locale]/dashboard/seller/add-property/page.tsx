@@ -8,6 +8,7 @@ import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { compressImageFiles } from "@/utils/imageCompressor";
+import { saveDraftToIndexedDB, loadDraftFromIndexedDB, clearDraftFromIndexedDB } from "@/utils/indexedDBStorage";
 
 // Recreated Document Config from backend
 const PROPERTY_DOC_CONFIG: any = {
@@ -120,62 +121,73 @@ export default function AddPropertyPage() {
 
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Restore draft on mount if within 1 hour and matches formType
+  // 1. Restore draft on mount (from IndexedDB or legacy localStorage fallback)
   useEffect(() => {
-    try {
-      // Purge legacy non-scoped keys if any exist
-      localStorage.removeItem("cmp_draft_realtime_property");
-
-      const savedDraftStr = localStorage.getItem(DRAFT_STORAGE_KEY);
-      if (savedDraftStr) {
-        const draft = JSON.parse(savedDraftStr);
+    let isMounted = true;
+    async function restoreDraft() {
+      try {
+        localStorage.removeItem("cmp_draft_auction_property");
+        const indexedDBDraft = await loadDraftFromIndexedDB(DRAFT_STORAGE_KEY);
         const now = Date.now();
-        if (
-          draft.formType === "REALTIME_AUCTION" &&
-          draft.savedAt && 
-          (now - draft.savedAt < DRAFT_EXPIRY_MS)
-        ) {
-          if (draft.formData) setFormData(draft.formData);
-          if (draft.amenities) setAmenities(draft.amenities);
-          if (draft.step) setStep(draft.step);
+
+        if (indexedDBDraft && (now - indexedDBDraft.updatedAt < DRAFT_EXPIRY_MS)) {
+          if (!isMounted) return;
+          if (indexedDBDraft.formData) setFormData(indexedDBDraft.formData as any);
+          if (indexedDBDraft.amenities) setAmenities(indexedDBDraft.amenities);
+          if (indexedDBDraft.images?.length) setImages(indexedDBDraft.images);
+          if (indexedDBDraft.documents && Object.keys(indexedDBDraft.documents).length) setDocuments(indexedDBDraft.documents);
           setDraftRestored(true);
-        } else {
-          // Expired (> 1 hour) or wrong formType
-          localStorage.removeItem(DRAFT_STORAGE_KEY);
+          return;
         }
+
+        // Fallback to legacy localStorage text draft
+        const savedDraftStr = localStorage.getItem(DRAFT_STORAGE_KEY);
+        if (savedDraftStr) {
+          const draft = JSON.parse(savedDraftStr);
+          if (draft.savedAt && (now - draft.savedAt < DRAFT_EXPIRY_MS)) {
+            if (!isMounted) return;
+            if (draft.formData) setFormData(draft.formData);
+            if (draft.amenities) setAmenities(draft.amenities);
+            if (draft.step) setStep(draft.step);
+            setDraftRestored(true);
+          } else {
+            localStorage.removeItem(DRAFT_STORAGE_KEY);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to restore property draft", err);
       }
-    } catch (err) {
-      console.error("Failed to restore property draft", err);
     }
+    restoreDraft();
+    return () => { isMounted = false; };
   }, [DRAFT_STORAGE_KEY]);
 
-  // 2. Auto-save draft on state change (1 hour expiry window)
+  // 2. Auto-save draft to IndexedDB on state change (supporting images & documents)
   useEffect(() => {
-    try {
-      const hasContent = Object.entries(formData).some(
-        ([key, val]) => typeof val === "string" && val.trim() !== "" && val !== "RESIDENTIAL" && val !== "READY" && val !== "APARTMENT" && val !== "1"
-      );
-      if (hasContent || amenities.length > 0) {
-        const draftPayload = {
-          formType: "REALTIME_AUCTION",
-          userId,
-          savedAt: Date.now(),
-          formData,
-          amenities,
-          step
-        };
-        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftPayload));
-      }
-    } catch (err) {
-      console.error("Failed to auto-save property draft", err);
+    const hasContent = Object.entries(formData).some(
+      ([key, val]) => typeof val === "string" && val.trim() !== "" && val !== "RESIDENTIAL" && val !== "READY" && val !== "APARTMENT" && val !== "1"
+    );
+    if (hasContent || amenities.length > 0 || images.length > 0 || Object.keys(documents).length > 0) {
+      saveDraftToIndexedDB(DRAFT_STORAGE_KEY, {
+        formData,
+        amenities,
+        images,
+        documents
+      });
+      try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({ savedAt: Date.now(), formData, amenities, step }));
+      } catch {}
     }
-  }, [formData, amenities, step, DRAFT_STORAGE_KEY, userId]);
+  }, [formData, amenities, images, documents, step, DRAFT_STORAGE_KEY]);
 
   const clearDraft = () => {
     try {
       localStorage.removeItem(DRAFT_STORAGE_KEY);
+      clearDraftFromIndexedDB(DRAFT_STORAGE_KEY);
       setFormData(initialFormData);
       setAmenities([]);
+      setImages([]);
+      setDocuments({});
       setStep(1);
       setDraftRestored(false);
     } catch (err) {
@@ -443,6 +455,7 @@ export default function AddPropertyPage() {
       });
       
       localStorage.removeItem(DRAFT_STORAGE_KEY);
+      clearDraftFromIndexedDB(DRAFT_STORAGE_KEY);
       setIsSuccess(true);
       setTimeout(() => {
         router.push(`/${locale}/dashboard/seller/properties`);
