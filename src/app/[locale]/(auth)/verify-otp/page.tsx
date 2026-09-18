@@ -67,6 +67,8 @@ function VerifyOtpContent() {
     }
   };
 
+  const isNewSeller = searchParams.get("isNewSeller") === "true";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const enteredOtp = otp.join("");
@@ -89,9 +91,10 @@ function VerifyOtpContent() {
         setSuccess(true);
         setTimeout(() => {
           if (typeParam === "PASSWORD_RESET") {
-            // Check if backend returned a token for reset
             const resetToken = response.data.resetToken || response.data.data?.resetToken || "dummy_token"; 
             router.push(`/${locale}/reset-password?token=${resetToken}`);
+          } else if (isNewSeller) {
+            router.push(`/${locale}/onboarding-hold`);
           } else {
             router.push(`/${locale}/login`);
           }

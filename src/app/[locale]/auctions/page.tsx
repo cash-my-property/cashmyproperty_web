@@ -362,8 +362,8 @@ export default function AuctionsListingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading ? (
             Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="bg-white dark:bg-[#102418] rounded-[24px] p-2 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4">
-                <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-[20px] w-full" />
+              <div key={idx} className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4">
+                <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-xl w-full" />
                 <div className="p-4 flex flex-col gap-3">
                   <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
                   <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
@@ -429,9 +429,9 @@ export default function AuctionsListingPage() {
                 <Link 
                   href={`/${locale}/auctions/${item._id}`} 
                   key={item._id} 
-                  className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group block cursor-pointer"
+                  className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer"
                 >
-                  <div className="relative h-[240px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711]">
+                  <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
                     <Image
                       src={image}
                       alt={title}

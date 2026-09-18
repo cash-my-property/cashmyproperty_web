@@ -81,8 +81,8 @@ export default function FavoritesPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array(3).fill(0).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden border border-gray-100 dark:border-[#1A3626] p-2 animate-pulse shadow-sm h-[380px]">
-              <div className="h-[200px] rounded-[20px] bg-gray-200 dark:bg-[#163321] w-full" />
+            <div key={i} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#1A3626] p-1.5 animate-pulse shadow-sm h-[380px]">
+              <div className="h-[200px] rounded-xl bg-gray-200 dark:bg-[#163321] w-full" />
               <div className="p-4 space-y-3">
                 <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded w-3/4" />
                 <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded w-1/2" />
@@ -198,9 +198,9 @@ export default function FavoritesPage() {
               <Link 
                 href={detailPath} 
                 key={item.favouriteId} 
-                className="bg-white dark:bg-[#102418] rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-2 group relative block cursor-pointer"
+                className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group relative block cursor-pointer"
               >
-                <div className="relative h-[200px] overflow-hidden rounded-[20px] bg-gray-100 dark:bg-[#091711] w-full">
+                <div className="relative h-[200px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711] w-full">
                   <Image
                     src={image}
                     alt={details.propertyTitle || "Property"}
