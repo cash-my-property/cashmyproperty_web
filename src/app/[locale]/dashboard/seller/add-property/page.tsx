@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import { compressImageFiles } from "@/utils/imageCompressor";
 import { saveDraftToIndexedDB, loadDraftFromIndexedDB, clearDraftFromIndexedDB } from "@/utils/indexedDBStorage";
+import GooglePlacesAutocomplete from "@/components/GooglePlacesAutocomplete";
 
 // Recreated Document Config from backend
 const PROPERTY_DOC_CONFIG: any = {
@@ -622,7 +623,12 @@ export default function AddPropertyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-2">
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Location *</label>
-                <input required name="propertyLocation" value={formData.propertyLocation} onChange={handleChange} placeholder="e.g. Dubai Marina" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                <GooglePlacesAutocomplete
+                  required
+                  value={formData.propertyLocation}
+                  onChange={(loc) => setFormData(prev => ({ ...prev, propertyLocation: loc }))}
+                  placeholder="Search area, community, building in UAE..."
+                />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Price (AED) *</label>
