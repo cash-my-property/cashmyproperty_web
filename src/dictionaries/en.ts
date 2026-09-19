@@ -1718,16 +1718,16 @@ export const content = {
   guide: {
     heroTag: "COMPREHENSIVE PLATFORM GUIDE",
     title: "How to Use Cash My Property",
-    subtitle: "Your step-by-step master guide to buying, selling, live auctions, contract signing, and role permissions across the UAE's premier real estate portal.",
-    searchPlaceholder: "Search guides, bidding, BRN verification, role switching...",
+    subtitle: "Your step-by-step master guide to buying, selling, contract signing, and role permissions across the UAE's premier real estate portal.",
+    searchPlaceholder: "Search guides, property listings, BRN verification, role switching...",
     quickNavTitle: "Select a Guide Topic",
     tabs: {
       gettingStarted: "1. Account & Verification",
       roleSwitcher: "2. Roles & Permissions",
       buyerSimple: "3. Buyer - Simple Listings",
-      buyerRealtime: "4. Buyer - Live Bidding",
+      buyerRealtime: "4. Buyer - Realtime Listings",
       sellerSimple: "5. Seller - Simple Listings",
-      sellerRealtime: "6. Seller - Live Auctions"
+      sellerRealtime: "6. Seller - Realtime Listings"
     },
     gettingStarted: {
       title: "Account Setup & Verification",
@@ -1784,13 +1784,13 @@ export const content = {
       rows: [
         { feature: "Browse Simple Listings & Search", sb: "Yes", rb: "No", ss: "No (Redirected)", rs: "No (Redirected)" },
         { feature: "Contact Verified Agents (WhatsApp/Call/Email)", sb: "Yes", rb: "No", ss: "No", rs: "No" },
-        { feature: "Browse Live Distress Auctions", sb: "No", rb: "Yes", ss: "No (Redirected)", rs: "No (Redirected)" },
+        { feature: "Browse Realtime Distress Listings", sb: "No", rb: "Yes", ss: "No (Redirected)", rs: "No (Redirected)" },
         { feature: "Digital Undertaking Letter / MOA Signing", sb: "No", rb: "Yes", ss: "No", rs: "No" },
-        { feature: "Place Real-Time Live Bids & Countdown Access", sb: "No", rb: "Yes", ss: "No", rs: "No" },
+        { feature: "Place Real-Time Offers & Countdown Access", sb: "No", rb: "Yes", ss: "No", rs: "No" },
         { feature: "Add Simple Property Listing", sb: "No", rb: "No", ss: "Yes", rs: "No" },
-        { feature: "Add Realtime Distress Auction Listing", sb: "No", rb: "No", ss: "No", rs: "Yes" },
+        { feature: "Add Realtime Distress Property Listing", sb: "No", rb: "No", ss: "No", rs: "Yes" },
         { feature: "Track Admin Verification Status", sb: "No", rb: "No", ss: "Yes", rs: "Yes" },
-        { feature: "View Live Incoming Buyer Bids & Accept Offers", sb: "No", rb: "No", ss: "No", rs: "Yes" },
+        { feature: "View Live Incoming Buyer Offers & Accept Deals", sb: "No", rb: "No", ss: "No", rs: "Yes" },
         { feature: "Sellers Directory & Agent Detailed Profiles (/sellers)", sb: "Yes", rb: "No", ss: "No", rs: "No" }
       ]
     },
@@ -1831,37 +1831,37 @@ export const content = {
       ]
     },
     buyerRealtime: {
-      title: "Buyer Guide - Live Bidding & Realtime Distress Offers",
-      subtitle: "How to participate in live property auctions, sign digital Undertaking Letters, and win distress deals.",
+      title: "Buyer Guide - Realtime Listings & Distress Offers",
+      subtitle: "How to participate in realtime property listings, sign digital Undertaking Letters, and win distress deals.",
       steps: [
         {
           num: "01",
-          title: "Browse Live Bids & Countdown Timers",
-          desc: "Navigate to the Realtime Auctions portal (`/auctions`). Inspect live auction cards featuring live countdown timers (Days, Hours, Minutes), current highest bid, and starting prices.",
-          tip: "Listings marked with a green pulse dot are actively accepting live bids."
+          title: "Browse Realtime Listings & Countdown Timers",
+          desc: "Navigate to the Realtime Listings portal (`/auctions`). Inspect realtime property cards featuring live countdown timers (Days, Hours, Minutes), current highest offer, and starting prices.",
+          tip: "Listings marked with a green pulse dot are actively accepting live offers."
         },
         {
           num: "02",
           title: "Sign Digital Undertaking Letter (MOA)",
-          desc: "Before placing your first bid, click 'Sign Contract / Undertaking'. Review the official legal terms, fill in your passport/Emirates ID details, and sign the digital MOA contract.",
+          desc: "Before making your first offer, click 'Sign Contract / Undertaking'. Review the official legal terms, fill in your passport/Emirates ID details, and sign the digital MOA contract.",
           tip: "Once approved, your contract status turns to SIGNED & APPROVED."
         },
         {
           num: "03",
-          title: "Place Real-Time Live Bids",
-          desc: "Enter your bid amount in the Buyer Action Sidebar. Our WebSocket engine updates the highest bid across all connected users instantly without page refreshes.",
-          tip: "Bids must exceed the current highest bid by the minimum bid increment."
+          title: "Place Real-Time Offers",
+          desc: "Enter your offer amount in the Buyer Action Sidebar. Our WebSocket engine updates the highest offer across all connected users instantly without page refreshes.",
+          tip: "Offers must exceed the current highest offer by the minimum increment."
         },
         {
           num: "04",
           title: "Instant Web Push & Bell Notifications",
-          desc: "Receive real-time notifications when another buyer outbids you, when an auction timer is extended, or when the seller accepts your offer.",
+          desc: "Receive real-time notifications when another buyer submits a higher offer, when a listing timer is extended, or when the seller accepts your offer.",
           tip: "Enable FCM Web Push Notifications in your browser for instant alerts."
         },
         {
           num: "05",
-          title: "Auction Completion & Winning Offer",
-          desc: "When the countdown expires, if your bid is the highest accepted offer, you will receive official confirmation and transaction instructions in your Dashboard (`/dashboard/bids`).",
+          title: "Listing Completion & Winning Offer",
+          desc: "When the countdown expires, if your offer is the highest accepted offer, you will receive official confirmation and transaction instructions in your Dashboard (`/dashboard/bids`).",
           tip: "Track signed contracts in `/dashboard/contracts`."
         }
       ]
@@ -1897,31 +1897,31 @@ export const content = {
       ]
     },
     sellerRealtime: {
-      title: "Seller Guide - Live Auctions & Distress Offers",
-      subtitle: "How to launch live distress auctions, set reserve prices, track incoming live bids, and accept winning offers.",
+      title: "Seller Guide - Realtime Listings & Distress Offers",
+      subtitle: "How to launch realtime distress listings, set reserve prices, track incoming live offers, and accept winning deals.",
       steps: [
         {
           num: "01",
-          title: "Create a Realtime Distress Auction",
-          desc: "Navigate to 'Add Realtime Property' (`/dashboard/seller/add-property`). Specify property details, starting price, reserve price, auction start time, and auction end duration.",
-          tip: "Setting an attractive starting price creates competitive bidding momentum."
+          title: "Create a Realtime Distress Listing",
+          desc: "Navigate to 'Add Realtime Property' (`/dashboard/seller/add-property`). Specify property details, starting price, reserve price, listing start time, and listing end duration.",
+          tip: "Setting an attractive starting price creates competitive interest."
         },
         {
           num: "02",
           title: "Admin Approval & Live Activation",
-          desc: "CMP compliance verifies property title deed, Trakheesi permit, and seller authorization. Once approved, the auction goes live on the public `/auctions` portal.",
-          tip: "You will receive an instant notification when your auction goes live."
+          desc: "CMP compliance verifies property title deed, Trakheesi permit, and seller authorization. Once approved, the listing goes live on the public `/auctions` portal.",
+          tip: "You will receive an instant notification when your listing goes live."
         },
         {
           num: "03",
-          title: "Monitor Live Incoming Buyer Bids",
-          desc: "Watch live buyer bids populate in real time on your Seller Auction Dashboard (`/dashboard/seller/auctions`). View bidder counters and live bid progression.",
-          tip: "All bidders are verified and signed under legal Undertaking Letters."
+          title: "Monitor Live Incoming Buyer Offers",
+          desc: "Watch live buyer offers populate in real time on your Seller Dashboard (`/dashboard/seller/auctions`). View buyer counters and live offer progression.",
+          tip: "All buyers are verified and signed under legal Undertaking Letters."
         },
         {
           num: "04",
           title: "Accept Offer & Complete Transaction",
-          desc: "Accept the winning bid at auction close or accept a strong offer before auction end. Once accepted, CMP initiates contract execution and transfer coordination.",
+          desc: "Accept the winning offer at listing close or accept a strong offer before listing end. Once accepted, CMP initiates contract execution and transfer coordination.",
           tip: "Review completed deals in `/dashboard/seller/sold-history`."
         }
       ]
@@ -1935,8 +1935,8 @@ export const content = {
           a: "Sellers on CMP have dedicated tools to manage listings and track offers. To maintain strict role isolation and prevent confusion, browsing buyer feeds is reserved for Buyer Mode. Simply click 'Switch Role' in the top navigation bar to switch to Buyer Mode anytime."
         },
         {
-          q: "What is the difference between a Simple Listing and a Realtime Distress Auction?",
-          a: "Simple Listings are standard property classifieds where buyers contact agents directly via WhatsApp/Call/Email. Realtime Distress Auctions are time-bound live bidding events where verified buyers sign digital MOA contracts and place competitive live bids."
+          q: "What is the difference between a Simple Listing and a Realtime Distress Listing?",
+          a: "Simple Listings are standard property classifieds where buyers contact agents directly via WhatsApp/Call/Email. Realtime Distress Listings are time-bound property offers where verified buyers sign digital MOA contracts and submit competitive live offers."
         },
         {
           q: "How does RERA BRN Auto-Fill work during signup?",

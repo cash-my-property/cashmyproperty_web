@@ -55,27 +55,14 @@ export default function LoginPage() {
       // Backend returns data with message and user info in response.data.user
       // Token is set in HttpOnly cookies
       if (response.data && response.data.user) {
-        const user = response.data.user;
-        login("dummy-token-because-httponly", user);
-
-        const isHold = user.agencyStatus === 'PENDING' || user.onboardingStatus === 'HOLD' || user.status === 'PENDING' || response.data.status === 'onboarding_pending';
-        const roleStr = typeof user.role === 'string' ? user.role : (user.role?.main || '');
-
-        if (roleStr.toLowerCase() === 'seller' && isHold) {
-          router.push(`/${locale}/onboarding-hold`);
-        } else {
-          router.push(`/${locale}`);
-        }
+        login("dummy-token-because-httponly", response.data.user);
+        router.push(`/${locale}`);
       } else {
         throw new Error("Invalid response from server");
       }
     } catch (err: any) {
       if (err.response?.data?.status === "verification_pending") {
         router.push(`/${locale}/verify-otp?email=${encodeURIComponent(err.response.data.email || email)}&type=verify`);
-        return;
-      }
-      if (err.response?.data?.status === "onboarding_pending" || err.response?.data?.status === "agency_pending") {
-        router.push(`/${locale}/onboarding-hold`);
         return;
       }
       setError(err.response?.data?.message || "Invalid credentials. Please try again.");

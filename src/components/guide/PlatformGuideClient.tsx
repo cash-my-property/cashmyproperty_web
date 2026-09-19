@@ -36,9 +36,9 @@ export default function PlatformGuideClient() {
     gettingStarted: "1. Account & Verification",
     roleSwitcher: "2. Roles & Permissions",
     buyerSimple: "3. Buyer - Simple Listings",
-    buyerRealtime: "4. Buyer - Live Bidding",
+    buyerRealtime: "4. Buyer - Realtime Listings",
     sellerSimple: "5. Seller - Simple Listings",
-    sellerRealtime: "6. Seller - Live Auctions"
+    sellerRealtime: "6. Seller - Realtime Listings"
   };
 
   const getTabIcon = (key: string) => {
@@ -95,7 +95,7 @@ export default function PlatformGuideClient() {
           </h1>
 
           <p className="text-sm sm:text-base lg:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed font-light">
-            {guide.subtitle || "Your step-by-step master guide to buying, selling, live auctions, contract signing, and role permissions across the UAE's premier real estate portal."}
+            {guide.subtitle || "Your step-by-step master guide to buying, selling, contract signing, and role permissions across the UAE's premier real estate portal."}
           </p>
 
           {/* Search Filter Bar */}
@@ -105,7 +105,7 @@ export default function PlatformGuideClient() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={guide.searchPlaceholder || "Search guides, bidding, BRN verification, role switching..."}
+                placeholder={guide.searchPlaceholder || "Search guides, property listings, BRN verification, role switching..."}
                 className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-white/10 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-[#1A3626] text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-[#5CD284] transition-all shadow-lg"
               />
               <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -375,7 +375,7 @@ export default function PlatformGuideClient() {
               <div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                   <Zap className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
-                  {guide.buyerRealtime?.title || "Buyer Guide - Live Bidding & Realtime Offers"}
+                  {guide.buyerRealtime?.title || "Buyer Guide - Realtime Listings & Offers"}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {guide.buyerRealtime?.subtitle}
@@ -385,7 +385,7 @@ export default function PlatformGuideClient() {
                 href={`/${locale}/auctions`}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-xs hover:opacity-90 transition-opacity shrink-0 shadow-md"
               >
-                <span>Explore Live Auctions</span>
+                <span>Explore Realtime Listings</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -466,14 +466,14 @@ export default function PlatformGuideClient() {
           </div>
         )}
 
-        {/* TAB 6: SELLER GUIDE - REALTIME LIVE AUCTIONS */}
+        {/* TAB 6: SELLER GUIDE - REALTIME LISTINGS */}
         {(activeTab === "sellerRealtime" || isSearchActive) && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 dark:border-[#1A3626] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                   <Flame className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
-                  {guide.sellerRealtime?.title || "Seller Guide - Live Auctions & Distress Offers"}
+                  {guide.sellerRealtime?.title || "Seller Guide - Realtime Listings & Distress Offers"}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {guide.sellerRealtime?.subtitle}
@@ -483,7 +483,7 @@ export default function PlatformGuideClient() {
                 href={`/${locale}/dashboard/seller/add-property`}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-xs hover:opacity-90 transition-opacity shrink-0 shadow-md"
               >
-                <span>Create Realtime Auction</span>
+                <span>Create Realtime Property</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -578,7 +578,7 @@ export default function PlatformGuideClient() {
               href={`/${locale}/auctions`}
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-extrabold text-xs sm:text-sm transition-all shadow-md text-center"
             >
-              {guide.cta?.buyerButton || "Explore Live Auctions"}
+              {guide.cta?.buyerButton || "Explore Realtime Listings"}
             </Link>
             <Link
               href={`/${locale}/dashboard/seller/add-property`}
