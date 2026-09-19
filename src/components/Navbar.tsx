@@ -10,11 +10,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-import dynamic from "next/dynamic";
-
-const RoleSwitchModal = dynamic(() => import("@/components/modals/RoleSwitchModal"), {
-  ssr: false,
-});
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -23,8 +18,9 @@ export default function Navbar() {
   const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [roleModalTarget, setRoleModalTarget] = useState<"BUYER" | "SELLER">("BUYER");
+
+  const isAuctionsActive = pathname.includes('/auctions') || pathname.includes('/property/') || pathname.includes('/public-property/');
+  const isListingsActive = (pathname.includes('/listings') || pathname.includes('/simple-listings') || pathname.includes('/simple-property') || pathname.includes('/public-simple-property/')) && !isAuctionsActive;
 
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
   const userType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
@@ -108,24 +104,55 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-2 sm:top-4 z-50 w-full px-4 sm:px-6 transition-all duration-300 pointer-events-none">
-        <div
-          className={`max-w-[1200px] mx-auto flex items-center justify-between rounded-full transition-all duration-500 pointer-events-auto ${scrolled
-            ? "bg-white/80 dark:bg-[#091711]/80 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-gray-200/40 dark:border-[#1A3626]/50 py-2.5 px-6 translate-y-2"
-            : "bg-white/95 dark:bg-[#091711]/95 backdrop-blur-xl shadow-sm border border-gray-200/60 dark:border-[#1A3626]/60 py-3.5 px-6 translate-y-4"
-            }`}
-        >
+      <header
+        className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 border-b ${
+          scrolled
+            ? "bg-white/90 dark:bg-[#091711]/90 backdrop-blur-2xl shadow-md border-gray-200/60 dark:border-[#1A3626]/80 py-1.5"
+            : "bg-white/95 dark:bg-[#091711]/95 backdrop-blur-xl border-gray-200/40 dark:border-[#1A3626]/50 py-2 sm:py-2.5"
+        }`}
+      >
+        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center group ml-2">
-            <Image
-              src="/cmpfavicon-removebg-preview.png"
-              alt="Cash My Property"
-              width={75}
-              height={21}
-              className="object-contain group-hover:scale-105 transition-transform duration-300"
-              priority
-            />
-          </Link>
+          <div className="flex items-center shrink-0">
+            <Link href="/" className="flex items-center group">
+              <Image
+                src="/cmpfavicon-removebg-preview.png"
+                alt="Cash My Property"
+                width={60}
+                height={17}
+                style={{ width: "auto", height: "auto" }}
+                className="object-contain max-h-5 sm:max-h-5.5 group-hover:scale-105 transition-transform duration-300"
+                priority
+              />
+            </Link>
+          </div>
+
+          {/* Platform Toggle Pill (Listings vs Real Time Offer) - Centered Spacing */}
+          <div className="flex items-center ml-4 sm:ml-8 lg:ml-12 mr-auto lg:mr-8 shrink-0">
+            <div className="flex items-center bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner">
+              <Link
+                href={`/${locale}/listings`}
+                className={`px-3 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-[11.5px] font-bold transition-all flex items-center gap-1.5 ${
+                  isListingsActive && !isAuctionsActive
+                    ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
+                    : "text-gray-300 hover:text-white"
+                }`}
+              >
+                <span>Listings</span>
+              </Link>
+              <Link
+                href={`/${locale}/auctions`}
+                className={`px-3 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-[11.5px] font-bold transition-all flex items-center gap-1.5 ${
+                  isAuctionsActive
+                    ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
+                    : "text-gray-300 hover:text-white"
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <span>Real Time Offer</span>
+              </Link>
+            </div>
+          </div>
 
           {/* Right Side (Nav + Actions) */}
           <div className="hidden lg:flex items-center gap-8 mr-2">
@@ -135,7 +162,7 @@ export default function Navbar() {
                 <Link
                   key={index}
                   href={`/${locale}${item.href === "/" ? "" : item.href}`}
-                  className="relative px-4 py-2 font-semibold text-[14.5px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#c9a14b] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
+                  className="relative px-3.5 py-1.5 font-semibold text-[14px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#c9a14b] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
                   style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
                 >
                   {item.title}
@@ -166,20 +193,6 @@ export default function Navbar() {
 
               {isAuthenticated ? (
                 <div className="flex items-center gap-3">
-
-                  {/* Mode Switcher Button */}
-                  <button
-                    onClick={() => setRoleModalOpen(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-[12.5px] tracking-wide border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] hover:bg-emerald-500/20 transition-all cursor-pointer shadow-sm hover:scale-105"
-                    title="Switch Account Mode"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>
-                      {isSeller 
-                        ? (userType === 'SIMPLE' ? 'Simple Seller' : 'Realtime Seller')
-                        : (buyerType === 'SIMPLE' ? 'Simple Buyer' : 'Realtime Buyer')}
-                    </span>
-                  </button>
 
                   {/* Notifications Center */}
                   <div className="relative flex items-center">
@@ -472,37 +485,6 @@ export default function Navbar() {
 
               <div className="h-px bg-gray-200 dark:bg-[#102418] my-1" />
 
-              {/* Mobile Role Switch Button */}
-              {isAuthenticated && (
-                <div className="py-2">
-                  {isSeller ? (
-                    <button
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setRoleModalTarget("BUYER");
-                        setRoleModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] border border-emerald-500/30 cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Become Buyer</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setRoleModalTarget("SELLER");
-                        setRoleModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm bg-amber-500/10 text-amber-700 dark:text-[#c9a14b] border border-amber-500/30 cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Become Seller</span>
-                    </button>
-                  )}
-                </div>
-              )}
-
               {/* Mobile Theme Toggle */}
               <div className="flex items-center justify-between py-1">
                 <span className="text-gray-500 dark:text-gray-400 uppercase tracking-widest text-[11px] font-bold">Theme</span>
@@ -551,12 +533,6 @@ export default function Navbar() {
           </div>
         </div>
       </header>
-
-      {/* Role Switch Confirmation Modal */}
-      <RoleSwitchModal
-        isOpen={roleModalOpen}
-        onClose={() => setRoleModalOpen(false)}
-      />
     </>
   );
 }
