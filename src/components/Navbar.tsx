@@ -15,56 +15,31 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { locale, dict } = useDictionary();
-  const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
 
   const isAuctionsActive = pathname.includes('/auctions') || pathname.includes('/property/') || pathname.includes('/public-property/');
   const isListingsActive = (pathname.includes('/listings') || pathname.includes('/simple-listings') || pathname.includes('/simple-property') || pathname.includes('/public-simple-property/')) && !isAuctionsActive;
 
-  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
-  const userType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   const getNavLinks = () => {
+    const baseLinks = dict?.navbar?.links || [
+      { title: "Home", href: "/" },
+      { title: "Find Agents", href: "/sellers" },
+      { title: "About Us", href: "/about" },
+      { title: "Blog", href: "/blog" },
+      { title: "Contact", href: "/contact" }
+    ];
+
     if (!isAuthenticated || !user) {
-      return dict.navbar.links;
+      return baseLinks;
     }
 
-    if (isSeller) {
-      if (userType === 'SIMPLE') {
-        return [
-          { title: "Home", href: "/" },
-          { title: "Add Simple Listing", href: "/dashboard/seller/add-simple-property" },
-          { title: "Listings", href: "/dashboard/seller/simple-listings" },
-          { title: "Analytics", href: "/dashboard" }
-        ];
-      } else {
-        return [
-          { title: "Home", href: "/" },
-          { title: "Add Property", href: "/dashboard/seller/add-property" },
-          { title: "Listings", href: "/dashboard/seller/properties" },
-          { title: "Analytics", href: "/dashboard" }
-        ];
-      }
-    }
+    const homeLink = baseLinks.find(l => l.href === '/') || { title: "Home", href: "/" };
+    const findAgentsLink = baseLinks.find(l => l.href === '/sellers') || { title: "Find Agents", href: "/sellers" };
 
-    if (isBuyer) {
-      if (buyerType === 'SIMPLE') {
-        return [
-          { title: "Home", href: "/" },
-          { title: "Simple Listings", href: "/listings" },
-          { title: "Find Sellers", href: "/sellers" }
-        ];
-      } else {
-        return [
-          { title: "Home", href: "/" },
-          { title: "Realtime Offers", href: "/auctions" },
-          { title: "Contracts", href: "/dashboard/contracts" }
-        ];
-      }
-    }
-
-    return dict.navbar.links;
+    return [homeLink, findAgentsLink];
   };
 
   const navLinks = getNavLinks();

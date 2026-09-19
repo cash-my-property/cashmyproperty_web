@@ -217,10 +217,10 @@ export default function FindSellersPage() {
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
           <span className="text-[#5CD284] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[11px] sm:text-[12px] mb-4 uppercase bg-white/10 dark:bg-white/5 px-5 py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
-            Verified Sellers Directory
+            Verified Brokers Directory
           </span>
           <h1 className="text-white text-[34px] sm:text-[52px] lg:text-[58px] font-bold mb-4 leading-[1.15] tracking-tight max-w-3xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
-            Find Verified Real Estate Sellers & Brokers
+            Find Verified Real Estate Brokers
           </h1>
           <p className="text-white/80 dark:text-gray-300 text-[15px] sm:text-[18px] max-w-2xl leading-relaxed font-light">
             Connect directly with RERA-licensed brokers and verified property owners across Dubai for direct property listings and transparent real estate deals.

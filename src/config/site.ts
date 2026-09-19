@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Cash My Property",
-  description: "The premier digital real estate live offer platform in the UAE.",
+  description: "The premier digital real estate platform in the UAE.",
   url: "https://cashmyproperty.ae",
   mainNav: [
     { title: "Home", href: "/" },

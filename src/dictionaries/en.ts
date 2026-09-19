@@ -280,7 +280,7 @@ export const content = {
   },
   home: {
     hero: {
-      headline: "The Premier Digital Real Estate Live Offer Platform in the UAE",
+      headline: "The Premier Digital Real Estate Platform in the UAE",
       subheadline: "Buy, sell, and offer on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
       searchPlaceholder: "Search by location, property type, or keywords...",
       searchButton: "Search Properties",
@@ -438,7 +438,7 @@ export const content = {
     },
     cta: {
       heading: "Ready to find your next property?",
-      description: "Join the premier digital real estate live offer platform in the UAE. Verified listings, transparent offering, and secure transactions.",
+      description: "Join the premier digital real estate platform in the UAE. Verified listings, transparent transactions.",
       buttonText: "Create an Account"
     }
   },
@@ -632,7 +632,7 @@ export const content = {
   navbar: {
     links: [
       { title: "Home", href: "/" },
-      { title: "Find Sellers", href: "/sellers" },
+      { title: "Find Agents", href: "/sellers" },
       { title: "About Us", href: "/about" },
       { title: "Blog", href: "/blog" },
       { title: "Contact", href: "/contact" }

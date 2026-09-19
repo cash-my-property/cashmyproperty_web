@@ -26,7 +26,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const simpleBuyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
     { name: "Simple Listings", href: `/${locale}/listings`, icon: Building },
-    { name: "Find Sellers", href: `/${locale}/sellers`, icon: UserCheck },
+    { name: "Find Agents", href: `/${locale}/sellers`, icon: UserCheck },
     { name: content.favorites || "Favorites", href: `/${locale}/dashboard/favorites`, icon: Heart },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];

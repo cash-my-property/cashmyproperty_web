@@ -280,7 +280,7 @@ export const content = {
   },
   home: {
     hero: {
-      headline: "أبرز منصة للمزادات العقارية الرقمية في الإمارات",
+      headline: "أبرز منصة عقارية رقمية في الإمارات",
       subheadline: "بيع واشتر وساوم على عقارات موثوقة بشفافية 100٪. تربط منصتنا المشترين الجادين بالبائعين المتحمسين في بيئة آمنة.",
       searchPlaceholder: "ابحث حسب الموقع، أو نوع العقار، أو الكلمات الرئيسية...",
       searchButton: "البحث عن العقارات",
@@ -596,7 +596,7 @@ export const content = {
   navbar: {
     links: [
       { title: "الرئيسية", href: "/" },
-      { title: "دليل البائعين", href: "/sellers" },
+      { title: "دليل الوكلاء", href: "/sellers" },
       { title: "من نحن", href: "/about" },
       { title: "المدونة", href: "/blog" },
       { title: "اتصل بنا", href: "/contact" }
