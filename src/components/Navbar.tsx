@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2, RefreshCw } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -14,6 +14,7 @@ import { useSocket } from "@/context/SocketContext";
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { locale, dict } = useDictionary();
   const { isAuthenticated, user } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
@@ -22,9 +23,12 @@ export default function Navbar() {
   const isAuctionsActive = pathname.includes('/auctions') || pathname.includes('/property/') || pathname.includes('/public-property/');
   const isListingsActive = (pathname.includes('/listings') || pathname.includes('/simple-listings') || pathname.includes('/simple-property') || pathname.includes('/public-simple-property/')) && !isAuctionsActive;
 
+  const currentPurpose = searchParams.get('listingPurpose') || searchParams.get('purpose');
+  const currentSort = searchParams.get('sortBy') || searchParams.get('sort');
+
 
   const getNavLinks = () => {
-    const baseLinks = dict?.navbar?.links || [
+    const rawLinks = dict?.navbar?.links || [
       { title: "Home", href: "/" },
       { title: "Find Agents", href: "/sellers" },
       { title: "About Us", href: "/about" },
@@ -32,14 +36,15 @@ export default function Navbar() {
       { title: "Contact", href: "/contact" }
     ];
 
+    const baseLinks = rawLinks.filter((l: any) => l.href !== '/');
+
     if (!isAuthenticated || !user) {
       return baseLinks;
     }
 
-    const homeLink = baseLinks.find(l => l.href === '/') || { title: "Home", href: "/" };
-    const findAgentsLink = baseLinks.find(l => l.href === '/sellers') || { title: "Find Agents", href: "/sellers" };
+    const findAgentsLink = baseLinks.find((l: any) => l.href === '/sellers') || { title: "Find Agents", href: "/sellers" };
 
-    return [homeLink, findAgentsLink];
+    return [findAgentsLink];
   };
 
   const navLinks = getNavLinks();
@@ -102,8 +107,8 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Platform Toggle Pill (Listings vs Real Time Offer) - Centered Spacing */}
-          <div className="flex items-center ml-4 sm:ml-8 lg:ml-12 mr-auto lg:mr-8 shrink-0">
+          {/* Platform Toggle Pill (Listings vs Real Time Offer) & Simple Listings Sub-Navigations */}
+          <div className="flex items-center ml-3 sm:ml-6 lg:ml-8 mr-auto lg:mr-6 shrink-0 gap-4 sm:gap-6">
             <div className="flex items-center bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner">
               <Link
                 href={`/${locale}/listings`}
@@ -127,23 +132,63 @@ export default function Navbar() {
                 <span>Real Time Offer</span>
               </Link>
             </div>
+
+            {/* Simple Listings specific nav items: Buy, Rent, Sell (with red New badge), New Projects, Find Agents */}
+            {isListingsActive && !isAuctionsActive && (
+              <div className="hidden md:flex items-center gap-4 lg:gap-6 text-[13.5px] sm:text-[14px] font-semibold text-gray-700 dark:text-gray-200">
+                <Link
+                  href={`/${locale}/listings?listingPurpose=SALE`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors ${
+                    currentPurpose === 'SALE' || currentPurpose === 'BUY' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  Buy
+                </Link>
+                <Link
+                  href={`/${locale}/listings?listingPurpose=RENT`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors ${
+                    currentPurpose === 'RENT' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  Rent
+                </Link>
+                <Link
+                  href={`/${locale}/listings?sortBy=newest`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap ${
+                    currentSort === 'newest' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  New Projects
+                </Link>
+                <Link
+                  href={`/${locale}/sellers`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap ${
+                    pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Right Side (Nav + Actions) */}
           <div className="hidden lg:flex items-center gap-8 mr-2">
-            {/* Desktop Navigation */}
-            <nav className="flex items-center gap-1">
-              {navLinks.map((item, index) => (
-                <Link
-                  key={index}
-                  href={`/${locale}${item.href === "/" ? "" : item.href}`}
-                  className="relative px-3.5 py-1.5 font-semibold text-[14px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#c9a14b] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
-                  style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </nav>
+            {/* Desktop Navigation (Only when not in listings mode, since Find Agents is in inline strip) */}
+            {!isListingsActive && (
+              <nav className="flex items-center gap-1">
+                {navLinks.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={`/${locale}${item.href === "/" ? "" : item.href}`}
+                    className="relative px-3.5 py-1.5 font-semibold text-[14px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#c9a14b] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
+                    style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+              </nav>
+            )}
 
             {/* Desktop Actions */}
             <div className="flex items-center gap-4">

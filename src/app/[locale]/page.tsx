@@ -103,121 +103,27 @@ export default function HomePage() {
           return;
         }
 
-        // 1. Live Properties (realtime campaigns) Query
-        const liveParams = new URLSearchParams();
-        liveParams.append('limit', '6');
-        if (appliedSearch) {
-          liveParams.append('search', appliedSearch);
-        }
-        if (selectedType && selectedType !== 'all') {
-          if (selectedType === 'land') {
-            liveParams.append('propertyType', 'LAND');
-          } else {
-            liveParams.append('category', selectedType.toUpperCase());
-          }
-        }
-        if (selectedPrice && selectedPrice !== 'all') {
-          if (selectedPrice === 'under1m') {
-            liveParams.append('maxPrice', '1000000');
-          } else if (selectedPrice === '1mTo5m') {
-            liveParams.append('minPrice', '1000000');
-            liveParams.append('maxPrice', '5000000');
-          } else if (selectedPrice === 'over5m') {
-            liveParams.append('minPrice', '5000000');
-          }
-        }
-        if (selectedSort) {
-          if (selectedSort === 'newest') {
-            liveParams.append('sortBy', 'newest');
-          } else if (selectedSort === 'priceAsc') {
-            liveParams.append('sortBy', 'priceLow');
-          } else if (selectedSort === 'priceDesc') {
-            liveParams.append('sortBy', 'priceHigh');
-          }
-        }
-        const liveQuery = liveParams.toString();
+        const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
+          api.get('/public/live-properties?limit=6').catch(() => ({ data: { data: [] } })),
+          api.get('/public/upcoming-properties?limit=6').catch(() => ({ data: { data: [] } })),
+          api.get('/public/simple-live-properties?limit=6').catch(() => ({ data: { data: [] } }))
+        ]);
 
-        // 2. Simple Listings Query
-        const simpleParams = new URLSearchParams();
-        simpleParams.append('limit', '6');
-        if (appliedSearch) {
-          simpleParams.append('search', appliedSearch);
-        }
-        if (selectedType && selectedType !== 'all') {
-          if (selectedType === 'land') {
-            simpleParams.append('propertyType', 'LAND');
-          } else {
-            simpleParams.append('propertyCategory', selectedType.toUpperCase());
-          }
-        }
-        if (selectedPrice && selectedPrice !== 'all') {
-          if (selectedPrice === 'under1m') {
-            simpleParams.append('maxPrice', '1000000');
-          } else if (selectedPrice === '1mTo5m') {
-            simpleParams.append('minPrice', '1000000');
-            simpleParams.append('maxPrice', '5000000');
-          } else if (selectedPrice === 'over5m') {
-            simpleParams.append('minPrice', '5000000');
-          }
-        }
-        if (selectedSort) {
-          if (selectedSort === 'newest') {
-            simpleParams.append('sortBy', 'newest');
-          } else if (selectedSort === 'priceAsc') {
-            simpleParams.append('sortBy', 'priceLow');
-          } else if (selectedSort === 'priceDesc') {
-            simpleParams.append('sortBy', 'priceHigh');
-          }
-        }
-        const simpleQuery = simpleParams.toString();
+        const liveData = liveRes.data?.data || [];
+        const upcomingData = upcomingRes.data?.data || [];
+        const simpleLiveData = simpleLiveRes.data?.data || [];
 
-        if (isAuthenticated && isBuyer) {
-          if (buyerType === 'REGULAR') {
-            // Logged in Regular Buyer: Only hit regular buyer private routes
-            const [liveRes, upcomingRes] = await Promise.all([
-              api.get(`/buyer/live-listings?${liveQuery}`),
-              api.get(`/buyer/upcoming-listings?${liveQuery}`)
-            ]);
-
-            const liveData = liveRes.data.data;
-            const upcomingData = upcomingRes.data.data;
-
-            setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
-            setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
-            setSimpleLiveProperties([]);
-          } else if (buyerType === 'SIMPLE') {
-            // Logged in Simple Buyer: Only hit simple buyer private routes
-            const simpleLiveRes = await api.get(`/buyer/simpleLiveListings?${simpleQuery}`);
-            const simpleLiveData = simpleLiveRes.data.data;
-
-            setLiveProperties([]);
-            setUpcomingProperties([]);
-            setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
-          }
-        } else {
-          // Guest User: Fetch public routes only
-          const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
-            api.get(`/public/live-properties?${liveQuery}`),
-            api.get(`/public/upcoming-properties?${liveQuery}`),
-            api.get(`/public/simple-live-properties?${simpleQuery}`)
-          ]);
-
-          const liveData = liveRes.data.data;
-          const upcomingData = upcomingRes.data.data;
-          const simpleLiveData = simpleLiveRes.data.data;
-
-          setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
-          setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
-          setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
-        }
+        setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
+        setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
+        setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
       } catch (err) {
-        console.error("Error fetching properties", err);
+        console.error("Error fetching homepage properties", err);
       } finally {
         setIsLoading(false);
       }
     };
     fetchProperties();
-  }, [authLoading, isAuthenticated, buyerType, isBuyer, isSeller, appliedSearch, selectedType, selectedPrice, selectedSort]);
+  }, [authLoading, isAuthenticated, isSeller]);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">
@@ -243,7 +149,7 @@ export default function HomePage() {
           <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         </div>
         
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 flex flex-col items-center text-center mt-6">
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-6">
           <h1 className="text-white text-4xl sm:text-5xl lg:text-[64px] font-bold mb-6 leading-[1.1] tracking-tight max-w-4xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {home.hero.headline}
           </h1>
@@ -251,17 +157,8 @@ export default function HomePage() {
             {home.hero.subheadline}
           </p>
 
-          {/* Upgraded Hero Search Bar Widget */}
-          <HeroSearchWidget 
-            onSearch={(filters) => {
-              setAppliedSearch(filters.query);
-              if (filters.propertyType !== "ALL") {
-                setSelectedType(filters.propertyType.toLowerCase());
-              } else {
-                setSelectedType(null);
-              }
-            }}
-          />
+          {/* Upgraded Hero Search Bar Widget (Temporarily disabled) */}
+          {/* <HeroSearchWidget /> */}
         </div>
 
         {/* Bottom fade out to background */}
@@ -316,7 +213,7 @@ export default function HomePage() {
       )}
 
       {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) */}
-      {!(isAuthenticated && isSeller) && !(isAuthenticated && isBuyer && buyerType === 'SIMPLE') && (
+      {!(isAuthenticated && isSeller) && (
         <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
@@ -501,7 +398,7 @@ export default function HomePage() {
       )}
 
       {/* 3. SIMPLE LISTINGS */}
-      {!(isAuthenticated && isSeller) && !(isAuthenticated && isBuyer && buyerType === 'REGULAR') && (
+      {!(isAuthenticated && isSeller) && (
         <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>

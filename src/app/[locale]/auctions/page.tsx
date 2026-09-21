@@ -280,7 +280,7 @@ export default function AuctionsListingPage() {
         <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         
-        <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center mt-8">
+        <div className="relative z-10 text-center w-full max-w-5xl mx-auto flex flex-col items-center mt-8">
           <div className="flex items-center gap-2 mb-6">
           </div>
           <h1 className="text-white text-[40px] sm:text-[56px] font-bold mb-6 leading-[1.1] tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }} dangerouslySetInnerHTML={{ __html: content.hero.headline.replace('\n', '<br/>') }}>
