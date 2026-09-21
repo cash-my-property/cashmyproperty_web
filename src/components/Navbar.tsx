@@ -4,30 +4,20 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2, RefreshCw } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-import dynamic from "next/dynamic";
-
-const RoleSwitchModal = dynamic(() => import("@/components/modals/RoleSwitchModal"), {
-  ssr: false,
-});
-
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale, dict } = useDictionary();
   const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
-  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
-  const userType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [roleModalTarget, setRoleModalTarget] = useState<"BUYER" | "SELLER">("BUYER");
 
   const isAuctionsActive = pathname.includes('/auctions') || pathname.includes('/property/') || pathname.includes('/public-property/');
   const isListingsActive = (pathname.includes('/listings') || pathname.includes('/simple-listings') || pathname.includes('/simple-property') || pathname.includes('/public-simple-property/')) && !isAuctionsActive;
@@ -221,21 +211,6 @@ export default function Navbar() {
 
               {isAuthenticated ? (
                 <div className="flex items-center gap-3">
-
-                  {/* Mode Switcher Button */}
-                  <button
-                    onClick={() => setRoleModalOpen(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full font-bold text-[12.5px] tracking-wide border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] hover:bg-emerald-500/20 transition-all cursor-pointer shadow-sm hover:scale-105"
-                    title="Switch Account Mode"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>
-                      {isSeller 
-                        ? (userType === 'SIMPLE' ? 'Simple Seller' : 'Realtime Seller')
-                        : (buyerType === 'SIMPLE' ? 'Simple Buyer' : 'Realtime Buyer')}
-                    </span>
-                  </button>
-
                   {/* Notifications Center */}
                   <div className="relative flex items-center">
                     <button 
@@ -525,38 +500,7 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              <div className="h-px bg-gray-200 dark:bg-[#102418] my-1" />
 
-              {/* Mobile Role Switch Button */}
-              {isAuthenticated && (
-                <div className="py-2">
-                  {isSeller ? (
-                    <button
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setRoleModalTarget("BUYER");
-                        setRoleModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] border border-emerald-500/30 cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Become Buyer</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setRoleModalTarget("SELLER");
-                        setRoleModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-bold text-sm bg-amber-500/10 text-amber-700 dark:text-[#c9a14b] border border-amber-500/30 cursor-pointer"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Become Seller</span>
-                    </button>
-                  )}
-                </div>
-              )}
 
               {/* Mobile Theme Toggle */}
               <div className="flex items-center justify-between py-1">
@@ -607,11 +551,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Role Switch Confirmation Modal */}
-      <RoleSwitchModal
-        isOpen={roleModalOpen}
-        onClose={() => setRoleModalOpen(false)}
-      />
     </>
   );
 }
