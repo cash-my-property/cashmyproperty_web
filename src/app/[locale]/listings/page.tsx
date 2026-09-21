@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,8 +22,6 @@ export default function ListingsPage() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
-  const [appliedLocation, setAppliedLocation] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -36,15 +34,11 @@ export default function ListingsPage() {
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
-  // Read URL search params on mount or param change
-  useEffect(() => {
-    const urlLocation = searchParams.get("location");
-    const urlSearch = searchParams.get("search");
-    if (urlLocation) setAppliedLocation(urlLocation);
-    if (urlSearch) setAppliedSearch(urlSearch);
-  }, [searchParams]);
+  // Only the latest non-append request may update the list (filters can change faster than the API answers)
+  const latestRequestRef = useRef(0);
 
   const fetchProperties = async (pageNum: number = 1, append: boolean = false) => {
+    const requestId = append ? latestRequestRef.current : ++latestRequestRef.current;
     try {
       if (append) {
         setIsFetchingMore(true);
@@ -65,10 +59,12 @@ export default function ListingsPage() {
       queryParams.append('limit', '10');
 
       // Add URL params if present
-      const paramLocation = searchParams.get('location') || appliedLocation;
-      const paramSearch = searchParams.get('search') || appliedSearch;
-      const paramPurpose = searchParams.get('listingPurpose');
-      const paramCategory = searchParams.get('propertyCategory');
+      // Everything comes from the URL, so removing a search / location from it also removes it from the results
+      const paramLocation = searchParams.get('location') || searchParams.get('propertyLocation');
+      const paramSearch = searchParams.get('search');
+      const paramPurpose = searchParams.get('listingPurpose') || searchParams.get('purpose');
+      const paramSortBy = searchParams.get('sortBy') || searchParams.get('sort');
+      const paramCategory = searchParams.get('propertyCategory') || searchParams.get('category');
       const paramType = searchParams.get('propertyType');
       const paramMinPrice = searchParams.get('minPrice');
       const paramMaxPrice = searchParams.get('maxPrice');
@@ -76,31 +72,43 @@ export default function ListingsPage() {
 
       if (paramLocation) queryParams.append('location', paramLocation);
       if (paramSearch) queryParams.append('search', paramSearch);
-      if (paramPurpose) queryParams.append('listingPurpose', paramPurpose);
+      if (paramPurpose) {
+        const upperPurpose = paramPurpose.toUpperCase();
+        queryParams.append('listingPurpose', upperPurpose === 'BUY' ? 'SALE' : upperPurpose);
+      }
       if (paramCategory) queryParams.append('propertyCategory', paramCategory);
       if (paramPlan) queryParams.append('propertyPlan', paramPlan);
       if (paramMinPrice) queryParams.append('minPrice', paramMinPrice);
       if (paramMaxPrice) queryParams.append('maxPrice', paramMaxPrice);
 
+      // Filters from the search widget that the list endpoints understand as-is (comma separated for multi values)
+      ['beds', 'baths', 'minArea', 'maxArea', 'amenities', 'furnishing', 'rentalPeriod'].forEach((key) => {
+        const value = searchParams.get(key);
+        if (value) queryParams.append(key, value);
+      });
+
+      // The quick pills below the hero win over the widget's category / property type (set, not append, to avoid duplicates)
       if (activeType && activeType !== 'All') {
         if (activeType === 'Commercial') {
-          queryParams.append('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyCategory', 'COMMERCIAL');
         } else {
-          queryParams.append('propertyType', activeType.toUpperCase());
+          queryParams.set('propertyType', activeType.toUpperCase());
         }
       } else if (paramType) {
-        queryParams.append('propertyType', paramType.toUpperCase());
+        queryParams.set('propertyType', paramType.toUpperCase());
       }
 
       if (selectedType && selectedType !== 'all') {
         if (selectedType === 'land') {
-          queryParams.append('propertyType', 'LAND');
+          queryParams.set('propertyType', 'LAND');
         } else {
-          queryParams.append('propertyCategory', selectedType.toUpperCase());
+          queryParams.set('propertyCategory', selectedType.toUpperCase());
         }
       }
       if (priceSort) {
         queryParams.append('sortBy', priceSort === 'asc' ? 'priceLow' : 'priceHigh');
+      } else if (paramSortBy) {
+        queryParams.append('sortBy', paramSortBy);
       }
 
       const queryString = queryParams.toString();
@@ -111,6 +119,8 @@ export default function ListingsPage() {
       } else {
         res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
       }
+
+      if (requestId !== latestRequestRef.current) return;
 
       const rawData = res.data.data;
       const paginationObj = res.data.pagination || res.data.data?.pagination || (typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : null);
@@ -140,8 +150,10 @@ export default function ListingsPage() {
     } catch (err) {
       console.error("Error fetching properties", err);
     } finally {
-      setIsLoading(false);
-      setIsFetchingMore(false);
+      if (requestId === latestRequestRef.current) {
+        setIsLoading(false);
+        setIsFetchingMore(false);
+      }
     }
   };
 
@@ -149,7 +161,7 @@ export default function ListingsPage() {
     if (authLoading) return;
     setPage(1);
     fetchProperties(1, false);
-  }, [authLoading, isAuthenticated, buyerType, isSeller, appliedSearch, activeType, selectedType, priceSort]);
+  }, [authLoading, isAuthenticated, buyerType, isSeller, activeType, selectedType, priceSort, searchParams?.toString()]);
 
   const loadNextPage = () => {
     if (isFetchingMore || isLoading || !hasMore) return;
@@ -188,7 +200,7 @@ export default function ListingsPage() {
         <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         
-        <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center mt-8">
+        <div className="relative z-10 text-center w-full max-w-5xl mx-auto flex flex-col items-center mt-8">
           <h1 className="text-white text-[40px] sm:text-[56px] font-bold mb-6 leading-[1.1] tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }} dangerouslySetInnerHTML={{ __html: content.hero.headline.replace('\n', '<br/>') }}>
           </h1>
           <p className="text-white/80 text-[16px] sm:text-[18px] max-w-2xl leading-relaxed font-light mb-10">
@@ -198,15 +210,7 @@ export default function ListingsPage() {
           {/* Upgraded Hero Search Bar Widget */}
           <HeroSearchWidget 
             initialTab="RENT"
-            showTabs={false}
-            onSearch={(filters) => {
-              setAppliedSearch(filters.query);
-              if (filters.propertyType !== "ALL") {
-                setSelectedType(filters.propertyType.toLowerCase());
-              } else {
-                setSelectedType(null);
-              }
-            }}
+            showTabs={true}
           />
         </div>
       </section>
