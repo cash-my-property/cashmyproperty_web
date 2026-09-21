@@ -22,6 +22,8 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const { locale, dict } = useDictionary();
   const { isAuthenticated, user, isBuyer, isSeller } = useAuth();
+  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const userType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
   const [roleModalOpen, setRoleModalOpen] = useState(false);
@@ -52,7 +54,6 @@ export default function Navbar() {
     const findAgentsLink = baseLinks.find((l: any) => l.href === '/sellers') || { title: "Find Agents", href: "/sellers" };
 
     return [findAgentsLink];
-  };
   };
 
   const navLinks = getNavLinks();
@@ -196,7 +197,6 @@ export default function Navbar() {
                 ))}
               </nav>
             )}
->>>>>>> 5f03f96 (Update search widget and hero filters)
 
             {/* Desktop Actions */}
             <div className="flex items-center gap-4">
