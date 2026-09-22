@@ -229,7 +229,7 @@ export default function RejectedPropertiesPage() {
           <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Realtime Seller Mode</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-            You are currently in Simple Listing Seller mode. Please switch to Realtime Seller mode to view your rejected regular properties (Live Offers).
+            You are currently in Listing Seller mode. Please switch to Realtime Seller mode to view your rejected regular properties (Realtime Offers).
           </p>
           <button
             onClick={async () => {

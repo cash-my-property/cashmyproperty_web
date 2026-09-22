@@ -213,7 +213,7 @@ export default function FavoritesPage() {
                   <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-md text-[#1A3626] dark:text-[#c9a14b]">
                     {isRegular ? (
                       <>
-                        <TrendingUp className="w-3.5 h-3.5" /> Live Offer
+                        <TrendingUp className="w-3.5 h-3.5" /> Realtime Offer
                       </>
                     ) : (
                       <>

@@ -17,7 +17,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const buyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: "Live Offers", href: `/${locale}/auctions`, icon: TrendingUp },
+    { name: "Realtime Offers", href: `/${locale}/auctions`, icon: TrendingUp },
     { name: content.favorites || "Favorites", href: `/${locale}/dashboard/favorites`, icon: Heart },
     { name: "My Contracts", href: `/${locale}/dashboard/contracts`, icon: FileText },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
@@ -25,8 +25,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const simpleBuyerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: "Simple Listings", href: `/${locale}/listings`, icon: Building },
-    { name: "Find Sellers", href: `/${locale}/sellers`, icon: UserCheck },
+    { name: "Listings", href: `/${locale}/listings`, icon: Building },
+    { name: "Find Agents", href: `/${locale}/sellers`, icon: UserCheck },
     { name: content.favorites || "Favorites", href: `/${locale}/dashboard/favorites`, icon: Heart },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];
@@ -42,8 +42,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const simpleSellerLinks = [
     { name: content.overview, href: `/${locale}/dashboard`, icon: LayoutDashboard },
-    { name: "Add Simple Listing", href: `/${locale}/dashboard/seller/add-simple-property`, icon: PlusCircle },
-    { name: "My Simple Listings", href: `/${locale}/dashboard/seller/simple-listings`, icon: Building },
+    { name: "Add Listing", href: `/${locale}/dashboard/seller/add-simple-property`, icon: PlusCircle },
+    { name: "My Listings", href: `/${locale}/dashboard/seller/simple-listings`, icon: Building },
     { name: "Rejected Properties", href: `/${locale}/dashboard/seller/rejected-simple-properties`, icon: AlertTriangle },
     { name: content.settings, href: `/${locale}/dashboard/settings`, icon: Settings },
   ];

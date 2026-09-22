@@ -1,9 +1,9 @@
 export const content = {
   auth: {
     hero: {
-      tagline: "Live Offer Platform",
+      tagline: "Real Estate Platform",
       title: "The Art of\nOwnership.",
-      description: "Redefining real estate in the UAE through transparent digital live offers.",
+      description: "Redefining real estate in the UAE through transparent digital offers & listings.",
     },
     login: {
       heading: "Welcome back",
@@ -225,7 +225,7 @@ export const content = {
       posts: [
         {
           id: 1,
-          title: "The Future of Digital Real Estate Live Offers in Dubai",
+          title: "The Future of Digital Real Estate in Dubai",
           date: "August 4, 2026",
           category: "Market Trends",
           excerpt: "How technology is reshaping the property market and making transactions more transparent than ever before."
@@ -256,7 +256,7 @@ export const content = {
     main: {
       label: "Contact Information",
       heading: "We'd love to hear from you",
-      description: "Whether you are looking to buy, sell, or simply want to learn more about our secure digital live offer platform, feel free to drop us a message.",
+      description: "Whether you are looking to buy, sell, or simply want to learn more about our secure digital platform, feel free to drop us a message.",
       form: {
         firstNameLabel: "First Name",
         firstNamePlaceholder: "John",
@@ -280,7 +280,7 @@ export const content = {
   },
   home: {
     hero: {
-      headline: "The Premier Digital Real Estate Live Offer Platform in the UAE",
+      headline: "The Premier Digital Real Estate Platform in the UAE",
       subheadline: "Buy, sell, and offer on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
       searchPlaceholder: "Search by location, property type, or keywords...",
       searchButton: "Search Properties",
@@ -309,15 +309,15 @@ export const content = {
     },
     simpleListings: {
       label: "Standard Properties",
-      heading: "Simple Listings",
+      heading: "Listings",
       description: "Explore our collection of standard properties available for immediate inquiry.",
       viewAll: "View all listings"
     },
     realtimebids: {
-      label: "Live Offers",
+      label: "Realtime Offers",
       heading: "Realtime Offers",
-      description: "Properties currently in an active 7-Day Live Offer. Offer now before the timer runs out.",
-      viewAllText: "View All Live Offers",
+      description: "Properties currently in an active 7-Day Realtime Offer. Offer now before the timer runs out.",
+      viewAllText: "View All Realtime Offers",
       items: [
         {
           id: "r1",
@@ -405,7 +405,7 @@ export const content = {
         },
         {
           title: "Offer, Win & Close",
-          description: "Place your offers on Realtime Offers (7-Day Live Offers) or purchase Simple Listings. Highest buyer wins at the end of the countdown timer!"
+          description: "Place your offers on Realtime Offers (7-Day Offers) or purchase Listings. Highest buyer wins at the end of the countdown timer!"
         }
       ]
     },
@@ -423,14 +423,14 @@ export const content = {
         },
         {
           title: "Speed & Liquidity",
-          description: "Our 7-Day Live Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to property listings."
+          description: "Our 7-Day Realtime Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to property listings."
         }
       ]
     },
     appDownload: {
       tagline: "Get the CMP App",
       heading: "Your Real Estate Portfolio, Now in Your Pocket",
-      description: "Experience the fastest way to offer, buy, and sell properties in the UAE. Download the Cash My Property app for real-time live offer alerts, document management, and seamless transactions.",
+      description: "Experience the fastest way to offer, buy, and sell properties in the UAE. Download the Cash My Property app for real-time offer alerts, document management, and seamless transactions.",
       appStoreText: "Download on the",
       appStore: "App Store",
       playStoreText: "GET IT ON",
@@ -438,7 +438,7 @@ export const content = {
     },
     cta: {
       heading: "Ready to find your next property?",
-      description: "Join the premier digital real estate live offer platform in the UAE. Verified listings, transparent offering, and secure transactions.",
+      description: "Join the premier digital real estate platform in the UAE. Verified listings, transparent offering, and secure transactions.",
       buttonText: "Create an Account"
     }
   },
@@ -446,7 +446,7 @@ export const content = {
     hero: {
       tagline: "Property Listings",
       title: "Discover Your\nNext Property",
-      description: "Explore our exclusive verified listings available for immediate purchase or live offer."
+      description: "Explore our exclusive verified listings available for immediate purchase or realtime offer."
     },
     filters: {
       searchPlaceholder: "Search properties by name or location...",
@@ -586,9 +586,9 @@ export const content = {
   },
   auctions: {
     hero: {
-      tagline: "Live Offers",
+      tagline: "Realtime Offers",
       title: "Make Offers on\nPremium Properties",
-      description: "Participate in live offers for high-value properties. Secure, transparent, and fast."
+      description: "Participate in realtime offers for high-value properties. Secure, transparent, and fast."
     },
     liveStatus: "Live Now",
     offering: {
@@ -632,7 +632,7 @@ export const content = {
   navbar: {
     links: [
       { title: "Home", href: "/" },
-      { title: "Find Sellers", href: "/sellers" },
+      { title: "Find Agents", href: "/sellers" },
       { title: "About Us", href: "/about" },
       { title: "Blog", href: "/blog" },
       { title: "Contact", href: "/contact" }
@@ -702,8 +702,8 @@ export const content = {
       title: "Saved Properties",
       description: "Properties you have saved as favorites.",
       noFavorites: "You haven't saved any properties yet.",
-      noFavoritesSub: "Browse live offers and direct listings, then save your favorite properties here to track them.",
-      browseAuctions: "Browse Live Offers",
+      noFavoritesSub: "Browse realtime offers and direct listings, then save your favorite properties here to track them.",
+      browseAuctions: "Browse Realtime Offers",
       browseDirectListings: "Browse Direct Listings",
       browse: "Browse Properties"
     },
@@ -1791,7 +1791,7 @@ export const content = {
         { feature: "Add Realtime Distress Auction Listing", sb: "No", rb: "No", ss: "No", rs: "Yes" },
         { feature: "Track Admin Verification Status", sb: "No", rb: "No", ss: "Yes", rs: "Yes" },
         { feature: "View Live Incoming Buyer Bids & Accept Offers", sb: "No", rb: "No", ss: "No", rs: "Yes" },
-        { feature: "Sellers Directory & Agent Detailed Profiles (/sellers)", sb: "Yes", rb: "No", ss: "No", rs: "No" }
+        { feature: "Agents Directory & Agent Detailed Profiles (/sellers)", sb: "Yes", rb: "No", ss: "No", rs: "No" }
       ]
     },
     buyerSimple: {

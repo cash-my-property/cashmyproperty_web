@@ -298,7 +298,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             <ChevronRight className="w-3.5 h-3.5" />
             <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{detailDict.backToProperties || "Properties"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-gray-900 dark:text-white font-bold font-mono">{propertyInfo.PID || propertyInfo._id}</span>
+            <span className="text-gray-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-[350px] md:max-w-[500px]" title={title}>{title}</span>
           </div>
 
           <div className="flex items-center gap-3">

@@ -33,8 +33,8 @@ export default function MyAuctionsPage() {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Live Offers</h1>
-          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 text-sm">Monitor your properties currently on live offer</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2">Realtime Offers</h1>
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 text-sm">Monitor your properties currently on realtime offer</p>
         </div>
       </div>
 
@@ -47,7 +47,7 @@ export default function MyAuctionsPage() {
           <div className="w-20 h-20 bg-gray-50 dark:bg-[#1A3626]/30 rounded-full flex items-center justify-center mb-6">
             <TrendingUp className="w-10 h-10 text-gray-400 dark:text-[#c9a14b]" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Live Offers</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Realtime Offers</h3>
           <p className="text-gray-500 dark:text-gray-400 max-w-md">None of your properties are currently live for offering. Once approved, they will appear here.</p>
         </div>
       ) : (
@@ -98,7 +98,7 @@ export default function MyAuctionsPage() {
                   href={`/${locale}/auctions/${auction._id}`}
                   className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:opacity-90 flex justify-center items-center gap-2 transition-opacity cursor-pointer"
                 >
-                  <Eye className="w-4 h-4" /> View Live Offer
+                  <Eye className="w-4 h-4" /> View Realtime Offer
                 </Link>
               </div>
             </div>

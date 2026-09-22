@@ -217,10 +217,10 @@ export default function FindSellersPage() {
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
           <span className="text-[#5CD284] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[11px] sm:text-[12px] mb-4 uppercase bg-white/10 dark:bg-white/5 px-5 py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
-            Verified Sellers Directory
+            Verified Agents Directory
           </span>
           <h1 className="text-white text-[34px] sm:text-[52px] lg:text-[58px] font-bold mb-4 leading-[1.15] tracking-tight max-w-3xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
-            Find Verified Real Estate Sellers & Brokers
+            Find Verified Real Estate Agents & Brokers
           </h1>
           <p className="text-white/80 dark:text-gray-300 text-[15px] sm:text-[18px] max-w-2xl leading-relaxed font-light">
             Connect directly with RERA-licensed brokers and verified property owners across Dubai for direct property listings and transparent real estate deals.
@@ -237,7 +237,7 @@ export default function FindSellersPage() {
             <Search className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
             <input
               type="text"
-              placeholder="Search seller by name, brokerage name, or BRN number..."
+              placeholder="Search agent by name, brokerage name, or BRN number..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -261,7 +261,7 @@ export default function FindSellersPage() {
           {/* Listing Purpose Filter Tabs */}
           <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 scrollbar-none shrink-0">
             {[
-              { label: "All Sellers", value: "ALL" },
+              { label: "All Agents", value: "ALL" },
               { label: "For Sale Listings", value: "SALE" },
               { label: "For Rent Listings", value: "RENT" },
             ].map((tab) => (
@@ -292,7 +292,7 @@ export default function FindSellersPage() {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Verified Sellers Directory
+              Verified Agents Directory
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b]">
               {pagination.total} Available

@@ -116,7 +116,7 @@ export default function MySimpleListingsPage() {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Simple Listings</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Listings</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">Manage all the properties you have added</p>
         </div>
         <button 

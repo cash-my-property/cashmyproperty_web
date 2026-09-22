@@ -39,22 +39,22 @@ export default function FloatingGuideWidget() {
               <>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <Building className="w-4 h-4 text-[#5CD284] shrink-0 mt-0.5" />
-                  <span><strong>Seller Mode:</strong> Add Simple listings or launch Live Distress Auctions from your Seller Dashboard.</span>
+                  <span><strong>Seller Mode:</strong> Add listings or launch Realtime Distress Offers from your Dashboard.</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <RefreshCw className="w-4 h-4 text-[#c9a14b] shrink-0 mt-0.5" />
-                  <span><strong>Need to Browse?</strong> Click &quot;Switch Role&quot; in the Navbar to switch to Buyer Mode.</span>
+                  <span><strong>Need to Browse?</strong> Switch role from your Dashboard to browse as Buyer.</span>
                 </div>
               </>
             ) : (
               <>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <Zap className="w-4 h-4 text-[#5CD284] shrink-0 mt-0.5" />
-                  <span><strong>Live Auctions:</strong> Sign your digital MOA Undertaking Letter before placing live bids.</span>
+                  <span><strong>Realtime Offers:</strong> Sign your digital MOA Undertaking Letter before placing live offers.</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <ShieldCheck className="w-4 h-4 text-[#c9a14b] shrink-0 mt-0.5" />
-                  <span><strong>Simple Listings:</strong> Contact verified agents directly via WhatsApp, Call, or Email.</span>
+                  <span><strong>Listings:</strong> Contact verified agents directly via WhatsApp, Call, or Email.</span>
                 </div>
               </>
             )}

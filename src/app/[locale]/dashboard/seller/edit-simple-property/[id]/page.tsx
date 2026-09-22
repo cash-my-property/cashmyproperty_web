@@ -383,7 +383,7 @@ export default function EditSimplePropertyPage() {
       ) : (
       <>
       <div className="mb-6 sm:mb-10">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Edit Rejected Simple Listing</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Edit Rejected Listing</h1>
         <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Update your listing details to resolve the rejection issues and re-submit.</p>
       </div>
 

@@ -139,8 +139,8 @@ export default function DashboardOverviewPage() {
 
   if (role === 'buyer' && buyerType === 'SIMPLE') {
     stats = [
-      { label: "Simple Listings", value: "Browse", icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/listings` },
-      { label: "Verified Sellers", value: "Directory", icon: UserCheck, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/sellers` },
+      { label: "Listings", value: "Browse", icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/listings` },
+      { label: "Verified Agents", value: "Directory", icon: UserCheck, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/sellers` },
       { label: content.stats.savedProperties, value: "Saved", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/favorites` },
     ];
   } else if (role === 'seller' && sellerType === 'SIMPLE' && quota) {

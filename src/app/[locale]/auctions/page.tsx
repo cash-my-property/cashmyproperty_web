@@ -332,7 +332,7 @@ export default function AuctionsListingPage() {
             <div className="flex items-center gap-2 mb-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] animate-pulse"></span>
               <span className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[12px] uppercase">
-                Active & Upcoming Live Offers
+                Active & Upcoming Realtime Offers
               </span>
             </div>
             <h2 className="text-gray-900 dark:text-white text-[32px] sm:text-[40px] font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -375,7 +375,7 @@ export default function AuctionsListingPage() {
               <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
               <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">No Realtime Offers Available</h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-                No active or upcoming live offers match your selected criteria. Try adjusting your search filters.
+                No active or upcoming realtime offers match your selected criteria. Try adjusting your search filters.
               </p>
             </div>
           ) : (
@@ -441,7 +441,7 @@ export default function AuctionsListingPage() {
                     />
                     <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
-                      {item.status || "Live Offer"}
+                      {item.status || "Realtime Offer"}
                     </div>
                     <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
