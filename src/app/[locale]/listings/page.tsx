@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
+import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
@@ -31,8 +32,18 @@ export default function ListingsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+
+  useEffect(() => {
+    if (isAuthenticated && isBuyer && buyerType !== 'SIMPLE') {
+      api.put('/switch/toggleRole', { type: 'SIMPLE' })
+        .then(() => {
+          if (fetchProfile) fetchProfile();
+        })
+        .catch((err) => console.error("Auto switch in listings page failed", err));
+    }
+  }, [isAuthenticated, isBuyer, buyerType]);
 
   // Only the latest non-append request may update the list (filters can change faster than the API answers)
   const latestRequestRef = useRef(0);
@@ -209,7 +220,7 @@ export default function ListingsPage() {
 
           {/* Upgraded Hero Search Bar Widget */}
           <HeroSearchWidget 
-            initialTab="RENT"
+            initialTab={(searchParams?.get("tab") as any) || (searchParams?.get("listingPurpose") === "RENT" ? "RENT" : "BUY")}
             showTabs={true}
           />
         </div>
@@ -239,14 +250,8 @@ export default function ListingsPage() {
       <section className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] animate-pulse"></span>
-              <span className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[12px] uppercase">
-                Direct Sale & Rent
-              </span>
-            </div>
             <h2 className="text-gray-900 dark:text-white text-[32px] sm:text-[40px] font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Simple Listings
+              Listings
             </h2>
           </div>
 
@@ -295,7 +300,10 @@ export default function ListingsPage() {
                 const words = rawLocation.trim().split(/\s+/);
                 return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
               })();
-              const image = item.image || details.propertyImages?.[0]?.url || "/property-placeholder.svg";
+              const rawImages = details.propertyImages || item.propertyImages || (item.image ? [item.image] : []);
+              const images = Array.isArray(rawImages) && rawImages.length > 0
+                ? rawImages
+                : ["/property-placeholder.svg"];
               const beds = item.specs?.beds || details.propertyBedrooms || 0;
               const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
               const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
@@ -308,20 +316,17 @@ export default function ListingsPage() {
                 key={item._id || item.id} 
                 className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer"
               >
-                <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    priority={idx < 3}
-                    loading={idx < 3 ? undefined : "lazy"}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    {item.status || "Active"}
-                  </div>
-                </div>
+                <PropertyCardImageCarousel
+                  images={images}
+                  alt={title}
+                  priority={idx < 3}
+                  aspectClass="h-[240px]"
+                  badge={
+                    <div className="bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                      {item.status || "Active"}
+                    </div>
+                  }
+                />
 
                 <div className="p-4 pt-5 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-4 mb-2">

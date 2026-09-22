@@ -195,9 +195,9 @@ export const content = {
       }
     },
     realtimeOffers: {
-      label: "Live Offers",
+      label: "Realtime Offers",
       heading: "Realtime Offers",
-      description: "Properties currently in an active 7-Day Live Offer. Make an offer now before the timer runs out.",
+      description: "Properties currently in an active 7-Day Realtime Offer. Make an offer now before the timer runs out.",
       viewAllText: "View All Offers",
       items: [
         {
@@ -237,7 +237,7 @@ export const content = {
     },
     simpleListings: {
       label: "Standard Properties",
-      heading: "Simple Listings",
+      heading: "Listings",
       description: "Verified properties available for immediate purchase at a fixed asking price.",
       viewAllText: "View All Listings",
       items: [
@@ -286,7 +286,7 @@ export const content = {
         },
         {
           title: "Offer, Win & Close",
-          description: "Place your offers on Realtime Offers (7-Day Offers) or purchase Simple Listings. Highest offer wins at the end of the countdown timer!"
+          description: "Place your offers on Realtime Offers (7-Day Offers) or purchase Listings. Highest offer wins at the end of the countdown timer!"
         }
       ]
     },
@@ -327,7 +327,7 @@ export const content = {
     hero: {
       tagline: "Property Listings",
       title: "Discover Your\nNext Property",
-      description: "Explore our exclusive verified properties available for immediate purchase or active live offers."
+      description: "Explore our exclusive verified properties available for immediate purchase or active realtime offers."
     },
     filters: {
       searchPlaceholder: "Search properties by name or location...",
