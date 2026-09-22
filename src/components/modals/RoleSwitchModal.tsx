@@ -56,7 +56,7 @@ export default function RoleSwitchModal({ isOpen, onClose }: RoleSwitchModalProp
       }
 
       const roleLabel = targetRole === 'BUYER' ? 'Buyer' : 'Seller';
-      const typeLabel = targetType === 'REGULAR' ? 'Realtime' : 'Simple Listing';
+      const typeLabel = targetType === 'REGULAR' ? 'Realtime' : 'Listing';
 
       addToast(
         "Mode Switched", 
@@ -219,10 +219,7 @@ export default function RoleSwitchModal({ isOpen, onClose }: RoleSwitchModalProp
               <div className="flex flex-col">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-bold text-base text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#c9a14b] transition-colors">
-                    {activeTab === 'BUYER' ? 'Simple Listing Buyer' : 'Simple Listing Seller'}
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    Direct Sale & Rent
+                    {activeTab === 'BUYER' ? 'Listing Buyer' : 'Listing Seller'}
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">

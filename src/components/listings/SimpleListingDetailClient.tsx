@@ -23,7 +23,10 @@ import {
   Camera,
   Sparkles,
   Lock,
-  X
+  X,
+  Car,
+  FileText,
+  Hash
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -110,6 +113,18 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
       if (isAuthenticated) {
         try {
           const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
+          
+          // If logged-in user is a Buyer and not in SIMPLE mode, switch to SIMPLE mode first
+          const currentType = typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : '';
+          if (isBuyer && currentType !== 'SIMPLE') {
+            try {
+              await api.put('/switch/toggleRole', { type: 'SIMPLE' });
+              if (fetchProfile) await fetchProfile();
+            } catch (switchErr) {
+              console.error("Failed to auto-switch to SIMPLE mode", switchErr);
+            }
+          }
+
           res = await api.get(`/buyer/simpleListingDetails/${id}${queryStr}`);
           if (res.data?.roleWasSwitched) {
             await fetchProfile();
@@ -178,18 +193,43 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
   const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || propertyInfo.location || "Dubai, UAE");
   const priceAmount = details.propertyPrice?.amount || details.propertyPrice || propertyInfo.price || 0;
   const priceValue = priceAmount.toLocaleString();
+  const downPaymentAmount = details.propertyPrice?.downPayment ?? propertyInfo.propertyPrice?.downPayment;
+  const downPaymentValue = (downPaymentAmount !== undefined && downPaymentAmount !== null && Number(downPaymentAmount) > 0)
+    ? Number(downPaymentAmount).toLocaleString()
+    : null;
   const type = details.propertyType || propertyInfo.propertyType || "N/A";
-  const beds = details.propertyBedrooms || propertyInfo.bedrooms || 0;
-  const baths = details.propertyWashrooms || details.propertyBathrooms || propertyInfo.bathrooms || 0;
+  const purpose = details.listingPurpose || propertyInfo.listingPurpose || "";
+  const category = details.propertyCategory || propertyInfo.propertyCategory || "";
+  const plan = details.propertyPlan || propertyInfo.propertyPlan || "";
+  const beds = details.propertyBedrooms || propertyInfo.bedrooms;
+  const baths = details.propertyWashrooms || details.propertyBathrooms || propertyInfo.bathrooms;
+  const parkingSpaces = details.parkingSpaces !== undefined ? details.parkingSpaces : propertyInfo.parkingSpaces;
+  const permitNumber = details.permitNumber || propertyInfo.permitNumber || "";
+  const referenceNumber = details.referenceNumber || propertyInfo.referenceNumber || "";
+  const listingId = details.listingId || propertyInfo.listingId || "";
+  const availability = details.availability || propertyInfo.availability || "";
+  const furnishingStatus = details.furnishingStatus || propertyInfo.furnishingStatus || "";
   
   const getAreaValue = (area: any) => {
     if (!area) return 0;
-    if (typeof area === 'object' && area.value !== undefined) return area.value;
-    return area;
+    if (typeof area === 'object' && area.value !== undefined) return Number(area.value);
+    return Number(area) || 0;
   };
-  const sqft = getAreaValue(details.propertyArea || details.propertyBuiltUpArea || propertyInfo.area);
+  const totalArea = getAreaValue(details.propertyArea || propertyInfo.propertyArea || propertyInfo.area);
+  const builtUpArea = getAreaValue(details.propertyBuiltUpArea || propertyInfo.propertyBuiltUpArea);
+  const sqft = builtUpArea || totalArea;
   const description = details.propertyDescription || propertyInfo.description || "No description provided.";
-  const features = details.propertyFeatures || propertyInfo.features || ["Central A/C", "Balcony", "Shared Pool", "Security"];
+  
+  // Real propertyAmenities from backend response (fallback to propertyFeatures/features only if empty)
+  const features = (details.propertyAmenities && details.propertyAmenities.length > 0)
+    ? details.propertyAmenities
+    : (propertyInfo.propertyAmenities && propertyInfo.propertyAmenities.length > 0)
+    ? propertyInfo.propertyAmenities
+    : (details.propertyFeatures && details.propertyFeatures.length > 0)
+    ? details.propertyFeatures
+    : (propertyInfo.features && propertyInfo.features.length > 0)
+    ? propertyInfo.features
+    : ["Central A/C", "Balcony", "Shared Pool", "Security"];
 
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-16 transition-colors">
@@ -199,9 +239,9 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
             <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/simple-listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Simple Listings</Link>
+            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Listings</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-gray-900 dark:text-white font-bold font-mono">{propertyInfo.PID || propertyInfo._id || propertyInfo.id}</span>
+            <span className="text-gray-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-[350px] md:max-w-[500px]" title={title}>{title}</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -357,6 +397,14 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] dark:text-[#c9a14b] tabular-nums flex items-center gap-2">
                   <Dirham className="text-xl sm:text-2xl" /> {priceValue}
                 </p>
+                {downPaymentValue && (
+                  <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between gap-3 text-xs">
+                    <span className="text-white/70 font-semibold uppercase tracking-wider text-[10px]">Down Payment</span>
+                    <span className="text-white font-extrabold tabular-nums flex items-center gap-1">
+                      <Dirham className="text-xs text-[#5CD284] dark:text-[#c9a14b]" /> {downPaymentValue}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -409,37 +457,77 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
-                    {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds} Beds`}
-                  </p>
-                </div>
-              </div>
+              {beds > 0 || baths > 0 ? (
+                <>
+                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                      <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
+                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
+                        {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds} Beds`}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Washrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
-                    {Number(baths) === 1 ? "1 Bath" : `${baths} Baths`}
-                  </p>
-                </div>
-              </div>
+                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                      <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bathrooms</p>
+                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
+                        {Number(baths) === 1 ? "1 Bath" : `${baths} Baths`}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                      {parkingSpaces ? (
+                        <Car className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
+                        {parkingSpaces ? "Parking" : "Property Plan"}
+                      </p>
+                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate">
+                        {parkingSpaces ? `${parkingSpaces} Spaces` : (plan || "Ready")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                      <Square className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Plot Area</p>
+                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${totalArea || sqft} sqft`}>
+                        {totalArea ? `${totalArea.toLocaleString()} sqft` : `${sqft.toLocaleString()} sqft`}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
                   <Square className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Built Up Area</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${sqft} sqft`}>{sqft} sqft</p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
+                    {builtUpArea ? "Built Up Area" : "Area"}
+                  </p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${(builtUpArea || sqft).toLocaleString()} sqft`}>
+                    {(builtUpArea || sqft).toLocaleString()} sqft
+                  </p>
                 </div>
               </div>
             </div>
@@ -448,24 +536,60 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Details</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {propertyInfo.listingPurpose && (
+                {listingId && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Listing ID</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-[#1A3626] dark:text-[#5CD284] font-mono truncate" title={listingId}>{listingId}</span>
+                  </div>
+                )}
+                {referenceNumber && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Reference No.</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate" title={referenceNumber}>{referenceNumber}</span>
+                  </div>
+                )}
+                {permitNumber && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Permit No.</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate" title={permitNumber}>{permitNumber}</span>
+                  </div>
+                )}
+                {purpose && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{propertyInfo.listingPurpose.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{purpose.toLowerCase()}</span>
                   </div>
                 )}
-                {propertyInfo.propertyCategory && (
+                {category && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{propertyInfo.propertyCategory.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{category.toLowerCase()}</span>
                   </div>
                 )}
-                {propertyInfo.furnishingStatus && (
+                {plan && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{plan === "READY" ? "Ready" : plan === "OFF_PLAN" ? "Off-Plan" : plan.toLowerCase()}</span>
+                  </div>
+                )}
+                {availability && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Availability</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize">{availability}</span>
+                  </div>
+                )}
+                {furnishingStatus && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
                     <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {propertyInfo.furnishingStatus === "NOT_FURNISHED" ? "Not Furnished" : propertyInfo.furnishingStatus === "SEMI" ? "Semi Furnished" : propertyInfo.furnishingStatus.replace('_', ' ')}
+                      {furnishingStatus === "NOT_FURNISHED" ? "Not Furnished" : furnishingStatus === "SEMI" ? "Semi Furnished" : furnishingStatus.replace('_', ' ')}
                     </span>
+                  </div>
+                )}
+                {parkingSpaces !== undefined && parkingSpaces !== null && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Parking Spaces</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{parkingSpaces} {parkingSpaces === 1 ? 'Space' : 'Spaces'}</span>
                   </div>
                 )}
                 {propertyInfo.unitNumber && (
@@ -518,6 +642,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                       src={propertyInfo.sellerInfo.thumbnail || "/placeholder-avatar.png"}
                       alt={propertyInfo.sellerInfo.name || "Agent"}
                       fill
+                      sizes="48px"
                       className="object-cover"
                     />
                   </div>

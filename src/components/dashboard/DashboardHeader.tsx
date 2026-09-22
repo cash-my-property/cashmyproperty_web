@@ -2,20 +2,20 @@
 
 import { useDictionary } from "@/components/DictionaryProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Bell, Globe, ChevronDown, RefreshCw, Menu, Check, Trash2, Sparkles, LayoutDashboard } from "lucide-react";
+import { Bell, Globe, ChevronDown, Menu, Check, Trash2, LayoutDashboard, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import { useState } from "react";
-import RoleSwitchModal from "@/components/modals/RoleSwitchModal";
+import api from "@/lib/api";
 
 export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
   const { locale } = useDictionary();
   const router = useRouter();
-  const { user } = useAuth();
-  const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
+  const { user, fetchProfile } = useAuth();
+  const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification, addToast } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
 
   const switchLanguage = (newLocale: string) => {
     if (newLocale === locale) return;
@@ -38,9 +38,46 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
   const currentType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
   const isSeller = currentRole === "SELLER";
 
-  const typeLabel = currentType === 'REGULAR' ? 'Realtime' : 'Simple';
-  const roleLabel = isSeller ? 'Seller' : 'Buyer';
-  const currentModeLabel = `${typeLabel} ${roleLabel}`;
+  const handleToggleRole = async (targetRole: "BUYER" | "SELLER") => {
+    if (currentRole === targetRole || isSwitching) return;
+    try {
+      setIsSwitching(true);
+      await api.put('/switch/toggleRole', { 
+        main: targetRole 
+      });
+
+      if (fetchProfile) {
+        await fetchProfile();
+      }
+
+      addToast(
+        "Role Switched", 
+        `You are now in ${targetRole === 'BUYER' ? 'Buyer' : 'Agent'} mode.`, 
+        "success"
+      );
+
+      if (targetRole === 'BUYER') {
+        router.push(`/${locale}/dashboard`);
+      } else {
+        if (currentType === 'SIMPLE') {
+          router.push(`/${locale}/dashboard/seller/simple-listings`);
+        } else {
+          router.push(`/${locale}/dashboard/seller/properties`);
+        }
+      }
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+
+    } catch (err: any) {
+      console.error("Failed to switch role:", err);
+      const errorMsg = err?.response?.data?.message || "Failed to switch role. Please try again.";
+      addToast("Error", errorMsg, "warning");
+    } finally {
+      setIsSwitching(false);
+    }
+  };
 
   const userName = user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User";
   const firstName = userName.split(' ')[0] || "User";
@@ -73,37 +110,45 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
           </div>
         </div>
 
-        {/* 2. CENTER ZONE: Fills Empty Space on Laptop / Desktop Screens gracefully */}
-        <div className="hidden md:flex items-center justify-center flex-1 max-w-md mx-6">
-          <div className="w-full bg-gray-50/90 dark:bg-[#163321]/50 border border-gray-200/80 dark:border-[#1A3626] rounded-full px-4 py-2 flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#5CD284] animate-pulse" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Current Mode:</span>
-              <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">{currentModeLabel}</span>
-            </div>
-            
+        {/* 2. CENTER ZONE: Buyer / Agent Toggle + Type Badge */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 mx-1 sm:mx-6">
+          <div className="bg-gray-100 dark:bg-[#163321] p-0.5 sm:p-1 rounded-full border border-gray-200/80 dark:border-[#1A3626] flex items-center shadow-inner">
             <button
-              onClick={() => setRoleModalOpen(true)}
-              className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] hover:opacity-90 transition-all cursor-pointer shadow-xs flex items-center gap-1"
+              type="button"
+              disabled={isSwitching}
+              onClick={() => handleToggleRole("BUYER")}
+              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                !isSeller
+                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
             >
-              <RefreshCw className="w-3 h-3" />
-              <span>Switch</span>
+              {isSwitching && !isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
+              <span>Buyer</span>
             </button>
+            <button
+              type="button"
+              disabled={isSwitching}
+              onClick={() => handleToggleRole("SELLER")}
+              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                isSeller
+                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              {isSwitching && isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
+              <span>Agent</span>
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5CD284] animate-pulse" />
+            <span>{currentType === 'SIMPLE' ? 'Listings' : 'Realtime'}</span>
           </div>
         </div>
 
         {/* 3. RIGHT ZONE: Action Controls (Optimized for Mobile & Laptop) */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          
-          {/* Mobile Mode Switch Button (Visible on Mobile only when Center Zone is hidden) */}
-          <button
-            onClick={() => setRoleModalOpen(true)}
-            className="md:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-full font-bold text-[11px] bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b] border border-[#1A3626]/20 dark:border-[#c9a14b]/30 hover:bg-[#1A3626]/20 transition-all cursor-pointer shrink-0"
-            title="Switch Mode"
-          >
-            <Sparkles className="w-3 h-3 shrink-0" />
-            <span className="truncate max-w-[75px] xs:max-w-[100px]">{currentModeLabel}</span>
-          </button>
 
           {/* Theme Toggle */}
           <div className="scale-85 sm:scale-90 shrink-0">
@@ -235,12 +280,6 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
 
         </div>
       </header>
-
-      {/* Role Switch Confirmation Modal */}
-      <RoleSwitchModal
-        isOpen={roleModalOpen}
-        onClose={() => setRoleModalOpen(false)}
-      />
     </>
   );
 }
