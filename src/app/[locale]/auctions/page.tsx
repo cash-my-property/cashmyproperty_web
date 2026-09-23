@@ -5,25 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { 
-  Search, 
   MapPin, 
   Clock, 
-  Filter, 
   Bed, 
   Bath, 
   Square, 
   ChevronDown, 
-  ArrowRight, 
-  Building, 
   Share2, 
-  Maximize, 
-  Home, 
-  Key, 
   Loader2,
-  CheckCircle2,
-  Heart,
-  Phone,
-  MessageCircle
+  Building,
+  Maximize
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -36,20 +27,27 @@ import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 export default function AuctionsListingPage() {
   const { dict, locale } = useDictionary();
   const searchParams = useSearchParams();
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
   const content = dict.home;
-  const realtimeOffers = dict.home.realtimebids.items;
 
   // Filter state
   const [activeType, setActiveType] = useState("All");
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [appliedLocation, setAppliedLocation] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
-  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const buyerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR');
+
+  useEffect(() => {
+    if (isAuthenticated && isBuyer && buyerType !== 'REGULAR') {
+      api.put('/switch/toggleRole', { type: 'REGULAR' })
+        .then(() => {
+          if (fetchProfile) fetchProfile();
+        })
+        .catch((err) => console.error("Auto switch in auctions page failed", err));
+    }
+  }, [isAuthenticated, isBuyer, buyerType]);
 
   const [liveAuctions, setLiveAuctions] = useState<any[]>([]);
   const [upcomingAuctions, setUpcomingAuctions] = useState<any[]>([]);
@@ -65,8 +63,15 @@ export default function AuctionsListingPage() {
   useEffect(() => {
     const urlLocation = searchParams.get("location");
     const urlSearch = searchParams.get("search");
+    const urlType = searchParams.get("propertyType");
     if (urlLocation) setAppliedLocation(urlLocation);
     if (urlSearch) setAppliedSearch(urlSearch);
+    if (urlType) {
+      const formatted = urlType.charAt(0).toUpperCase() + urlType.slice(1).toLowerCase();
+      setActiveType(formatted);
+    } else if (urlType === null && activeType !== "All") {
+      setActiveType("All");
+    }
   }, [searchParams]);
 
   // Listen to socket events for real-time price and auction updates
