@@ -39,7 +39,7 @@ export default function FloatingGuideWidget() {
               <>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <Building className="w-4 h-4 text-[#5CD284] shrink-0 mt-0.5" />
-                  <span><strong>Seller Mode:</strong> Add listings or launch Realtime Distress Offers from your Dashboard.</span>
+                  <span><strong>Agent Mode:</strong> Add listings or launch Realtime Distress Offers from your Dashboard.</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <RefreshCw className="w-4 h-4 text-[#c9a14b] shrink-0 mt-0.5" />

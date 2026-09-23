@@ -39,7 +39,7 @@ export const content = {
       lastNameLabel: "Last Name",
       lastNamePlaceholder: "Doe",
       brnLabel: "BRN NO",
-      brnPlaceholder: "Broker Reg. Number",
+      brnPlaceholder: "Agent Reg. Number",
       referralLabel: "Referral Code",
       referralOptional: "(Optional)",
       referralPlaceholder: "Enter code",
@@ -80,7 +80,7 @@ export const content = {
       heading: "The premier digital real estate offer platform in the UAE",
       paragraphs: [
         "Founded on the principles of transparency, efficiency, and innovation, Cash My Property is redefining how real estate is bought and sold in the UAE.",
-        "We provide a secure, encrypted platform that connects verified sellers with qualified buyers. Our digital offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against official regulations."
+        "We provide a secure, encrypted platform that connects verified agents with qualified buyers. Our digital offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against official regulations."
       ],
       features: [
         {
@@ -168,7 +168,7 @@ export const content = {
   home: {
     hero: {
       headline: "The Premier Digital Real Estate Offer Platform in the UAE",
-      subheadline: "Buy, sell, and make offers on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
+      subheadline: "Buy, sell, and make offers on verified properties with 100% transparency. Our platform connects serious buyers with verified agents and property owners in a secure environment.",
       searchPlaceholder: "Search by location, property type, or keywords...",
       searchButton: "Search Properties",
       filters: {
@@ -278,7 +278,7 @@ export const content = {
       steps: [
         {
           title: "Register & Verify",
-          description: "Enter your Broker Registration Number (BRN). The system verifies it instantly, auto-filling your details. Admin approves your account to begin."
+          description: "Enter your Agent Registration Number (BRN). The system verifies it instantly, auto-filling your details. Admin approves your account to begin."
         },
         {
           title: "Upload & Browse",
@@ -304,7 +304,7 @@ export const content = {
         },
         {
           title: "Immediate Liquidity",
-          description: "Our 7-Day Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to property listings."
+          description: "Our 7-Day Offer model provides immediate liquidity for motivated agents and owners, while buyers get fair access to property listings."
         }
       ]
     },

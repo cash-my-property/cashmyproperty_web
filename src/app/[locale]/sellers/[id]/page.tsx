@@ -306,7 +306,7 @@ export default function SellerDetailPage() {
       <main className="min-h-screen bg-gray-50 dark:bg-[#091711] flex items-center justify-center py-24">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 text-[#1A3626] dark:text-[#c9a14b] animate-spin" />
-          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">Loading seller profile...</p>
+          <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">Loading agent profile...</p>
         </div>
       </main>
     );
@@ -317,15 +317,15 @@ export default function SellerDetailPage() {
       <main className="min-h-screen bg-gray-50 dark:bg-[#091711] flex items-center justify-center py-24 px-6">
         <div className="bg-white dark:bg-[#102418] rounded-3xl p-10 text-center max-w-md border border-gray-200 dark:border-[#1A3626] shadow-xl">
           <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Profile Not Found</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Agent Profile Not Found</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
-            The seller profile you are looking for may have been removed or does not exist.
+            The agent profile you are looking for may have been removed or does not exist.
           </p>
           <Link
             href={`/${locale}/sellers`}
             className="px-6 py-2.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] rounded-full font-bold text-xs hover:opacity-90 transition-opacity"
           >
-            Back to Sellers Directory
+            Back to Agents Directory
           </Link>
         </div>
       </main>
@@ -366,7 +366,7 @@ export default function SellerDetailPage() {
                     className="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl sm:rounded-3xl object-cover border-2 border-[#5CD284] dark:border-[#c9a14b] shadow-2xl group-hover:scale-105 transition-transform duration-300"
                   />
                   {agent.isVerified && (
-                    <span className="absolute -bottom-2 -right-2 p-1.5 bg-[#1A3626] dark:bg-[#c9a14b] text-[#5CD284] dark:text-[#1A3626] rounded-full shadow-lg border border-white/20" title="Verified RERA Broker">
+                    <span className="absolute -bottom-2 -right-2 p-1.5 bg-[#1A3626] dark:bg-[#c9a14b] text-[#5CD284] dark:text-[#1A3626] rounded-full shadow-lg border border-white/20" title="Verified RERA Agent">
                       <ShieldCheck className="w-4 h-4" />
                     </span>
                   )}
@@ -379,18 +379,18 @@ export default function SellerDetailPage() {
                       {agent.name}
                     </h1>
                     <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-[#5CD284] border border-emerald-500/30 shadow-sm">
-                      Verified Seller
+                      Verified Agent
                     </span>
                   </div>
 
                   <p className="text-sm font-semibold text-white/80">
-                    {agent.designation || "Licensed Real Estate Seller"}
+                    {agent.designation || "Licensed Real Estate Agent"}
                   </p>
 
                   <div className="flex items-center gap-2 flex-wrap text-xs text-white/70 font-medium">
                     <span className="flex items-center gap-1 text-[#c9a14b]">
                       <Building className="w-3.5 h-3.5" />
-                      {agent.officeName || "Direct Property Seller"}
+                      {agent.officeName || "Direct Property Agent"}
                     </span>
                     {agent.brokerNumber && (
                       <>
@@ -936,7 +936,7 @@ export default function SellerDetailPage() {
                       Agent Overview & Licensing
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {agent.name} is a verified seller on Cash My Property, managing active property listings and transactions across residential and commercial sectors.
+                      {agent.name} is a verified agent on Cash My Property, managing active property listings and transactions across residential and commercial sectors.
                     </p>
                   </div>
 
@@ -945,14 +945,14 @@ export default function SellerDetailPage() {
                     <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#091711] border border-gray-100 dark:border-[#1A3626]">
                       <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">RERA / License Number</span>
                       <span className="text-sm font-extrabold text-[#1A3626] dark:text-[#c9a14b]">
-                        {agent.brokerNumber ? `BRN #${agent.brokerNumber}` : "Registered Broker"}
+                        {agent.brokerNumber ? `BRN #${agent.brokerNumber}` : "Registered Agent"}
                       </span>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#091711] border border-gray-100 dark:border-[#1A3626]">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Brokerage Office</span>
+                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Agency Office</span>
                       <span className="text-sm font-extrabold text-gray-900 dark:text-white">
-                        {agent.officeName || "Direct Property Seller"}
+                        {agent.officeName || "Direct Property Agent"}
                       </span>
                     </div>
 
@@ -968,7 +968,7 @@ export default function SellerDetailPage() {
                     <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#091711] border border-gray-100 dark:border-[#1A3626]">
                       <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Verification Status</span>
                       <span className="text-sm font-extrabold text-[#5CD284] flex items-center gap-1">
-                        <ShieldCheck className="w-4 h-4" /> Verified Seller
+                        <ShieldCheck className="w-4 h-4" /> Verified Agent
                       </span>
                     </div>
                   </div>
@@ -991,7 +991,7 @@ export default function SellerDetailPage() {
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Platform Verified Seller</h3>
+                  <h3 className="text-base font-bold text-white">Platform Verified Agent</h3>
                   <span className="text-[11px] text-white/70">Verified RERA Licensing & Identity</span>
                 </div>
               </div>
@@ -1003,7 +1003,7 @@ export default function SellerDetailPage() {
                   <CheckCircle2 className="w-4 h-4 text-[#5CD284] shrink-0 mt-0.5" />
                   <div className="text-xs text-white/90 font-medium">
                     <strong className="block text-white font-bold">RERA Licensing Guaranteed</strong>
-                    Government-registered real estate broker/seller.
+                    Government-registered real estate agent.
                   </div>
                 </div>
 

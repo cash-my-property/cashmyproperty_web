@@ -51,7 +51,7 @@ export default function OnboardingHoldPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-gray-900 dark:text-white">Access Notification</p>
-                <p className="text-[12px] text-gray-500 dark:text-gray-400">Web seller dashboard access will be unlocked automatically upon approval.</p>
+                <p className="text-[12px] text-gray-500 dark:text-gray-400">Web agent dashboard access will be unlocked automatically upon approval.</p>
               </div>
             </div>
           </div>

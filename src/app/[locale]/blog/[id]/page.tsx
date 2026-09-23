@@ -43,7 +43,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
     quote: "The integration of real-time verified buyer offers and instant digital valuation is not just optimizing property transactions in Dubai — it is setting a worldwide benchmark for speed and trust.",
     keyTakeaways: [
       "Real-time offer mechanisms reduce standard closing negotiation times by up to 60%.",
-      "RERA-certified broker verification creates a secure, fraud-free ecosystem for buyers and sellers.",
+      "RERA-certified agent verification creates a secure, fraud-free ecosystem for buyers and property owners.",
       "Digital undertaking documentation streamlines legal compliance and escrow deposits.",
       "Transparent pricing feeds provide immediate valuation signals across high-demand Dubai districts."
     ]
@@ -176,11 +176,11 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
             {/* Intro Paragraph */}
             <div className="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg">
               <p>
-                The Dubai real estate ecosystem has undergone a remarkable evolution over the past decade. What was once a market reliant heavily on manual listings, protracted negotiations, and fragmented broker communications is now rapidly transitioning towards structured, transparent, and technology-driven transaction platforms.
+                The Dubai real estate ecosystem has undergone a remarkable evolution over the past decade. What was once a market reliant heavily on manual listings, protracted negotiations, and fragmented agent communications is now rapidly transitioning towards structured, transparent, and technology-driven transaction platforms.
               </p>
               
               <p className="mt-4">
-                At the forefront of this digital shift is Cash My Property (CMP) — a dedicated platform engineered specifically for RERA-certified brokers, buyers, and sellers looking for speed, security, and verified market valuation.
+                At the forefront of this digital shift is Cash My Property (CMP) — a dedicated platform engineered specifically for RERA-certified agents, buyers, and property owners looking for speed, security, and verified market valuation.
               </p>
             </div>
 
@@ -227,13 +227,13 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
               </h2>
 
               <p>
-                In high-velocity real estate hubs like Dubai, transaction integrity is non-negotiable. Traditional offline offer processes often suffer from unverified bids, phantom buyers, or delayed paperwork. By mandating Broker Registration Number (BRN) verification and structured undertaking documentation, property sellers gain absolute clarity on every inquiry.
+                In high-velocity real estate hubs like Dubai, transaction integrity is non-negotiable. Traditional offline offer processes often suffer from unverified bids, phantom buyers, or delayed paperwork. By mandating Agent Registration Number (BRN) verification and structured undertaking documentation, property owners gain absolute clarity on every inquiry.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
                 {[
                   { label: "Average Deal Time", val: "< 48 Hours", desc: "For live buyer offers" },
-                  { label: "Verified Brokers", val: "100% RERA", desc: "Strict onboarding policy" },
+                  { label: "Verified Agents", val: "100% RERA", desc: "Strict onboarding policy" },
                   { label: "Transaction Safety", val: "Bank-grade", desc: "Escrow & legal documentation" },
                 ].map((stat, i) => (
                   <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#102418] border border-gray-100 dark:border-[#1A3626] text-center shadow-xs">

@@ -56,7 +56,7 @@ export default function DashboardOverviewPage() {
               setWonAuctionsCount(auctionsList.length.toString());
               setActiveBidsCount(bidsList.length.toString());
             } catch {
-              addToast("Error", "Failed to load seller statistics.", "warning");
+              addToast("Error", "Failed to load agent statistics.", "warning");
             }
           }
           setRecentActivity([]);

@@ -578,8 +578,8 @@ export default function EditSimplePropertyPage() {
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Furnishing Status *</label>
                 <select name="furnishingStatus" value={formData.furnishingStatus} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                  <option value="NOT_FURNISHED">Unfurnished</option>
-                  <option value="SEMI">Semi-Furnished</option>
+                  <option value="NOT_FURNISHED">Not Furnished</option>
+                  <option value="SEMI">Semi Furnished</option>
                   <option value="FULL">Fully Furnished</option>
                 </select>
               </div>

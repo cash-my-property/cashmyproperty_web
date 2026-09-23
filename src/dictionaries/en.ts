@@ -39,7 +39,7 @@ export const content = {
       lastNameLabel: "Last Name",
       lastNamePlaceholder: "Doe",
       brnLabel: "BRN NO",
-      brnPlaceholder: "Broker Reg. Number",
+      brnPlaceholder: "Agent Reg. Number",
       referralLabel: "Referral Code",
       referralOptional: "(Optional)",
       referralPlaceholder: "Enter code",
@@ -80,7 +80,7 @@ export const content = {
       description: "The CMP platform replaces slow negotiations and scattered communications with a structured system where verified users can list properties and receive instant offers.",
       items: [
         {
-          title: "Exclusive to RERA-Certified Brokers",
+          title: "Exclusive to RERA-Certified Agents",
           description: "Access is restricted to licensed real estate professionals, ensuring credibility and trustworthy participation."
         },
         {
@@ -88,8 +88,8 @@ export const content = {
           description: "Send and receive offers in real-time, enabling transparent price discovery and faster decisions."
         },
         {
-          title: "Wide Broker Network",
-          description: "Connect with a growing network of verified brokers to maximize listing exposure and deal potential."
+          title: "Wide Agent Network",
+          description: "Connect with a growing network of verified agents to maximize listing exposure and deal potential."
         },
         {
           title: "Secure & Compliant Platform",
@@ -108,7 +108,7 @@ export const content = {
     experience: {
       badge: "SEAMLESS, SECURE & FAST",
       title: "We deliver the best experience",
-      description: "Cash My Property is Dubai's exclusive platform for RERA-certified brokers and licensed real estate professionals. List properties, receive instant offers, and move deals forward faster within a secure, transparent ecosystem. The CMP platform removes manual negotiation, cuts down on delays, and gives agents a structured environment to connect with serious buyers.",
+      description: "Cash My Property is Dubai's exclusive platform for RERA-certified agents and licensed real estate professionals. List properties, receive instant offers, and move deals forward faster within a secure, transparent ecosystem. The CMP platform removes manual negotiation, cuts down on delays, and gives agents a structured environment to connect with serious buyers.",
       cards: [
         {
           num: "01",
@@ -130,7 +130,7 @@ export const content = {
     founder: {
       title: "Meet The Founder",
       name: "Muhammad Sunain Yousuf",
-      quote: "Cash My Property is not just an application. It is a system designed for RERA-licensed brokers only to improve how property deals actually get closed.",
+      quote: "Cash My Property is not just an application. It is a system designed for RERA-licensed agents only to improve how property deals actually get closed.",
       missionTitle: "Mission",
       missionText: "To bring order, trust, and speed to every real estate transaction. By creating a process where demand is clear and decisions move faster.",
       visionTitle: "Vision",
@@ -191,11 +191,11 @@ export const content = {
       questions: [
         {
           q: "Who can register on Cash My Property?",
-          a: "Registration is exclusive to active RERA-licensed brokers and verified real estate professionals in Dubai."
+          a: "Registration is exclusive to active RERA-licensed agents and verified real estate professionals in Dubai."
         },
         {
           q: "How does the instant offer system work?",
-          a: "Brokers list properties on the platform. Other verified agents/buyers can submit instant offers on the listing. This cuts out back-and-forth and fosters transparency in pricing."
+          a: "Agents list properties on the platform. Other verified agents/buyers can submit instant offers on the listing. This cuts out back-and-forth and fosters transparency in pricing."
         },
         {
           q: "Is there any cost to download the app?",
@@ -281,7 +281,7 @@ export const content = {
   home: {
     hero: {
       headline: "The Premier Digital Real Estate Platform in the UAE",
-      subheadline: "Buy, sell, and offer on verified properties with 100% transparency. Our platform connects serious buyers with highly motivated sellers in a secure environment.",
+      subheadline: "Buy, sell, and offer on verified properties with 100% transparency. Our platform connects serious buyers with verified agents and property owners in a secure environment.",
       searchPlaceholder: "Search by location, property type, or keywords...",
       searchButton: "Search Properties",
       filters: {
@@ -317,87 +317,15 @@ export const content = {
       label: "Realtime Offers",
       heading: "Realtime Offers",
       description: "Properties currently in an active 7-Day Realtime Offer. Offer now before the timer runs out.",
-      viewAllText: "View All Realtime Offers",
-      items: [
-        {
-          id: "r1",
-          title: "Luxury Marina Penthouse",
-          location: "Dubai Marina, Dubai",
-          currentBid: "Ð 4,500,000",
-          image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          timeLeft: "2d 04h 15m",
-          beds: 4,
-          baths: 5,
-          area: "3,200 sqft"
-        },
-        {
-          id: "r2",
-          title: "Modern Downtown Apartment",
-          location: "Downtown Dubai",
-          currentBid: "Ð 2,100,000",
-          image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          timeLeft: "0d 12h 30m",
-          beds: 2,
-          baths: 2,
-          area: "1,150 sqft"
-        },
-        {
-          id: "r3",
-          title: "Palm Jumeirah Signature Villa",
-          location: "Palm Jumeirah, Dubai",
-          currentBid: "Ð 18,500,000",
-          image: "https://images.unsplash.com/photo-1613490908571-9ce2249b49be?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-          timeLeft: "5d 08h 45m",
-          beds: 6,
-          baths: 7,
-          area: "7,500 sqft"
-        }
-      ]
+      viewAllText: "View All Realtime Offers"
     },
-    // simpleListings: {
-    //   label: "Standard Properties",
-    //   heading: "Simple Listings",
-    //   description: "Verified properties available for immediate purchase at a fixed asking price.",
-    //   viewAllText: "View All Listings",
-    //   items: [
-    //     {
-    //       id: "s1",
-    //       title: "JLT Lake View Office Space",
-    //       location: "Jumeirah Lake Towers",
-    //       price: "Ð 1,800,000",
-    //       image: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    //       type: "Commercial",
-    //       area: "2,000 sqft"
-    //     },
-    //     {
-    //       id: "s2",
-    //       title: "Arabian Ranches Townhouse",
-    //       location: "Arabian Ranches",
-    //       price: "Ð 3,250,000",
-    //       image: "https://images.unsplash.com/photo-1512918580421-b2feaf3cb582?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    //       beds: 3,
-    //       baths: 4,
-    //       area: "2,400 sqft"
-    //     },
-    //     {
-    //       id: "s3",
-    //       title: "Dubai Hills Estate Mansion",
-    //       location: "Dubai Hills Estate",
-    //       price: "Ð 12,000,000",
-    //       image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    //       beds: 5,
-    //       baths: 6,
-    //       area: "6,000 sqft"
-    //     }
-    //   ]
-    // },
     howItWorks: {
       label: "The CMP Workflow",
       heading: "How It Works",
       steps: [
         {
           title: "Register & Verify",
-          description: "Enter your Broker Registration Number (BRN). The system verifies it instantly, auto-filling your details. Admin approves your account to begin."
+          description: "Enter your Agent Registration Number (BRN). The system verifies it instantly, auto-filling your details. Admin approves your account to begin."
         },
         {
           title: "Upload & Browse",
@@ -423,7 +351,7 @@ export const content = {
         },
         {
           title: "Speed & Liquidity",
-          description: "Our 7-Day Realtime Offer model provides immediate liquidity for motivated sellers, while buyers get fair access to property listings."
+          description: "Our 7-Day Realtime Offer model provides immediate liquidity for motivated property owners and agents, while buyers get fair access to property listings."
         }
       ]
     },
@@ -464,7 +392,7 @@ export const content = {
       plan: "Property Plan",
       trakheesi: "Trakheesi Number",
       interestedTitle: "Interested in this property?",
-      interestedDesc: "Log in to place an offer or bid on this property.",
+      interestedDesc: "Log in to place an offer on this property.",
       makeOffer: "Make Offer",
       loginRequired: "Login Required",
       loginRequiredDesc: "You must be logged in to make an offer. Would you like to log in now?",
@@ -721,7 +649,7 @@ export const content = {
         lastName: "Last Name",
         email: "Email Address",
         phone: "Phone Number",
-        brn: "Broker Registration Number",
+        brn: "Agent Registration Number (BRN)",
         saveChanges: "Save Changes",
         currentPassword: "Current Password",
         newPassword: "New Password",
@@ -784,7 +712,7 @@ export const content = {
     "s3p4": "CMP facilitates communication and interaction between seller agents and buyer agents with the objective of enabling property transactions. CMP may review submitted property details and documentation for the purpose of approving listings on the Application. However, CMP is not a party to any sale, purchase, or transfer agreement, and all transactions are concluded directly between the relevant parties.",
     "s3h3": "3. Commission and Fees",
     "s3p5": "By using the Application and participating in any transaction facilitated through CMP, users agree to the following commission structure:",
-    "s3p6": "a. Seller Side: The seller agrees to pay 10% of the difference between the seller’s asking price and the final accepted sale price (highest bid or negotiated price). This 10% commission shall be divided equally between Cash My Property L.L.C (“CMP”) and the Seller’s Agent, with each party receiving 5%.",
+    "s3p6": "a. Seller Side: The seller agrees to pay 10% of the difference between the seller’s asking price and the final accepted sale price (highest offer or negotiated price). This 10% commission shall be divided equally between Cash My Property L.L.C (“CMP”) and the Seller’s Agent, with each party receiving 5%.",
     "s3p7": "Example: If the asking price is AED 1,000,000 and the final sale price is AED 1,200,000, the difference is AED 200,000, and the seller shall pay 10% of AED 200,000 (i.e., AED 20,000) as commission.",
     "s3p8": "b. Buyer Side: The buyer agrees to pay 2% of the final agreed purchase price as commission. This amount shall be payable at the time of property transfer (typically via manager’s cheque or as otherwise agreed). The full 2% commission shall be allocated to the Buyer’s Agent.",
     "s3p9": "All commissions are deemed earned upon successful agreement between the parties and shall be payable in accordance with the agreed transaction process. CMP reserves the right to enforce its commission entitlement through legal means if required.",
@@ -1187,7 +1115,7 @@ export const content = {
     "s22h6": "Effect of Non-Response",
     "s22p28": "If the seller fails to respond within the required timeframe:",
     "s22p29": "• the offer shall automatically become null, expired, and non-binding;",
-    "s22p30": "• CMP may proceed to present alternative offers or competing bids;",
+    "s22p30": "• CMP may proceed to present alternative offers or competing offers;",
     "s22p31": "• CMP reserves the right to downgrade listing priority or recommend price adjustment where repeated non-responsiveness occurs.",
     "s22h7": "Good Faith Cooperation",
     "s22p32": "The seller and/or seller agent agrees to:",
@@ -1663,7 +1591,7 @@ export const content = {
     s2a1: "Create and manage user accounts",
     s2a2: "Verify users before granting access",
     s2a3: "Enable secure property listings",
-    s2a4: "Facilitate auctions and transaction processes",
+    s2a4: "Facilitate realtime offers and transaction processes",
     s2a5: "Improve app functionality and user experience",
     s2a6: "Communicate important account updates",
     s2a7: "Monitor and prevent fraudulent activity",
@@ -1718,16 +1646,16 @@ export const content = {
   guide: {
     heroTag: "COMPREHENSIVE PLATFORM GUIDE",
     title: "How to Use Cash My Property",
-    subtitle: "Your step-by-step master guide to buying, selling, live auctions, contract signing, and role permissions across the UAE's premier real estate portal.",
-    searchPlaceholder: "Search guides, bidding, BRN verification, role switching...",
+    subtitle: "Your step-by-step master guide to buying, listing, realtime offers, contract signing, and role permissions across the UAE's premier real estate portal.",
+    searchPlaceholder: "Search guides, realtime offers, BRN verification, role switching...",
     quickNavTitle: "Select a Guide Topic",
     tabs: {
       gettingStarted: "1. Account & Verification",
       roleSwitcher: "2. Roles & Permissions",
       buyerSimple: "3. Buyer - Simple Listings",
-      buyerRealtime: "4. Buyer - Live Bidding",
-      sellerSimple: "5. Seller - Simple Listings",
-      sellerRealtime: "6. Seller - Live Auctions"
+      buyerRealtime: "4. Buyer - Realtime Offers",
+      sellerSimple: "5. Agent - Simple Listings",
+      sellerRealtime: "6. Agent - Realtime Offers"
     },
     gettingStarted: {
       title: "Account Setup & Verification",
@@ -1736,7 +1664,7 @@ export const content = {
         {
           num: "01",
           title: "Choose Your Account Type",
-          desc: "Register as a Whitelisted Broker using your RERA Broker Registration Number (BRN) or as a Regular User. Whitelisted Brokers get instant auto-filling of licensed credentials.",
+          desc: "Register as a Whitelisted Agent using your RERA Agent Registration Number (BRN) or as a Regular User. Whitelisted Agents get instant auto-filling of licensed credentials.",
           tip: "Ensure your BRN is active with RERA Dubai / DLD before registering."
         },
         {
@@ -1761,13 +1689,13 @@ export const content = {
     },
     roleSwitcher: {
       title: "Role Switcher & Access Rights",
-      subtitle: "Understand how Buyer and Seller modes work and how to switch roles seamlessly from the top navigation bar.",
-      intro: "CashMyProperty uses strict role isolation to protect marketplace integrity. Sellers are focused on listing management and cannot browse buyer deals, while Buyers enjoy curated property feeds based on their buyer type.",
+      subtitle: "Understand how Buyer and Agent modes work and how to switch roles seamlessly from the top navigation bar.",
+      intro: "CashMyProperty uses strict role isolation to protect marketplace integrity. Agents are focused on listing management and cannot browse buyer deals, while Buyers enjoy curated property feeds based on their buyer type.",
       switchStepsTitle: "How to Switch Your Active Role:",
       steps: [
         "Click your profile icon or the 'Switch Role' button in the top navigation bar.",
-        "Select your desired mode: Buyer Mode or Seller Mode.",
-        "Confirm your switch in the Role Switcher Modal.",
+        "Select your desired mode: Buyer Mode or Agent Mode.",
+        "Confirm your role switch in the top header toggle.",
         "Your navigation bar, dashboard links, and accessible features will instantly update to match your active mode."
       ]
     },
@@ -1778,19 +1706,19 @@ export const content = {
         feature: "Platform Feature",
         simpleBuyer: "Simple Buyer",
         realtimeBuyer: "Realtime Buyer",
-        simpleSeller: "Simple Seller",
-        realtimeSeller: "Realtime Seller"
+        simpleSeller: "Simple Agent",
+        realtimeSeller: "Realtime Agent"
       },
       rows: [
         { feature: "Browse Simple Listings & Search", sb: "Yes", rb: "No", ss: "No (Redirected)", rs: "No (Redirected)" },
         { feature: "Contact Verified Agents (WhatsApp/Call/Email)", sb: "Yes", rb: "No", ss: "No", rs: "No" },
-        { feature: "Browse Live Distress Auctions", sb: "No", rb: "Yes", ss: "No (Redirected)", rs: "No (Redirected)" },
+        { feature: "Browse Realtime Distress Offers", sb: "No", rb: "Yes", ss: "No (Redirected)", rs: "No (Redirected)" },
         { feature: "Digital Undertaking Letter / MOA Signing", sb: "No", rb: "Yes", ss: "No", rs: "No" },
-        { feature: "Place Real-Time Live Bids & Countdown Access", sb: "No", rb: "Yes", ss: "No", rs: "No" },
+        { feature: "Place Real-Time Offers & Countdown Access", sb: "No", rb: "Yes", ss: "No", rs: "No" },
         { feature: "Add Simple Property Listing", sb: "No", rb: "No", ss: "Yes", rs: "No" },
-        { feature: "Add Realtime Distress Auction Listing", sb: "No", rb: "No", ss: "No", rs: "Yes" },
+        { feature: "Add Realtime Distress Listing", sb: "No", rb: "No", ss: "No", rs: "Yes" },
         { feature: "Track Admin Verification Status", sb: "No", rb: "No", ss: "Yes", rs: "Yes" },
-        { feature: "View Live Incoming Buyer Bids & Accept Offers", sb: "No", rb: "No", ss: "No", rs: "Yes" },
+        { feature: "View Live Incoming Buyer Offers & Accept Deals", sb: "No", rb: "No", ss: "No", rs: "Yes" },
         { feature: "Agents Directory & Agent Detailed Profiles (/sellers)", sb: "Yes", rb: "No", ss: "No", rs: "No" }
       ]
     },
@@ -1831,61 +1759,61 @@ export const content = {
       ]
     },
     buyerRealtime: {
-      title: "Buyer Guide - Live Bidding & Realtime Distress Offers",
-      subtitle: "How to participate in live property auctions, sign digital Undertaking Letters, and win distress deals.",
+      title: "Buyer Guide - Realtime Distress Offers",
+      subtitle: "How to participate in realtime property offers, sign digital Undertaking Letters, and secure distress deals.",
       steps: [
         {
           num: "01",
-          title: "Browse Live Bids & Countdown Timers",
-          desc: "Navigate to the Realtime Auctions portal (`/auctions`). Inspect live auction cards featuring live countdown timers (Days, Hours, Minutes), current highest bid, and starting prices.",
-          tip: "Listings marked with a green pulse dot are actively accepting live bids."
+          title: "Browse Realtime Offers & Countdown Timers",
+          desc: "Navigate to the Realtime Offers portal (`/auctions`). Inspect live offer cards featuring live countdown timers (Days, Hours, Minutes), current highest offer, and starting prices.",
+          tip: "Listings marked with a green pulse dot are actively accepting realtime offers."
         },
         {
           num: "02",
           title: "Sign Digital Undertaking Letter (MOA)",
-          desc: "Before placing your first bid, click 'Sign Contract / Undertaking'. Review the official legal terms, fill in your passport/Emirates ID details, and sign the digital MOA contract.",
+          desc: "Before placing your first offer, click 'Sign Contract / Undertaking'. Review the official legal terms, fill in your passport/Emirates ID details, and sign the digital MOA contract.",
           tip: "Once approved, your contract status turns to SIGNED & APPROVED."
         },
         {
           num: "03",
-          title: "Place Real-Time Live Bids",
-          desc: "Enter your bid amount in the Buyer Action Sidebar. Our WebSocket engine updates the highest bid across all connected users instantly without page refreshes.",
-          tip: "Bids must exceed the current highest bid by the minimum bid increment."
+          title: "Place Real-Time Offers",
+          desc: "Enter your offer amount in the Buyer Action Sidebar. Our WebSocket engine updates the highest offer across all connected users instantly without page refreshes.",
+          tip: "Offers must exceed the current highest offer by the minimum offer increment."
         },
         {
           num: "04",
           title: "Instant Web Push & Bell Notifications",
-          desc: "Receive real-time notifications when another buyer outbids you, when an auction timer is extended, or when the seller accepts your offer.",
+          desc: "Receive real-time notifications when another buyer places a higher offer, when an offer timer is extended, or when the agent accepts your offer.",
           tip: "Enable FCM Web Push Notifications in your browser for instant alerts."
         },
         {
           num: "05",
-          title: "Auction Completion & Winning Offer",
-          desc: "When the countdown expires, if your bid is the highest accepted offer, you will receive official confirmation and transaction instructions in your Dashboard (`/dashboard/bids`).",
+          title: "Offer Completion & Accepted Offer",
+          desc: "When the countdown expires, if your offer is the highest accepted offer, you will receive official confirmation and transaction instructions in your Dashboard (`/dashboard/bids`).",
           tip: "Track signed contracts in `/dashboard/contracts`."
         }
       ]
     },
     sellerSimple: {
-      title: "Seller Guide - Simple Listings",
+      title: "Agent Guide - Simple Listings",
       subtitle: "How to submit simple listings, track verification status, monitor view analytics, and update details.",
       steps: [
         {
           num: "01",
           title: "Add a Simple Property Listing",
-          desc: "Switch to Seller Mode and navigate to 'Add Simple Property' (`/dashboard/seller/add-simple-property`). Enter title, location, category, purpose, price, bedrooms, washrooms, area, and upload property photos.",
+          desc: "Switch to Agent Mode and navigate to 'Add Simple Property' (`/dashboard/seller/add-simple-property`). Enter title, location, category, purpose, price, bedrooms, washrooms, area, and upload property photos.",
           tip: "High-resolution photos increase buyer inquiries by up to 3x."
         },
         {
           num: "02",
           title: "Track Admin Verification Status",
-          desc: "Submissions are instantly sent to the CMP compliance team. Track verification status on your Seller Dashboard (`/dashboard/seller/simple-listings`): PENDING, VERIFIED, ACTIVE, or REJECTED.",
+          desc: "Submissions are instantly sent to the CMP compliance team. Track verification status on your Agent Dashboard (`/dashboard/seller/simple-listings`): PENDING, VERIFIED, ACTIVE, or REJECTED.",
           tip: "If a listing is rejected, click to view exact admin rejection notes and re-submit."
         },
         {
           num: "03",
           title: "Monitor Listing Analytics & Enquiries",
-          desc: "View listing performance, total views, and inquiry activity directly on your Seller Analytics dashboard.",
+          desc: "View listing performance, total views, and inquiry activity directly on your Agent Analytics dashboard.",
           tip: "Keep your contact information updated in Profile Settings."
         },
         {
@@ -1897,31 +1825,31 @@ export const content = {
       ]
     },
     sellerRealtime: {
-      title: "Seller Guide - Live Auctions & Distress Offers",
-      subtitle: "How to launch live distress auctions, set reserve prices, track incoming live bids, and accept winning offers.",
+      title: "Agent Guide - Realtime Distress Offers",
+      subtitle: "How to launch realtime distress offers, set reserve prices, track incoming live offers, and accept winning offers.",
       steps: [
         {
           num: "01",
-          title: "Create a Realtime Distress Auction",
-          desc: "Navigate to 'Add Realtime Property' (`/dashboard/seller/add-property`). Specify property details, starting price, reserve price, auction start time, and auction end duration.",
-          tip: "Setting an attractive starting price creates competitive bidding momentum."
+          title: "Create a Realtime Distress Offer Listing",
+          desc: "Navigate to 'Add Realtime Property' (`/dashboard/seller/add-property`). Specify property details, starting price, reserve price, offer start time, and offer duration.",
+          tip: "Setting an attractive starting price creates competitive offering momentum."
         },
         {
           num: "02",
           title: "Admin Approval & Live Activation",
-          desc: "CMP compliance verifies property title deed, Trakheesi permit, and seller authorization. Once approved, the auction goes live on the public `/auctions` portal.",
-          tip: "You will receive an instant notification when your auction goes live."
+          desc: "CMP compliance verifies property title deed, Trakheesi permit, and agent authorization. Once approved, the listing goes live on the public `/auctions` portal.",
+          tip: "You will receive an instant notification when your listing goes live."
         },
         {
           num: "03",
-          title: "Monitor Live Incoming Buyer Bids",
-          desc: "Watch live buyer bids populate in real time on your Seller Auction Dashboard (`/dashboard/seller/auctions`). View bidder counters and live bid progression.",
-          tip: "All bidders are verified and signed under legal Undertaking Letters."
+          title: "Monitor Live Incoming Buyer Offers",
+          desc: "Watch live buyer offers populate in real time on your Agent Offers Dashboard (`/dashboard/seller/auctions`). View participant counters and live offer progression.",
+          tip: "All participants are verified and signed under legal Undertaking Letters."
         },
         {
           num: "04",
           title: "Accept Offer & Complete Transaction",
-          desc: "Accept the winning bid at auction close or accept a strong offer before auction end. Once accepted, CMP initiates contract execution and transfer coordination.",
+          desc: "Accept the highest offer at listing close or accept a strong offer before countdown ends. Once accepted, CMP initiates contract execution and transfer coordination.",
           tip: "Review completed deals in `/dashboard/seller/sold-history`."
         }
       ]
@@ -1931,20 +1859,20 @@ export const content = {
       subtitle: "Quick answers to common questions about Cash My Property.",
       list: [
         {
-          q: "Why can't I browse property listings while in Seller Mode?",
-          a: "Sellers on CMP have dedicated tools to manage listings and track offers. To maintain strict role isolation and prevent confusion, browsing buyer feeds is reserved for Buyer Mode. Simply click 'Switch Role' in the top navigation bar to switch to Buyer Mode anytime."
+          q: "Why can't I browse property listings while in Agent Mode?",
+          a: "Agents on CMP have dedicated tools to manage listings and track offers. To maintain strict role isolation and prevent confusion, browsing buyer feeds is reserved for Buyer Mode. Simply click 'Switch Role' in the top navigation bar to switch to Buyer Mode anytime."
         },
         {
-          q: "What is the difference between a Simple Listing and a Realtime Distress Auction?",
-          a: "Simple Listings are standard property classifieds where buyers contact agents directly via WhatsApp/Call/Email. Realtime Distress Auctions are time-bound live bidding events where verified buyers sign digital MOA contracts and place competitive live bids."
+          q: "What is the difference between a Simple Listing and a Realtime Distress Offer?",
+          a: "Simple Listings are standard property classifieds where buyers contact agents directly via WhatsApp/Call/Email. Realtime Distress Offers are time-bound live offering events where verified buyers sign digital MOA contracts and place competitive realtime offers."
         },
         {
           q: "How does RERA BRN Auto-Fill work during signup?",
-          a: "When you enter your RERA Broker Registration Number (BRN), our backend checks the official DLD database. If your BRN is whitelisted, your licensed name, phone, email, and card dates are automatically populated and locked for compliance."
+          a: "When you enter your RERA Agent Registration Number (BRN), our backend checks the official DLD database. If your BRN is whitelisted, your licensed name, phone, email, and card dates are automatically populated and locked for compliance."
         },
         {
-          q: "What is the Undertaking Letter / MOA requirement for Realtime Bids?",
-          a: "To ensure 100% serious bidders, CMP requires buyers to sign a digital Undertaking Letter before placing bids. This ensures all bids are legally binding and protects sellers from non-serious offers."
+          q: "What is the Undertaking Letter / MOA requirement for Realtime Offers?",
+          a: "To ensure 100% serious buyers, CMP requires buyers to sign a digital Undertaking Letter before placing offers. This ensures all offers are legally binding and protects agents from non-serious offers."
         },
         {
           q: "How do I switch languages or toggle Dark Mode?",
@@ -1954,8 +1882,8 @@ export const content = {
     },
     cta: {
       title: "Ready to Experience the Future of UAE Real Estate?",
-      subtitle: "Join thousands of verified buyers, sellers, and real estate brokers on Cash My Property today.",
-      buyerButton: "Explore Live Auctions",
+      subtitle: "Join thousands of verified buyers and real estate agents on Cash My Property today.",
+      buyerButton: "Explore Realtime Offers",
       sellerButton: "List a Property Now"
     }
   }

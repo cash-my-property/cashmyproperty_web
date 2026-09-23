@@ -177,9 +177,9 @@ export default function RejectedSimplePropertiesPage() {
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
           <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Seller Mode</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Agent Mode</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-            You are currently in Buyer mode. Please switch to Seller mode to access and manage your rejected properties.
+            You are currently in Buyer mode. Please switch to Agent mode to access and manage your rejected properties.
           </p>
           <button
             onClick={async () => {
@@ -199,7 +199,7 @@ export default function RejectedSimplePropertiesPage() {
             className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
-            Switch to Seller Mode
+            Switch to Agent Mode
           </button>
         </div>
       </div>
@@ -226,9 +226,9 @@ export default function RejectedSimplePropertiesPage() {
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
           <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Listing Seller Mode</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Listing Agent Mode</h3>
           <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-            You are currently in Realtime Seller mode. Please switch to Listing Seller mode to view your rejected properties.
+            You are currently in Realtime Agent mode. Please switch to Listing Agent mode to view your rejected properties.
           </p>
           <button
             onClick={async () => {
@@ -248,7 +248,7 @@ export default function RejectedSimplePropertiesPage() {
             className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-8 py-3 rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {isSwitching && <Loader2 className="w-4 h-4 animate-spin" />}
-            Switch to Listing Seller
+            Switch to Listing Agent
           </button>
         </div>
       </div>

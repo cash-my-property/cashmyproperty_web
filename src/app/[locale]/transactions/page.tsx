@@ -521,7 +521,7 @@ export default function TransactionsPage() {
                   <th className="py-4 px-4">Specs & Type</th>
                   <th className="py-4 px-4">Transacted Price</th>
                   <th className="py-4 px-4">Date</th>
-                  <th className="py-4 px-6">Broker / Agent</th>
+                  <th className="py-4 px-6">Verified Agent</th>
                 </tr>
               </thead>
 

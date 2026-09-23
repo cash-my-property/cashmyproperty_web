@@ -52,7 +52,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
 
       addToast(
         "Role Switched", 
-        `You are now in ${targetRole === 'BUYER' ? 'Buyer' : 'Agent'} mode.`, 
+        `You are now in ${targetRole === 'BUYER' ? 'Buyer' : 'Seller'} mode.`, 
         "success"
       );
 
@@ -137,7 +137,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
               }`}
             >
               {isSwitching && isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
-              <span>Agent</span>
+              <span>Seller</span>
             </button>
           </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, ArrowDownUp, ChevronDown, Loader2, Share2 } from "lucide-react";
+import { Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, Loader2, Share2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
@@ -15,13 +15,6 @@ import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCa
 export default function HomePage() {
   const { dict, locale } = useDictionary();
   const { home } = dict;
-  
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
-  const [selectedSort, setSelectedSort] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
 
   const [liveProperties, setLiveProperties] = useState<any[]>([]);
   const [upcomingProperties, setUpcomingProperties] = useState<any[]>([]);
@@ -185,13 +178,13 @@ export default function HomePage() {
             {/* Center: Text */}
             <div className="relative z-10 flex-1 text-center lg:text-left">
               <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase block mb-3">
-                Seller Mode Active
+                Agent Mode Active
               </span>
               <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                You&apos;re here to sell,<br className="hidden sm:block" /> not to browse.
+                You&apos;re here to manage listings,<br className="hidden sm:block" /> not to browse.
               </h2>
               <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
-                As a seller, property listings and realtime offers are not accessible to you. Head to your dashboard to manage your listings, track offers, and monitor your activity.
+                As an agent, property listings and realtime offers are not accessible to you. Head to your dashboard to manage your listings, track offers, and monitor your activity.
               </p>
             </div>
 
@@ -670,7 +663,7 @@ export default function HomePage() {
               : "Ready to discover your next home?";
             
             const descText = isSeller
-              ? "Access your seller command center to add verified properties, inspect real-time bidding logs, and accept offers."
+              ? "Access your agent command center to add verified properties, inspect real-time bidding logs, and accept offers."
               : "Go to your buyer dashboard to track your live bids, view favorite properties, and explore direct simple deals.";
             
             const btnLink = isSeller

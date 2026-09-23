@@ -220,10 +220,10 @@ export default function FindSellersPage() {
             Verified Agents Directory
           </span>
           <h1 className="text-white text-[34px] sm:text-[52px] lg:text-[58px] font-bold mb-4 leading-[1.15] tracking-tight max-w-3xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
-            Find Verified Real Estate Agents & Brokers
+            Find Verified Real Estate Agents
           </h1>
           <p className="text-white/80 dark:text-gray-300 text-[15px] sm:text-[18px] max-w-2xl leading-relaxed font-light">
-            Connect directly with RERA-licensed brokers and verified property owners across Dubai for direct property listings and transparent real estate deals.
+            Connect directly with RERA-licensed agents and verified property owners across Dubai for direct property listings and transparent real estate deals.
           </p>
         </div>
       </section>
@@ -237,7 +237,7 @@ export default function FindSellersPage() {
             <Search className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
             <input
               type="text"
-              placeholder="Search agent by name, brokerage name, or BRN number..."
+              placeholder="Search agent by name, agency name, or BRN number..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -348,9 +348,9 @@ export default function FindSellersPage() {
           /* EMPTY STATE */
           <div className="bg-white dark:bg-[#102418] rounded-3xl p-12 text-center border border-gray-200 dark:border-[#1A3626] my-8 shadow-sm">
             <Building className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Verified Sellers Found</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No Verified Agents Found</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-              No seller profiles match your search criteria. Try adjusting your search query or filter options.
+              No agent profiles match your search criteria. Try adjusting your search query or filter options.
             </p>
             <button
               onClick={() => { setSearchQuery(""); setSelectedPurpose("ALL"); setSelectedSortBy("mostListings"); setPage(1); }}
@@ -387,7 +387,7 @@ export default function FindSellersPage() {
                           className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-[#1A3626]/20 dark:border-[#c9a14b]/30 group-hover:scale-105 transition-transform"
                         />
                         {agent.isVerified && (
-                          <span className="absolute -bottom-1 -right-1 p-1 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] rounded-full shadow-md" title="Verified RERA Broker">
+                          <span className="absolute -bottom-1 -right-1 p-1 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] rounded-full shadow-md" title="Verified RERA Agent">
                             <ShieldCheck className="w-3.5 h-3.5" />
                           </span>
                         )}
@@ -412,14 +412,14 @@ export default function FindSellersPage() {
                         </p>
 
                         <span className="text-[11px] font-bold text-[#1A3626] dark:text-[#c9a14b] truncate mt-0.5">
-                          {agent.officeName || "Independent Broker"} {agent.brokerNumber ? `(RERA #${agent.brokerNumber})` : ""}
+                          {agent.officeName || "Independent Agent"} {agent.brokerNumber ? `(RERA #${agent.brokerNumber})` : ""}
                         </span>
                       </div>
                     </div>
 
                     {/* Mode Pill Badge */}
                     <span className="shrink-0 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                      Simple Seller
+                      Verified Agent
                     </span>
                   </div>
 
@@ -534,9 +534,9 @@ export default function FindSellersPage() {
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Seller Profile Details</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Agent Profile Details</h3>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {selectedSellerModal.brokerNumber ? `BRN #${selectedSellerModal.brokerNumber}` : "Licensed Broker"}
+                    {selectedSellerModal.brokerNumber ? `BRN #${selectedSellerModal.brokerNumber}` : "Licensed Agent"}
                   </span>
                 </div>
               </div>
@@ -562,7 +562,7 @@ export default function FindSellersPage() {
                 <div className="flex flex-col min-w-0">
                   <h4 className="text-lg font-bold text-gray-900 dark:text-white truncate">{selectedSellerModal.name}</h4>
                   <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 truncate">{selectedSellerModal.designation || "Property Consultant"}</span>
-                  <span className="text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] mt-0.5 truncate">{selectedSellerModal.officeName || "Independent Broker"}</span>
+                  <span className="text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] mt-0.5 truncate">{selectedSellerModal.officeName || "Independent Agent"}</span>
                 </div>
               </div>
 

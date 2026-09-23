@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Bed, Bath, Maximize } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
@@ -21,7 +21,6 @@ export default function SimpleListingHistoryPage() {
   const [properties, setProperties] = useState<any[]>([]);
   const [showVerificationError, setShowVerificationError] = useState(false);
   const [viewModalProperty, setViewModalProperty] = useState<any | null>(null);
-  const [editModalProperty, setEditModalProperty] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -158,67 +157,7 @@ export default function SimpleListingHistoryPage() {
         />
       )}
 
-      {/* Edit Property Modal */}
-      {editModalProperty && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#102418] rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-[#1A3626]">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Property</h2>
-              <button onClick={() => setEditModalProperty(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-full transition-colors">
-                <X className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto space-y-6">
-              <div className="bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 text-orange-800 dark:text-orange-400 p-4 rounded-xl text-sm">
-                <strong>Note:</strong> Currently, properties that are {editModalProperty.status} cannot be edited directly via the generic endpoint. Wait for admin rejection to make changes, or contact support.
-              </div>
-              
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Title</label>
-                <input 
-                  defaultValue={editModalProperty.title} 
-                  className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Price (AED)</label>
-                <input 
-                  type="number"
-                  defaultValue={editModalProperty.price?.amount} 
-                  className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" 
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description</label>
-                <textarea 
-                  rows={4}
-                  defaultValue={editModalProperty.description} 
-                  className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] resize-none" 
-                />
-              </div>
-            </div>
-            
-            <div className="p-6 border-t border-gray-100 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] flex justify-end gap-3">
-              <button 
-                onClick={() => setEditModalProperty(null)}
-                className="px-6 py-2.5 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => {
-                  alert("Property Edit action is mocked for this modal.");
-                  setEditModalProperty(null);
-                }}
-                className="px-6 py-2.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white rounded-xl font-medium hover:opacity-90 transition-opacity cursor-pointer"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Verification Error Modal */}
       {showVerificationError && (

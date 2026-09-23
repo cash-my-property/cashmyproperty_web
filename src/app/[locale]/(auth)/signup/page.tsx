@@ -65,7 +65,7 @@ export default function SignupPage() {
 
           // Case 1: Already registered user with this BRN
           if (resData.exists === true) {
-            const msg = resData.message || "Broker number is already registered.";
+            const msg = resData.message || "Agent number is already registered.";
             setBrnError(msg);
             setError(msg);
             setBrnLocked(false);
@@ -74,7 +74,7 @@ export default function SignupPage() {
 
           // Case 2: BRN is not whitelisted / authorized
           if (resData.whitelisted === false) {
-            const msg = resData.message || "Broker number is not authorized for signup.";
+            const msg = resData.message || "Agent number is not authorized for signup.";
             setBrnError(msg);
             setError(msg);
             setBrnLocked(false);
@@ -113,7 +113,7 @@ export default function SignupPage() {
             setBrnLocked(true);
             setBrnError("");
             setError("");
-            setBrnSuccess("Broker details verified & auto-filled successfully.");
+            setBrnSuccess("Agent details verified & auto-filled successfully.");
           }
         }
       } catch (err: any) {
@@ -455,7 +455,7 @@ export default function SignupPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Broker Card Issue *</label>
+                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Agent Card Issue *</label>
                   <input
                     type="date"
                     value={brokerCardIssue}
@@ -466,7 +466,7 @@ export default function SignupPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Broker Card Expiry *</label>
+                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Agent Card Expiry *</label>
                   <input
                     type="date"
                     value={brokerCardExpiry}

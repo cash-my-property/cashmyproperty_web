@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key, Loader2, CheckCircle2, Heart, Phone, MessageCircle } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ChevronDown, Loader2, Building } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -20,9 +20,7 @@ export default function ListingsPage() {
 
   // Filter state
   const [activeType, setActiveType] = useState("All");
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -331,8 +329,13 @@ export default function ListingsPage() {
                 <div className="p-4 pt-5 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-4 mb-2">
                     <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
+                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap flex items-baseline">
                       <Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}
+                      {((item.listingPurpose || details.listingPurpose) === "RENT") && (item.rentalPeriod || details.rentalPeriod) && (
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 lowercase">
+                          /{(item.rentalPeriod || details.rentalPeriod) === 'PER_YEAR' ? 'yr' : (item.rentalPeriod || details.rentalPeriod) === 'PER_MONTH' ? 'mo' : (item.rentalPeriod || details.rentalPeriod) === 'PER_WEEK' ? 'wk' : (item.rentalPeriod || details.rentalPeriod) === 'PER_DAY' ? 'day' : (item.rentalPeriod || details.rentalPeriod).replace('PER_', '').toLowerCase()}
+                        </span>
+                      )}
                     </span>
                   </div>
                   
