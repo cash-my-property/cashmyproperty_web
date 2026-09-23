@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,7 +22,10 @@ import {
   Award,
   Sparkles,
   Lock,
-  X
+  X,
+  FileText,
+  Eye,
+  ExternalLink
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -48,6 +51,7 @@ interface PropertyDetailClientProps {
 export default function PropertyDetailClient({ id, initialData, locale }: PropertyDetailClientProps) {
   const { dict } = useDictionary();
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
+  const { socket, isConnected, joinRoom, leaveRoom, addToast } = useSocket();
   const searchParams = useSearchParams();
   const st = searchParams?.get('st');
 
@@ -58,6 +62,25 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isFavourited, setIsFavourited] = useState(initialData?.isFavourited || false);
   const [isFavouriting, setIsFavouriting] = useState(false);
+  const [showOfflineWarning, setShowOfflineWarning] = useState(false);
+  const hasFetchedRef = useRef<string | null>(null);
+  const hasSwitchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || isConnected) {
+      setShowOfflineWarning(false);
+      return;
+    }
+
+    // Grace period: only show warning if socket remains disconnected for > 3.5s
+    const timer = setTimeout(() => {
+      if (isAuthenticated && !isConnected) {
+        setShowOfflineWarning(true);
+      }
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, isConnected]);
 
   useEffect(() => {
     if (propertyInfo) {
@@ -101,10 +124,8 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
     }
   };
 
-  const { socket, isConnected, joinRoom, leaveRoom, addToast } = useSocket();
-
   useEffect(() => {
-    if (!id || !socket) return;
+    if (!id || !socket || !isConnected) return;
 
     joinRoom(`auction_${id}`);
 
@@ -154,35 +175,71 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
       socket.off("update_bid", handleUpdateBid);
       socket.off("auction_ended", handleAuctionEnded);
     };
-  }, [id, socket]);
+  }, [id, socket, isConnected]);
 
   const fetchDetails = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
-      let res;
+      let res: any;
       if (isAuthenticated) {
+        // If logged-in user is a Buyer and not in REGULAR mode, auto-switch to REGULAR mode first (once per lifecycle)
+        const currentType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+        if (isBuyer && currentType !== 'REGULAR' && !hasSwitchedRef.current) {
+          hasSwitchedRef.current = true;
+          try {
+            await api.put('/switch/toggleRole', { type: 'REGULAR' });
+            if (fetchProfile) await fetchProfile();
+          } catch (switchErr) {
+            console.error("Auto switch to REGULAR mode failed", switchErr);
+          }
+        }
+
         try {
           const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
           res = await api.get(`/buyer/auction-details/${id}${queryStr}`);
-          if (res.data?.roleWasSwitched) {
+          if (res.data?.roleWasSwitched && !hasSwitchedRef.current) {
+            hasSwitchedRef.current = true;
             await fetchProfile();
             addToast("Role Switched", "Your mode was automatically switched to Buyer mode to view this shared property.", "info");
           }
-        } catch (apiErr) {
-          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        } catch (apiErr: any) {
+          const errMsg = apiErr?.response?.data?.message || "";
+          if (!hasSwitchedRef.current && (apiErr?.response?.status === 403 || errMsg.includes("Regular Buyer mode"))) {
+            hasSwitchedRef.current = true;
+            try {
+              await api.put('/switch/toggleRole', { type: 'REGULAR' });
+              if (fetchProfile) await fetchProfile();
+              const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
+              res = await api.get(`/buyer/auction-details/${id}${queryStr}`);
+            } catch (retryErr) {
+              if (!propertyInfo && !initialData) {
+                res = await axios.get(`${API_URL}/public/property-details/${id}`);
+              }
+            }
+          } else if (!propertyInfo && !initialData) {
+            res = await axios.get(`${API_URL}/public/property-details/${id}`);
+          }
         }
       } else {
-        res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        if (!propertyInfo && !initialData) {
+          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        }
       }
       
-      const data = res.data.data || res.data;
-      setPropertyInfo(data);
-      if (typeof data?.isFavourited === 'boolean') {
-        setIsFavourited(data.isFavourited);
+      if (res?.data) {
+        const data = res.data.data || res.data;
+        setPropertyInfo(data);
+        if (typeof data?.isFavourited === 'boolean') {
+          setIsFavourited(data.isFavourited);
+        }
       }
-    } catch (err) {
-      console.error("Error fetching property details client-side", err);
+    } catch (err: any) {
+      if (err?.response?.status === 429) {
+        console.warn("Property details rate limit reached. Using cached/server data.");
+      } else {
+        console.error("Error fetching property details client-side", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -190,8 +247,18 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
   useEffect(() => {
     if (authLoading) return;
+
+    if (!isAuthenticated && (initialData || propertyInfo)) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchKey = `${id}_${isAuthenticated ? (user?._id || 'auth') : 'guest'}`;
+    if (hasFetchedRef.current === fetchKey) return;
+    hasFetchedRef.current = fetchKey;
+
     fetchDetails();
-  }, [id, authLoading, isAuthenticated, user]);
+  }, [id, authLoading, isAuthenticated, user?._id]);
 
   if (isLoading && !propertyInfo) {
     return (
@@ -224,10 +291,10 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             <Building2 className="w-10 h-10 text-[#5CD284]" />
           </div>
           <div className="relative z-10">
-            <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Seller Mode Active</p>
+            <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Agent Mode Active</p>
             <h2 className="text-white text-[28px] font-bold mb-3 leading-tight">Access Restricted</h2>
             <p className="text-white/65 text-[15px] leading-relaxed">
-              Property detail pages are exclusively for buyers. As a seller, you can only manage and track your own listed properties.
+              Property detail pages are exclusively for buyers. As an agent, you can only manage and track your own listed properties.
             </p>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full justify-center">
@@ -279,11 +346,94 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   };
   const sqft = getAreaValue(details.propertyArea || details.propertyBuiltUpArea);
   const description = details.propertyDescription || "No description provided.";
-  const features = details.propertyFeatures || ["Central A/C", "Balcony", "Shared Pool", "Security"];
+  
+  const getAmenitiesList = (): string[] => {
+    const raw = details.propertyAmenities || propertyInfo.propertyAmenities || details.propertyFeatures || propertyInfo.features;
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (typeof raw === 'string' && raw.trim()) return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
+    return [];
+  };
+  const features = getAmenitiesList();
+
+  const rawDocs = details.propertyDocuments || propertyInfo.propertyDocuments || propertyInfo.documents;
+
+  const DOC_LABELS: Record<string, string> = {
+    propertyTrakheesi: "Trakheesi Permit",
+    trakheesi: "Trakheesi Permit",
+    propertyTitleDeed: "Title Deed",
+    titleDeed: "Title Deed",
+    passportDocument: "Passport / Emirates ID",
+    visaPassport: "Passport / Visa",
+    exclusiveContract: "Exclusive Listing Contract",
+    contractA: "Form A Contract",
+    propertyCheque: "Security Cheque",
+    oqoodDocument: "Oqood Certificate",
+    spaDocument: "Sales & Purchase Agreement (SPA)",
+    statementOfAccount: "Statement of Account",
+    propertyFloorPlan: "Floor Plan",
+    propertyUndertakingLetter: "Undertaking Letter",
+    brokerCard: "Broker Card",
+  };
+
+  const parseDocuments = (docsObj: any) => {
+    if (!docsObj || typeof docsObj !== 'object') return [];
+    const list: Array<{ key: string; label: string; url: string; fileName?: string; uploadedAt?: string }> = [];
+
+    Object.entries(docsObj).forEach(([key, val]: [string, any]) => {
+      if (!val) return;
+
+      if (Array.isArray(val)) {
+        val.forEach((item, i) => {
+          if (!item) return;
+          const url = typeof item === 'string' ? item : item.url;
+          if (url && typeof url === 'string') {
+            list.push({
+              key: `${key}_${i}`,
+              label: item.title || item.name || `Additional Document ${i + 1}`,
+              url,
+              fileName: item.fileName || item.name || undefined,
+              uploadedAt: item.uploadedAt || undefined
+            });
+          }
+        });
+        return;
+      }
+
+      const url = typeof val === 'string' ? val : val.url;
+      if (url && typeof url === 'string') {
+        const formattedKey = DOC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+        list.push({
+          key,
+          label: formattedKey,
+          url,
+          fileName: val.fileName || undefined,
+          uploadedAt: val.uploadedAt || undefined
+        });
+      }
+    });
+
+    return list;
+  };
+
+  const documentList = parseDocuments(rawDocs);
+
+  const formatUploadDate = (isoStr?: string) => {
+    if (!isoStr) return "";
+    try {
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return isoStr.split("T")[0] || isoStr;
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const year = d.getUTCFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return isoStr.split("T")[0] || isoStr;
+    }
+  };
 
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-16 transition-colors">
-      {isAuthenticated && !isConnected && (
+      {showOfflineWarning && (
         <div className="w-full bg-amber-500/10 border-b border-amber-500/20 py-2.5 px-6 text-center text-[13px] font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 animate-pulse mb-6">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           Live connection offline. Offers may not update in real-time. Retrying...
@@ -561,7 +711,13 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
                     <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {details.furnishingStatus === "NOT_FURNISHED" ? "Not Furnished" : details.furnishingStatus === "SEMI" ? "Semi Furnished" : details.furnishingStatus.replace('_', ' ')}
+                      {details.furnishingStatus.toUpperCase() === "NOT_FURNISHED"
+                        ? "Not Furnished"
+                        : details.furnishingStatus.toUpperCase() === "SEMI"
+                        ? "Semi Furnished"
+                        : details.furnishingStatus.toUpperCase() === "FULL"
+                        ? "Fully Furnished"
+                        : details.furnishingStatus.replace(/_/g, " ")}
                     </span>
                   </div>
                 )}
@@ -595,20 +751,79 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             </div>
 
             {/* Features & Amenities */}
-            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Features & Amenities</h3>
-              <div className="flex flex-wrap gap-2.5">
-                {features.map((feature: string, idx: number) => (
-                  <span 
-                    key={idx} 
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
-                    <span>{feature}</span>
-                  </span>
-                ))}
+            {features.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Features & Amenities</h3>
+                <div className="flex flex-wrap gap-2.5">
+                  {features.map((feature: string, idx: number) => (
+                    <span 
+                      key={idx} 
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
+                      <span>{feature}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Property Documents */}
+            {documentList.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-[#1A3626] dark:text-[#5CD284]" />
+                    <span>Property Documents</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-[#5CD284] border border-emerald-500/20 uppercase tracking-wider">
+                      Verified
+                    </span>
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Official permits and compliance certificates for this property.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {documentList.map((doc) => (
+                    <div 
+                      key={doc.key}
+                      className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center justify-between gap-3 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-sm transition-all duration-300"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#102418] border border-gray-200/70 dark:border-[#1A3626] flex items-center justify-center shrink-0 shadow-xs">
+                          <FileText className="w-5 h-5 text-[#1A3626] dark:text-[#5CD284]" />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white truncate">
+                            {doc.label}
+                          </h4>
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono mt-0.5">
+                            {doc.fileName || "Verified Document"}
+                          </p>
+                          {doc.uploadedAt && (
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5" suppressHydrationWarning>
+                              Uploaded: {formatUploadDate(doc.uploadedAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#102418] hover:bg-[#5CD284] hover:text-[#0A1C12] dark:hover:bg-[#5CD284] dark:hover:text-[#0A1C12] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-[#1A3626] text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View</span>
+                        <ExternalLink className="w-3 h-3 opacity-60" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

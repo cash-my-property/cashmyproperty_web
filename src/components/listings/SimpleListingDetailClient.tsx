@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -62,6 +62,8 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
   const [isFavourited, setIsFavourited] = useState(initialData?.isFavourited || false);
   const [isFavouriting, setIsFavouriting] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const hasFetchedRef = useRef<string | null>(null);
+  const hasSwitchedRef = useRef(false);
 
   useEffect(() => {
     if (!isLightboxOpen) return;
@@ -109,14 +111,15 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
-      let res;
+      let res: any;
       if (isAuthenticated) {
         try {
           const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
           
-          // If logged-in user is a Buyer and not in SIMPLE mode, switch to SIMPLE mode first
+          // If logged-in user is a Buyer and not in SIMPLE mode, switch to SIMPLE mode first (once per lifecycle)
           const currentType = typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : '';
-          if (isBuyer && currentType !== 'SIMPLE') {
+          if (isBuyer && currentType !== 'SIMPLE' && !hasSwitchedRef.current) {
+            hasSwitchedRef.current = true;
             try {
               await api.put('/switch/toggleRole', { type: 'SIMPLE' });
               if (fetchProfile) await fetchProfile();
@@ -126,24 +129,35 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
           }
 
           res = await api.get(`/buyer/simpleListingDetails/${id}${queryStr}`);
-          if (res.data?.roleWasSwitched) {
+          if (res.data?.roleWasSwitched && !hasSwitchedRef.current) {
+            hasSwitchedRef.current = true;
             await fetchProfile();
             addToast("Role Switched", "Your mode was automatically switched to Buyer mode to view this shared property.", "info");
           }
         } catch (apiErr) {
-          res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+          if (!propertyInfo && !initialData) {
+            res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+          }
         }
       } else {
-        res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+        if (!propertyInfo && !initialData) {
+          res = await axios.get(`${API_URL}/public/simple-property-details/${id}`);
+        }
       }
       
-      const data = res.data.data || res.data;
-      setPropertyInfo(data);
-      if (typeof data?.isFavourited === 'boolean') {
-        setIsFavourited(data.isFavourited);
+      if (res?.data) {
+        const data = res.data.data || res.data;
+        setPropertyInfo(data);
+        if (typeof data?.isFavourited === 'boolean') {
+          setIsFavourited(data.isFavourited);
+        }
       }
-    } catch (err) {
-      console.error("Error fetching simple listing details client-side", err);
+    } catch (err: any) {
+      if (err?.response?.status === 429) {
+        console.warn("Simple listing details rate limit reached. Using cached/server data.");
+      } else {
+        console.error("Error fetching simple listing details client-side", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -151,8 +165,18 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
 
   useEffect(() => {
     if (authLoading) return;
+
+    if (!isAuthenticated && (initialData || propertyInfo)) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchKey = `${id}_${isAuthenticated ? (user?._id || 'auth') : 'guest'}`;
+    if (hasFetchedRef.current === fetchKey) return;
+    hasFetchedRef.current = fetchKey;
+
     fetchDetails();
-  }, [id, authLoading, isAuthenticated, user]);
+  }, [id, authLoading, isAuthenticated, user?._id]);
 
   if (isLoading && !propertyInfo) {
     return (
@@ -209,6 +233,26 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
   const listingId = details.listingId || propertyInfo.listingId || "";
   const availability = details.availability || propertyInfo.availability || "";
   const furnishingStatus = details.furnishingStatus || propertyInfo.furnishingStatus || "";
+  const rentalPeriod = details.rentalPeriod || propertyInfo.rentalPeriod || "";
+  const isForRent = purpose === "RENT" || details.listingPurpose === "RENT" || propertyInfo.listingPurpose === "RENT";
+
+  const formatRentalPeriod = (period: string) => {
+    const p = (period || "").toUpperCase();
+    if (p === "PER_YEAR") return "Yearly";
+    if (p === "PER_MONTH") return "Monthly";
+    if (p === "PER_WEEK") return "Weekly";
+    if (p === "PER_DAY") return "Daily";
+    return period.replace(/PER_/i, "").replace(/_/g, " ");
+  };
+
+  const getRentalPeriodSuffix = (period: string) => {
+    const p = (period || "").toUpperCase();
+    if (p === "PER_YEAR") return "year";
+    if (p === "PER_MONTH") return "month";
+    if (p === "PER_WEEK") return "week";
+    if (p === "PER_DAY") return "day";
+    return period.replace(/PER_/i, "").replace(/_/g, " ").toLowerCase();
+  };
   
   const getAreaValue = (area: any) => {
     if (!area) return 0;
@@ -392,10 +436,17 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
                 <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-[#5CD284] animate-pulse" />
-                  Asking Price
+                  {isForRent ? "Rental Price" : "Asking Price"}
                 </p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] dark:text-[#c9a14b] tabular-nums flex items-center gap-2">
-                  <Dirham className="text-xl sm:text-2xl" /> {priceValue}
+                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] dark:text-[#c9a14b] tabular-nums flex items-baseline gap-2">
+                  <span className="flex items-center gap-1">
+                    <Dirham className="text-xl sm:text-2xl" /> {priceValue}
+                  </span>
+                  {isForRent && rentalPeriod && (
+                    <span className="text-xs sm:text-sm font-bold text-white/80 tracking-normal lowercase">
+                      / {getRentalPeriodSuffix(rentalPeriod)}
+                    </span>
+                  )}
                 </p>
                 {downPaymentValue && (
                   <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between gap-3 text-xs">
@@ -560,6 +611,14 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                     <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{purpose.toLowerCase()}</span>
                   </div>
                 )}
+                {isForRent && rentalPeriod && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Rental Period</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-[#1A3626] dark:text-[#5CD284] capitalize truncate">
+                      {formatRentalPeriod(rentalPeriod)}
+                    </span>
+                  </div>
+                )}
                 {category && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
@@ -582,7 +641,13 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
                     <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {furnishingStatus === "NOT_FURNISHED" ? "Not Furnished" : furnishingStatus === "SEMI" ? "Semi Furnished" : furnishingStatus.replace('_', ' ')}
+                      {furnishingStatus.toUpperCase() === "NOT_FURNISHED"
+                        ? "Not Furnished"
+                        : furnishingStatus.toUpperCase() === "SEMI"
+                        ? "Semi Furnished"
+                        : furnishingStatus.toUpperCase() === "FULL"
+                        ? "Fully Furnished"
+                        : furnishingStatus.replace(/_/g, " ")}
                     </span>
                   </div>
                 )}
@@ -665,7 +730,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
               )}
 
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                Contact the seller directly to request details, schedule a viewing, or negotiate terms.
+                Contact the agent directly to request details, schedule a viewing, or negotiate terms.
               </p>
 
               <div className="space-y-3 pt-2">
