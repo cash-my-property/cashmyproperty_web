@@ -186,15 +186,21 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
         const socketUrl = API_URL.replace(/\/api\/?$/, '');
-        const token = Cookies.get('token');
+        const rawToken = Cookies.get('authToken') || Cookies.get('token');
+        const token = (rawToken && rawToken !== 'dummy-token-because-httponly') ? rawToken : undefined;
 
         console.log("📡 Initializing Socket.io connection dynamically to:", socketUrl);
         socketInstance = io(socketUrl, {
           auth: {
-            token: (token && token !== 'dummy-token-because-httponly') ? token : undefined
+            token: token
           },
-          transports: ['websocket', 'polling'],
-          withCredentials: true
+          transports: ['polling', 'websocket'],
+          withCredentials: true,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 2500,
+          reconnectionDelayMax: 10000,
+          timeout: 15000
         });
 
         socketRef.current = socketInstance;
@@ -216,20 +222,28 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           socketInstance.emit('join_room', 'global_auctions');
         });
 
-        socketInstance.on('disconnect', () => {
-          console.log('📡 Socket disconnected.');
+        socketInstance.on('disconnect', (reason: string) => {
+          console.log('📡 Socket disconnected. Reason:', reason);
           setIsConnected(false);
         });
 
+        let authRetryCount = 0;
         socketInstance.on('connect_error', (err: any) => {
-          console.warn('📡 Socket connection error:', err.message);
+          const errMsg = err?.message || '';
+          console.warn('📡 Socket connection error:', errMsg);
           setIsConnected(false);
-          if (err.message.includes('token') || err.message.includes('expired') || err.message.includes('Authentication error')) {
-            // Trigger profile fetch to refresh HttpOnly cookie, then reconnect
-            fetchProfile().then(() => {
-              console.log("📡 Retrying socket connection after token refresh...");
-              socketInstance?.connect();
-            }).catch((e) => console.error("Socket reconnect profile refresh failed", e));
+          if (errMsg.includes('token') || errMsg.includes('expired') || errMsg.includes('Authentication error')) {
+            if (authRetryCount < 1) {
+              authRetryCount++;
+              // Trigger profile fetch to refresh HttpOnly cookie, then reconnect once
+              fetchProfile().then(() => {
+                console.log("📡 Retrying socket connection after token refresh...");
+                socketInstance?.connect();
+              }).catch((e) => console.error("Socket reconnect profile refresh failed", e));
+            } else {
+              console.warn("📡 Socket authentication failed after retry. Stopping reconnect attempts.");
+              socketInstance?.disconnect();
+            }
           }
         });
 
@@ -272,7 +286,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
         socketInstance.on('account_verified', (data: any) => {
           console.log("📡 [Socket Event] Received account_verified:", data);
-          const msg = "Your broker/agency profile has been successfully verified by admin.";
+          const msg = "Your agent/agency profile has been successfully verified by admin.";
           addToast(
             "Account Verified!", 
             msg,
@@ -356,7 +370,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socketRef.current = null;
       setSocket(null);
     };
-  }, [isAuthenticated, user, isSeller, authLoading]);
+  }, [isAuthenticated, user?._id, isSeller, authLoading]);
 
   const joinRoom = (roomId: string) => {
     if (socketRef.current && socketRef.current.connected) {
