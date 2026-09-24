@@ -7,15 +7,7 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "crypto-js",
-      "axios",
-      "socket.io-client",
-      "js-cookie",
-      "@vercel/analytics",
-      "@vercel/speed-insights",
-    ],
+    optimizePackageImports: ["lucide-react"],
   },
   images: {
     formats: ["image/avif", "image/webp"],
