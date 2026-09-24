@@ -644,7 +644,7 @@ export default function Navbar() {
                     key={index}
                     href={`/${locale}${item.href === "/" ? "" : item.href}`}
                     className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors tracking-wide py-1"
-                    style={{ fontFamily: "var(--font-inter), sans-serif" }}
+                    style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.title}

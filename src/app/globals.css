@@ -16,6 +16,11 @@
     
     --card: #FFFFFF;
     --card-border: rgba(0, 32, 69, 0.05);
+
+    /* Headings Font - Switched to DM Sans */
+    --font-heading: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+    --font-playfair: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
+    --font-dm-sans: var(--font-dm-sans), 'DM Sans', system-ui, sans-serif;
   }
 
   .dark {
