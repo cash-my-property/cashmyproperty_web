@@ -11,6 +11,8 @@ import Image from "next/image";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
+import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function HomePage() {
   const { dict, locale } = useDictionary();
@@ -164,7 +166,7 @@ export default function HomePage() {
 
       {/* SELLER CTA PANEL — Only shown when user is in Seller Mode */}
       {isAuthenticated && isSeller && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
           <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col lg:flex-row items-center gap-10 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626]">
             {/* Background glow */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
@@ -211,7 +213,7 @@ export default function HomePage() {
 
       {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) */}
       {!(isAuthenticated && isSeller) && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
@@ -261,10 +263,7 @@ export default function HomePage() {
               const details = item.propertyDetails || {};
               const title = details.propertyTitle || "Untitled Property";
               const location = details.propertyLocation?.city || "Dubai";
-              const rawImages = details.propertyImages || item.propertyImages || (item.image ? [item.image] : []);
-              const images = Array.isArray(rawImages) && rawImages.length > 0
-                ? rawImages
-                : ["/property-placeholder.svg"];
+              const images = extractPropertyImages(item);
               const beds = details.propertyBedrooms || 0;
               const baths = details.propertyWashrooms || 0;
               const getArea = (area: any) => {
@@ -396,7 +395,7 @@ export default function HomePage() {
 
       {/* 3. SIMPLE LISTINGS */}
       {!(isAuthenticated && isSeller) && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -434,10 +433,7 @@ export default function HomePage() {
                 const words = rawSimpleLoc.trim().split(/\s+/);
                 return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawSimpleLoc;
               })();
-              const rawSimpleImages = details.propertyImages || item.propertyImages || (item.image ? [item.image] : []);
-              const simpleImages = Array.isArray(rawSimpleImages) && rawSimpleImages.length > 0
-                ? rawSimpleImages
-                : ["/property-placeholder.svg"];
+              const simpleImages = extractPropertyImages(item);
               const beds = item.specs?.beds || details.propertyBedrooms || 0;
               const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
               const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
@@ -467,20 +463,14 @@ export default function HomePage() {
                     <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedSimpleLoc}</span>
                   </p>
                   
-                  <div className="flex items-center gap-4 mb-5">
+                  <div className="flex items-center gap-4 mb-4">
                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
                   </div>
                   
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="px-5 py-2.5 w-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                      View Details
-                    </div>
-                  </div>
-
-                  {/* Footer Grid */}
-                  <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
+                  {/* Property Meta Grid */}
+                  <div className="bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-2.5 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626] mb-1">
                     <div className="flex flex-col items-center justify-center text-center px-1">
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
@@ -493,6 +483,14 @@ export default function HomePage() {
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
                       <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
                     </div>
+                  </div>
+
+                  {/* Seller / Agent Info & Action CTAs Strip */}
+                  <div className="mt-auto">
+                    <PropertySellerCardStrip
+                      seller={item.sellerInfo || details.sellerInfo || item.seller || details.seller}
+                      propertyTitle={title}
+                    />
                   </div>
                 </div>
               </Link>
@@ -508,7 +506,7 @@ export default function HomePage() {
 
       {/* 4. HOW IT WORKS */}
       <section className="py-24 bg-white dark:bg-[#102418] border-y border-gray-200 dark:border-[#1A3626]/50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
             {home.howItWorks.label}
           </p>
@@ -538,7 +536,7 @@ export default function HomePage() {
       </section>
 
       {/* 5. APP DOWNLOAD BANNER */}
-      <section className="py-12 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative w-full bg-[#1A3626] dark:bg-[#091711] rounded-[32px] overflow-hidden shadow-2xl border border-[#5CD284]/10 dark:border-[#1A3626] flex flex-col md:flex-row items-center justify-between">
           
           {/* Decorative Background */}
@@ -602,7 +600,7 @@ export default function HomePage() {
       </section>
 
       {/* 6. WHY CHOOSE US */}
-      <section className="py-24 max-w-7xl mx-auto px-6 lg:px-12">
+      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
             {home.whyChooseUs.label}
@@ -630,7 +628,7 @@ export default function HomePage() {
       </section>
 
       {/* 7. BOTTOM CTA */}
-      <section className="pb-24 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+      <section className="pb-24 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative w-full bg-gradient-to-br from-[#1B3A2D] to-[#0A1C12] dark:from-[#102418] dark:to-[#091711] rounded-[40px] p-10 sm:p-16 lg:p-20 overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
           
           {/* Decorative elements */}

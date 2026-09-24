@@ -19,6 +19,13 @@ export default function Navbar() {
   const { isAuthenticated, user, isBuyer, isSeller, fetchProfile } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isAuth = mounted && isAuthenticated;
 
   const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/` || pathname === '/' || pathname === '';
   const isAuctionsActive = pathname.includes('/auctions') || pathname.includes('/property/') || pathname.includes('/public-property/');
@@ -54,7 +61,7 @@ export default function Navbar() {
 
     const baseLinks = rawLinks.filter((l: any) => l.href !== '/');
 
-    if (!isAuthenticated || !user) {
+    if (!isAuth || !user) {
       return dict.navbar.links;
     }
 
@@ -107,7 +114,7 @@ export default function Navbar() {
             : "bg-white/95 dark:bg-[#091711]/95 backdrop-blur-md border-b border-gray-200/50 dark:border-[#1A3626]/50 py-2 sm:py-2.5"
         }`}
       >
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 flex items-center justify-between">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Left: Logo & Centered Platform Toggle */}
           <div className="flex items-center flex-1 min-w-0">
             <Link href="/" className="flex items-center group shrink-0">
@@ -124,14 +131,14 @@ export default function Navbar() {
 
             {/* Platform Toggle Pill (Listings vs Real Time Offer) - Centered between Logo and Buy */}
             <div className="flex-1 flex justify-center px-1 sm:px-4">
-              <div className="flex items-center shrink-0 bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner">
+              <div className="flex items-center shrink-0 bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner transition-colors duration-300">
                 <button
                   type="button"
                   onClick={() => handleToggleType("SIMPLE", `/${locale}/listings`)}
-                  className={`px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11.5px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11.5px] font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer active:scale-95 ${
                     isListingsActive && !isHomePage
                       ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
-                      : "text-gray-300 hover:text-white"
+                      : "text-gray-300 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <span>Listings</span>
@@ -139,13 +146,12 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => handleToggleType("REGULAR", `/${locale}/auctions`)}
-                  className={`px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11.5px] font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11.5px] font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer active:scale-95 ${
                     isAuctionsActive && !isHomePage
                       ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
-                      : "text-gray-300 hover:text-white"
+                      : "text-gray-300 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                   <span>Real Time Offer</span>
                 </button>
               </div>
@@ -271,7 +277,7 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {isAuthenticated ? (
+              {isAuth ? (
                 <div className="flex items-center gap-3">
                   {/* Notifications Center */}
                   <div className="relative flex items-center">
@@ -418,7 +424,7 @@ export default function Navbar() {
 
           {/* Mobile Menu Toggle & Notifications */}
           <div className="flex items-center gap-2 lg:hidden">
-            {isAuthenticated && (
+            {isAuth && (
               <div className="relative">
                 <button 
                   onClick={() => {

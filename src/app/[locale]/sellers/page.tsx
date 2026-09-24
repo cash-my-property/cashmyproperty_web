@@ -229,7 +229,7 @@ export default function FindSellersPage() {
       </section>
 
       {/* 2. SEARCH & FILTERS CONTROL BAR */}
-      <section className="px-6 lg:px-12 max-w-7xl mx-auto w-full -mt-8 relative z-20">
+      <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full -mt-8 relative z-20">
         <div className="bg-white dark:bg-[#102418] rounded-[28px] p-4 sm:p-6 shadow-2xl border border-gray-100 dark:border-[#1A3626] flex flex-col md:flex-row items-center justify-between gap-4">
           
           {/* Main Search Input */}
@@ -286,7 +286,7 @@ export default function FindSellersPage() {
       </section>
 
       {/* 3. SELLERS CARDS DIRECTORY */}
-      <section className="py-12 px-6 lg:px-12 max-w-7xl mx-auto w-full flex-1">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full flex-1">
         
         {/* Results Counter & Sort Selector */}
         <div className="flex items-center justify-between mb-8">
@@ -554,9 +554,11 @@ export default function FindSellersPage() {
               
               {/* Profile Card Summary */}
               <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#091711] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
-                <img 
+                <Image 
                   src={selectedSellerModal.thumbnail || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"} 
                   alt={selectedSellerModal.name} 
+                  width={64}
+                  height={64}
                   className="w-16 h-16 rounded-2xl object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
                 />
                 <div className="flex flex-col min-w-0">

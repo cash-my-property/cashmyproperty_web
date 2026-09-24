@@ -21,24 +21,24 @@ const TwitterIcon = ({ className }: { className?: string }) => (
 export default function Footer() {
   const { dict, locale } = useDictionary();
   return (
-    <footer className="relative bg-gradient-to-b from-[#1B3A2D] to-[#0A1C12] text-gray-300 pt-20 lg:pt-28 pb-8 px-6 sm:px-12 lg:px-24 overflow-hidden border-t border-[#5CD284]/10">
+    <footer className="relative bg-gradient-to-b from-[#1B3A2D] to-[#0A1C12] text-gray-300 pt-20 lg:pt-28 pb-8 px-4 sm:px-6 lg:px-8 overflow-hidden border-t border-[#5CD284]/10">
 
       {/* Decorative Glow Elements */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#5CD284]/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
-      <div className="relative z-10 max-w-[1300px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-10 lg:gap-8 mb-16 flex-wrap lg:flex-nowrap">
 
-        {/* Brand Info (Spans 4 cols on Desktop) */}
-        <div className="lg:col-span-4 lg:pr-8 flex flex-col items-start">
+        {/* Brand Info (Far Left) */}
+        <div className="w-full lg:max-w-xs xl:max-w-sm flex flex-col items-start shrink-0">
           <Image src="/cmpfavicon-removebg-preview.png" alt={siteConfig.name} width={150} height={42} style={{ width: "auto", height: "auto" }} className="mb-6 object-contain opacity-100 transition-opacity" />
           <p className="text-green-100/60 text-[15px] leading-relaxed mb-8">
             {siteConfig.description}
           </p>
         </div>
 
-        {/* Quick Links (Spans 2 cols) */}
-        <div className="lg:col-span-2">
+        {/* Quick Links */}
+        <div className="min-w-[140px]">
           <h4 className="font-bold text-white text-[12px] tracking-[0.2em] uppercase mb-8 opacity-80">{dict.footer.quickLinksTitle}</h4>
           <ul className="space-y-4">
             {dict.footer.quickLinks.map((link, idx) => (
@@ -52,8 +52,8 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Legal (Spans 2 cols) */}
-        <div className="lg:col-span-2">
+        {/* Legal */}
+        <div className="min-w-[140px]">
           <h4 className="font-bold text-white text-[12px] tracking-[0.2em] uppercase mb-8 opacity-80">{dict.footer.legalLinksTitle}</h4>
           <ul className="space-y-4">
             {dict.footer.legalLinks.map((link, idx) => (
@@ -67,8 +67,8 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Contact (Spans 4 cols) */}
-        <div className="lg:col-span-4 lg:pl-8">
+        {/* Contact (Far Right Edge) */}
+        <div className="w-full lg:w-auto lg:max-w-xs flex flex-col items-start shrink-0">
           <h4 className="font-bold text-white text-[12px] tracking-[0.2em] uppercase mb-8 opacity-80">{dict.footer.contactTitle}</h4>
           <ul className="space-y-5">
             <li className="flex items-start gap-4 text-green-100/60 hover:text-white transition-colors group">
@@ -94,7 +94,7 @@ export default function Footer() {
       </div>
 
       {/* Social & Copyright */}
-      <div className="relative z-10 max-w-[1300px] mx-auto flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/10">
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/10">
         <p className="text-green-100/50 text-[13px] mb-6 md:mb-0">
           {dict.footer.copyright}
         </p>

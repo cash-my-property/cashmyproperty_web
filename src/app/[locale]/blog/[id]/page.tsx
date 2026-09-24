@@ -119,9 +119,11 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
           <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-gray-200/80 dark:border-[#1A3626]">
             
             <div className="flex items-center gap-3">
-              <img 
+              <Image 
                 src={articleData.author.avatar} 
                 alt={articleData.author.name}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
               />
               <div className="flex flex-col">
@@ -279,9 +281,11 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
             {/* Author Profile Card */}
             <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <img 
+                <Image 
                   src={articleData.author.avatar} 
                   alt={articleData.author.name}
+                  width={56}
+                  height={56}
                   className="w-14 h-14 rounded-full object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
                 />
                 <div>

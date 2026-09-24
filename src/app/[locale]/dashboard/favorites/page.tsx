@@ -9,6 +9,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import Dirham from "@/components/Dirham";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function FavoritesPage() {
   const { dict, locale } = useDictionary();
@@ -189,7 +190,7 @@ export default function FavoritesPage() {
               const words = rawLocation.trim().split(/\s+/);
               return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
             })();
-            const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
+            const image = extractPropertyImages(details)[0];
             const price = isRegular
               ? (item.currentHighestBid || details.propertyPrice?.amount || details.propertyPrice || 0)
               : (details.propertyPrice?.amount || details.propertyPrice || 0);

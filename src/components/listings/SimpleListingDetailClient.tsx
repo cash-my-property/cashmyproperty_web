@@ -434,8 +434,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
               {/* High-End Price Banner */}
               <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#c9a14b]/30 shadow-xl relative overflow-hidden group/price">
                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
-                <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#5CD284] animate-pulse" />
+                <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1">
                   {isForRent ? "Rental Price" : "Asking Price"}
                 </p>
                 <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] dark:text-[#c9a14b] tabular-nums flex items-baseline gap-2">
@@ -497,6 +496,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             </div>
 
             {/* Featured Key Specs Grid */}
+            {/* Featured Key Specs Grid (Top 4 Boxes) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4">
               <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
@@ -508,76 +508,44 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 </div>
               </div>
 
-              {beds > 0 || baths > 0 ? (
-                <>
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                      <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
-                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
-                        {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds} Beds`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                      <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bathrooms</p>
-                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
-                        {Number(baths) === 1 ? "1 Bath" : `${baths} Baths`}
-                      </p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                      {parkingSpaces ? (
-                        <Car className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                      ) : (
-                        <Sparkles className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
-                        {parkingSpaces ? "Parking" : "Property Plan"}
-                      </p>
-                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate">
-                        {parkingSpaces ? `${parkingSpaces} Spaces` : (plan || "Ready")}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                      <Square className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Plot Area</p>
-                      <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${totalArea || sqft} sqft`}>
-                        {totalArea ? `${totalArea.toLocaleString()} sqft` : `${sqft.toLocaleString()} sqft`}
-                      </p>
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
+                    {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds || 0} Beds`}
+                  </p>
+                </div>
+              </div>
 
               <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Square className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bathrooms</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
+                    {Number(baths) === 1 ? "1 Bath" : `${baths || 0} Baths`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  {parkingSpaces ? (
+                    <Car className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
-                    {builtUpArea ? "Built Up Area" : "Area"}
+                    {parkingSpaces ? "Parking" : "Property Plan"}
                   </p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${(builtUpArea || sqft).toLocaleString()} sqft`}>
-                    {(builtUpArea || sqft).toLocaleString()} sqft
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate">
+                    {parkingSpaces ? `${parkingSpaces} Spaces` : (plan || "Ready")}
                   </p>
                 </div>
               </div>
@@ -587,12 +555,6 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Details</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {listingId && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Listing ID</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1A3626] dark:text-[#5CD284] font-mono truncate" title={listingId}>{listingId}</span>
-                  </div>
-                )}
                 {referenceNumber && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Reference No.</span>
@@ -603,6 +565,18 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Permit No.</span>
                     <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate" title={permitNumber}>{permitNumber}</span>
+                  </div>
+                )}
+                {builtUpArea > 0 && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Built Up Area</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
+                  </div>
+                )}
+                {totalArea > 0 && (
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Area</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
                   </div>
                 )}
                 {purpose && (

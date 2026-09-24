@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
 const API_URL = (envApiUrl ? envApiUrl.replace(/\/auth\/?$/, '') : 'https://testapi.cmpdubai.com/api');
@@ -11,10 +12,25 @@ const api = axios.create({
   withCredentials: true, // authToken + refreshToken cookies automatically sent by browser
 });
 
+// Request interceptor to attach Bearer token to every authenticated request
+api.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+    if (token && token.startsWith('eyJ') && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 
 
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: Array<{
+  resolve: (token: string | null) => void;
+  reject: (error: any) => void;
+}> = [];
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -34,7 +50,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Check if the error status is 401 and the request has not been retried yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       // Avoid refreshing token for public endpoints or auth actions
       if (
         originalRequest.url?.includes('/public/') ||
@@ -49,10 +65,14 @@ api.interceptors.response.use(
       }
 
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
+        return new Promise<string | null>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => {
+          .then((newToken) => {
+            if (newToken) {
+              originalRequest.headers = originalRequest.headers || {};
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            }
             return api(originalRequest);
           })
           .catch((err) => {
@@ -64,17 +84,33 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post('/auth/refresh');
+        const refreshResponse = await api.post('/auth/refresh');
+        const newToken = refreshResponse.data?.token || refreshResponse.data?.accessToken;
+
+        if (newToken) {
+          Cookies.set('token', newToken, { expires: 7 });
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', newToken);
+          }
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
+
         isRefreshing = false;
-        processQueue(null);
+        processQueue(null, newToken || null);
         return api(originalRequest);
       } catch (refreshError) {
         isRefreshing = false;
-        processQueue(refreshError);
-        
-        if (typeof window !== 'undefined' && originalRequest.url !== '/logout') {
-          const locale = window.location.pathname.split('/')[1] || 'en';
-          window.location.href = `/${locale}/login`;
+        processQueue(refreshError, null);
+
+        if (typeof window !== 'undefined' && originalRequest.url !== '/auth/logout') {
+          Cookies.remove('token');
+          localStorage.removeItem('token');
+          const isDashboardRoute = window.location.pathname.includes('/dashboard');
+          if (isDashboardRoute) {
+            const locale = window.location.pathname.split('/')[1] || 'en';
+            window.location.href = `/${locale}/login`;
+          }
         }
         return Promise.reject(refreshError);
       }

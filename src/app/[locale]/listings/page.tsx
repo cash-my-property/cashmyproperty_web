@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { MapPin, Bed, Bath, Square, ChevronDown, Loader2, Building } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ChevronDown, Loader2, Building, LayoutGrid, List } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +12,10 @@ import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
+import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import PropertyGridCard from "@/components/listings/PropertyGridCard";
+import PropertyListCard from "@/components/listings/PropertyListCard";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
@@ -22,6 +26,7 @@ export default function ListingsPage() {
   const [activeType, setActiveType] = useState("All");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -123,8 +128,16 @@ export default function ListingsPage() {
       const queryString = queryParams.toString();
 
       let res;
-      if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
-        res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
+      if (isAuthenticated && isBuyer) {
+        try {
+          res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
+        } catch (buyerErr: any) {
+          if (buyerErr?.response?.status === 401 || buyerErr?.response?.status === 403) {
+            res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
+          } else {
+            throw buyerErr;
+          }
+        }
       } else {
         res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
       }
@@ -196,7 +209,7 @@ export default function ListingsPage() {
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* HERO BANNER */}
-      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center overflow-hidden">
+      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
           style={{
@@ -226,7 +239,7 @@ export default function ListingsPage() {
 
       {/* SELLER RESTRICTION BANNER */}
       {isAuthenticated && isSeller && (
-        <section className="w-full max-w-7xl mx-auto px-6 py-12">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
             <Building className="w-12 h-12 text-amber-500 mb-4" />
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Mode Active</h3>
@@ -245,137 +258,171 @@ export default function ListingsPage() {
 
       {/* SIMPLE LISTINGS GRID */}
       {(!isAuthenticated || !isSeller) && (
-      <section className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <h2 className="text-gray-900 dark:text-white text-[32px] sm:text-[40px] font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
               Listings
             </h2>
+            <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
+              Explore direct properties for rent or purchase with verified details and direct agent contact.
+            </p>
           </div>
 
-          {/* Property Category Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {["All", "Apartment", "Villa", "Commercial"].map((type) => (
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Property Category Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {["All", "Apartment", "Villa", "Commercial"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setActiveType(type)}
+                  className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeType === type
+                      ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
+                      : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+
+            {/* View Mode Toggle: Grid / List (Only visible on laptop/desktop screens) */}
+            <div className="hidden md:flex items-center bg-white dark:bg-[#102418] p-1 rounded-2xl border border-gray-100 dark:border-[#1A3626] shadow-sm shrink-0">
               <button
-                key={type}
-                onClick={() => setActiveType(type)}
-                className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  activeType === type
-                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
-                    : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                type="button"
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  viewMode === "grid"
+                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 }`}
               >
-                {type}
+                <LayoutGrid className="w-4 h-4" />
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                title="List View"
+                className={`p-2 rounded-xl transition-all cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Listings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4">
-                <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-xl w-full" />
-                <div className="p-4 flex flex-col gap-3">
-                  <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+        {/* Listings Grid / List Container */}
+        {isLoading ? (
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+                >
+                  <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                  <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Mobile Skeleton: Always Grid style */}
+              <div className="grid grid-cols-1 gap-8 md:hidden">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div
+                    key={`mob-skel-${idx}`}
+                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+                  >
+                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))
-          ) : (() => {
-            const filteredProperties = properties;
 
-            if (filteredProperties.length === 0) {
-              return <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">No properties match the selected filters.</div>;
-            }
-
-            return filteredProperties.map((item, idx) => {
-              const details = item.propertyDetails || item || {};
-              const title = item.title || details.propertyTitle || "Untitled Property";
-              const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-              const formattedLocation = (() => {
-                const words = rawLocation.trim().split(/\s+/);
-                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
-              })();
-              const rawImages = details.allPropertyImages || item.allPropertyImages || (item.image ? [item.image] : []);
-              const images = Array.isArray(rawImages) && rawImages.length > 0
-                ? rawImages
-                : ["/property-placeholder.svg"];
-              const beds = item.specs?.beds || details.propertyBedrooms || 0;
-              const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
-              const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
-              const price = item.price?.amount || details.propertyPrice?.amount || details.propertyPrice || 0;
-              const type = details.propertyType || "Property";
-
-              return (
-              <Link 
-                href={`/${locale}/simple-listings/${item._id || item.id}`} 
-                key={item._id || item.id} 
-                className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer"
-              >
-                <PropertyCardImageCarousel
-                  images={images}
-                  alt={title}
-                  priority={idx < 3}
-                  aspectClass="h-[240px]"
-                  badge={
-                    <div className="bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                      {item.status || "Active"}
-                    </div>
-                  }
-                />
-
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap flex items-baseline">
-                      <Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}
-                      {((item.listingPurpose || details.listingPurpose) === "RENT") && (item.rentalPeriod || details.rentalPeriod) && (
-                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 lowercase">
-                          /{(item.rentalPeriod || details.rentalPeriod) === 'PER_YEAR' ? 'yr' : (item.rentalPeriod || details.rentalPeriod) === 'PER_MONTH' ? 'mo' : (item.rentalPeriod || details.rentalPeriod) === 'PER_WEEK' ? 'wk' : (item.rentalPeriod || details.rentalPeriod) === 'PER_DAY' ? 'day' : (item.rentalPeriod || details.rentalPeriod).replace('PER_', '').toLowerCase()}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  
-                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                    <MapPin className="w-4 h-4" /> {formattedLocation}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                      <Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                      <Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                      <Square className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}
+              {/* Desktop Skeleton: List style */}
+              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={`desk-skel-${idx}`}
+                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col md:flex-row gap-4 min-h-[200px]"
+                  >
+                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl w-full md:w-[280px] h-[200px] md:h-auto" />
+                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
                     </div>
                   </div>
+                ))}
+              </div>
+            </>
+          )
+        ) : (() => {
+          const filteredProperties = properties;
 
-                  {/* Footer Grid */}
-                  <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+          if (filteredProperties.length === 0) {
+            return (
+              <div className="text-center py-12 text-gray-500">
+                No properties match the selected filters.
+              </div>
             );
-          });
+          }
+
+          if (viewMode === "grid") {
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredProperties.map((item, idx) => (
+                  <PropertyGridCard
+                    key={item._id || item.id || idx}
+                    item={item}
+                    locale={locale}
+                    priority={idx < 3}
+                  />
+                ))}
+              </div>
+            );
+          }
+
+          return (
+            <>
+              {/* Mobile View (< md): Always renders default Grid style */}
+              <div className="grid grid-cols-1 gap-8 md:hidden">
+                {filteredProperties.map((item, idx) => (
+                  <PropertyGridCard
+                    key={`mob-${item._id || item.id || idx}`}
+                    item={item}
+                    locale={locale}
+                    priority={idx < 3}
+                  />
+                ))}
+              </div>
+
+              {/* Laptop/Desktop View (md+): Renders List style */}
+              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
+                {filteredProperties.map((item, idx) => (
+                  <PropertyListCard
+                    key={`desk-${item._id || item.id || idx}`}
+                    item={item}
+                    locale={locale}
+                    priority={idx < 3}
+                  />
+                ))}
+              </div>
+            </>
+          );
         })()}
-        </div>
 
         {/* PAGINATION / INFINITE SCROLL LOADER */}
         {hasMore && (

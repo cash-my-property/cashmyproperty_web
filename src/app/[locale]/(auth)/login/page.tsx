@@ -52,11 +52,10 @@ export default function LoginPage() {
         }
       });
       
-      // Backend returns data with message and user info in response.data.user
-      // Token is set in HttpOnly cookies
       if (response.data && response.data.user) {
         const user = response.data.user;
-        login("dummy-token-because-httponly", user);
+        const token = response.data.token || "session-active";
+        login(token, user);
 
         const isHold = user.agencyStatus === 'PENDING' || user.onboardingStatus === 'HOLD' || user.status === 'PENDING' || response.data.status === 'onboarding_pending';
         const roleStr = typeof user.role === 'string' ? user.role : (user.role?.main || '');

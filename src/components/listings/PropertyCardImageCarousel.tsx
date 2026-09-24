@@ -14,6 +14,8 @@ interface PropertyCardImageCarouselProps {
   children?: React.ReactNode;
 }
 
+import { getOptimizedImageUrl } from "@/utils/imageUrl";
+
 export default function PropertyCardImageCarousel({
   images,
   alt,
@@ -24,39 +26,52 @@ export default function PropertyCardImageCarousel({
   children,
 }: PropertyCardImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [failedIndices, setFailedIndices] = useState<Record<number, boolean>>({});
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Normalize image urls
+  // Normalize and optimize image urls
   const safeImages: string[] = Array.isArray(images) && images.length > 0
     ? images
         .map((img) => (typeof img === "string" ? img : img?.url))
         .filter((url): url is string => Boolean(url))
+        .map(getOptimizedImageUrl)
     : ["/property-placeholder.svg"];
 
   const effectiveImages = safeImages.length > 0 ? safeImages : ["/property-placeholder.svg"];
   const total = effectiveImages.length;
 
+  const currentImageSrc = failedIndices[currentIndex]
+    ? "/property-placeholder.svg"
+    : effectiveImages[currentIndex] || effectiveImages[0];
+
   const handlePrev = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsLoaded(false);
     setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsLoaded(false);
     setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
   };
 
   return (
     <div className={`relative w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711] ${aspectClass}`}>
       <Image
-        src={effectiveImages[currentIndex] || effectiveImages[0]}
+        src={currentImageSrc}
         alt={`${alt} - image ${currentIndex + 1}`}
         fill
         priority={priority && currentIndex === 0}
         loading={priority && currentIndex === 0 ? undefined : "lazy"}
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        className="object-cover group-hover:scale-105 transition-transform duration-500"
+        onLoad={() => setIsLoaded(true)}
+        onError={() => setFailedIndices((prev) => ({ ...prev, [currentIndex]: true }))}
+        className={`object-cover group-hover:scale-105 transition-all duration-500 ${
+          isLoaded || (priority && currentIndex === 0) ? "opacity-100" : "opacity-80"
+        }`}
       />
 
       {/* Optional Badges & Overlays */}

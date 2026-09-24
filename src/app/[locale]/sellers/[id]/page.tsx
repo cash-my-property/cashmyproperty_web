@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { 
   ShieldCheck, 
@@ -360,9 +361,11 @@ export default function SellerDetailPage() {
               <div className="flex items-start sm:items-center gap-5 sm:gap-7">
                 {/* Avatar Image */}
                 <div className="relative shrink-0">
-                  <img 
+                  <Image 
                     src={agent.thumbnail || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"} 
                     alt={agent.name}
+                    width={112}
+                    height={112}
                     className="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl sm:rounded-3xl object-cover border-2 border-[#5CD284] dark:border-[#c9a14b] shadow-2xl group-hover:scale-105 transition-transform duration-300"
                   />
                   {agent.isVerified && (
@@ -847,9 +850,11 @@ export default function SellerDetailPage() {
                               <td className="py-4 px-5">
                                 <div className="flex items-center gap-3">
                                   {item.thumbnail && (
-                                    <img 
+                                    <Image 
                                       src={item.thumbnail} 
                                       alt={item.propertyTitle} 
+                                      width={40}
+                                      height={40}
                                       className="w-10 h-10 rounded-xl object-cover shrink-0 border border-gray-200 dark:border-[#1A3626]"
                                     />
                                   )}

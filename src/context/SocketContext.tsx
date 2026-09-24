@@ -52,7 +52,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   // Helper to fetch notifications from the backend
   const fetchNotifications = async () => {
-    if (!isAuthenticated || authLoading) return;
+    if (!isAuthenticated || authLoading || !user) return;
     try {
       const res = await api.get("/notifications?limit=50");
       const mapped = (res.data?.data?.notifications || res.data?.data || []).map((n: any) => ({
@@ -187,7 +187,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
         const socketUrl = API_URL.replace(/\/api\/?$/, '');
         const rawToken = Cookies.get('authToken') || Cookies.get('token');
-        const token = (rawToken && rawToken !== 'dummy-token-because-httponly') ? rawToken : undefined;
+        const token = (rawToken && rawToken.startsWith('eyJ')) ? rawToken : undefined;
 
         console.log("📡 Initializing Socket.io connection dynamically to:", socketUrl);
         socketInstance = io(socketUrl, {

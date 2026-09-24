@@ -23,6 +23,8 @@ import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
+import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function AuctionsListingPage() {
   const { dict, locale } = useDictionary();
@@ -190,11 +192,22 @@ export default function AuctionsListingPage() {
       const queryString = queryParams.toString();
 
       let liveRes, upcomingRes;
-      if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
-        [liveRes, upcomingRes] = await Promise.all([
-          api.get(`/buyer/live-listings?${queryString}`),
-          api.get(`/buyer/upcoming-listings?${queryString}`)
-        ]);
+      if (isAuthenticated && isBuyer) {
+        try {
+          [liveRes, upcomingRes] = await Promise.all([
+            api.get(`/buyer/live-listings?${queryString}`),
+            api.get(`/buyer/upcoming-listings?${queryString}`)
+          ]);
+        } catch (buyerErr: any) {
+          if (buyerErr?.response?.status === 401 || buyerErr?.response?.status === 403) {
+            [liveRes, upcomingRes] = await Promise.all([
+              axios.get(`${API_URL}/public/live-properties?${queryString}`),
+              axios.get(`${API_URL}/public/upcoming-properties?${queryString}`)
+            ]);
+          } else {
+            throw buyerErr;
+          }
+        }
       } else {
         [liveRes, upcomingRes] = await Promise.all([
           axios.get(`${API_URL}/public/live-properties?${queryString}`),
@@ -312,7 +325,7 @@ export default function AuctionsListingPage() {
 
       {/* SELLER RESTRICTION BANNER */}
       {isAuthenticated && isSeller && (
-        <section className="w-full max-w-7xl mx-auto px-6 py-12">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
             <Building className="w-12 h-12 text-amber-500 mb-4" />
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Mode Active</h3>
@@ -331,7 +344,7 @@ export default function AuctionsListingPage() {
 
       {/* REALTIME OFFERS GRID */}
       {(!isAuthenticated || !isSeller) && (
-      <section className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -390,7 +403,7 @@ export default function AuctionsListingPage() {
                 ? allItems 
                 : allItems.filter((i: any) => (i.status || 'LIVE') === selectedStatus);
 
-              return filteredItems.map((item: any) => {
+              return filteredItems.map((item: any, idx: number) => {
                 const details = item.propertyDetails || {};
                 const title = details.propertyTitle || "Untitled Property";
                 const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
@@ -398,7 +411,7 @@ export default function AuctionsListingPage() {
                   const words = rawLocation.trim().split(/\s+/);
                   return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
                 })();
-                const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
+                const images = extractPropertyImages(item);
                 const beds = details.propertyBedrooms || 0;
                 const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
                 
@@ -436,22 +449,23 @@ export default function AuctionsListingPage() {
                   key={item._id} 
                   className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer"
                 >
-                  <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
-                    <Image
-                      src={image}
-                      alt={title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
-                      {item.status || "Realtime Offer"}
-                    </div>
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
-                    </div>
-                  </div>
+                  <PropertyCardImageCarousel
+                    images={images}
+                    alt={title}
+                    priority={idx < 3}
+                    aspectClass="h-[240px]"
+                    badge={
+                      <div className="bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
+                        {item.status || "Realtime Offer"}
+                      </div>
+                    }
+                    topRightBadge={
+                      <div className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
+                      </div>
+                    }
+                  />
 
                   <div className="p-4 pt-5 flex flex-col flex-1">
                     <div className="flex items-start justify-between gap-4 mb-2">
