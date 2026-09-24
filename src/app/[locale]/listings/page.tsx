@@ -298,7 +298,7 @@ export default function ListingsPage() {
                 const words = rawLocation.trim().split(/\s+/);
                 return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
               })();
-              const rawImages = details.propertyImages || item.propertyImages || (item.image ? [item.image] : []);
+              const rawImages = details.allPropertyImages || item.allPropertyImages || (item.image ? [item.image] : []);
               const images = Array.isArray(rawImages) && rawImages.length > 0
                 ? rawImages
                 : ["/property-placeholder.svg"];
