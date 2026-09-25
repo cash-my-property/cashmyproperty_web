@@ -6,6 +6,7 @@ import Dirham from "@/components/Dirham";
 import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
 import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
 import { extractPropertyImages } from "@/utils/imageUrl";
+import { formatPropertyType, formatPropertyCategory, formatPropertyPlan, formatRentalPeriodShort } from "@/utils/formatters";
 
 interface PropertyGridCardProps {
   item: any;
@@ -40,23 +41,14 @@ export default function PropertyGridCard({
     : `${details.propertyBuiltUpArea || 0} sqft`;
   const price =
     item.price?.amount || details.propertyPrice?.amount || details.propertyPrice || 0;
-  const type = details.propertyType || "Property";
+  const type = formatPropertyType(details.propertyType || item.propertyType);
+  const category = formatPropertyCategory(details.propertyCategory || item.propertyCategory);
+  const plan = formatPropertyPlan(details.propertyPlan || item.propertyPlan || item.status);
   const seller = item.sellerInfo || details.sellerInfo || item.seller || details.seller;
   const isRent =
     (item.listingPurpose || details.listingPurpose) === "RENT";
   const rentalPeriod = item.rentalPeriod || details.rentalPeriod;
-
-  const rentalPeriodLabel = rentalPeriod
-    ? rentalPeriod === "PER_YEAR"
-      ? "yr"
-      : rentalPeriod === "PER_MONTH"
-      ? "mo"
-      : rentalPeriod === "PER_WEEK"
-      ? "wk"
-      : rentalPeriod === "PER_DAY"
-      ? "day"
-      : rentalPeriod.replace("PER_", "").toLowerCase()
-    : "";
+  const rentalPeriodLabel = formatRentalPeriodShort(rentalPeriod);
 
   return (
     <Link
@@ -116,15 +108,15 @@ export default function PropertyGridCard({
             <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">
               Category
             </span>
-            <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">
-              {details.propertyCategory || "Residential"}
+            <span className="text-gray-900 dark:text-white text-[12px] font-bold truncate w-full">
+              {category}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center text-center px-1">
             <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">
               Type
             </span>
-            <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">
+            <span className="text-gray-900 dark:text-white text-[12px] font-bold truncate w-full">
               {type}
             </span>
           </div>
@@ -132,8 +124,8 @@ export default function PropertyGridCard({
             <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">
               Status
             </span>
-            <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">
-              {item.status || "Ready"}
+            <span className="text-gray-900 dark:text-white text-[12px] font-bold truncate w-full">
+              {plan}
             </span>
           </div>
         </div>

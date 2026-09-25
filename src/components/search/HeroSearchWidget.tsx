@@ -47,7 +47,7 @@ const EMPTY_SUGGESTIONS: SuggestionState = { locations: [], properties: [], agen
 const TAB_FILTERS: Record<string, string[]> = {
   RENT: ["category", "propertyType", "beds", "baths", "price", "amenities", "furnishing", "rentalPeriod"],
   BUY: ["category", "propertyType", "beds", "baths", "price", "amenities", "area", "furnishing"],
-  NEW_PROJECTS: ["category", "propertyType", "beds", "price", "amenities", "deliveryDate"],
+  NEW_PROJECTS: ["propertyType", "beds", "price", "amenities", "deliveryDate"],
   AGENTS: ["segment", "propertyType", "language", "nationality"],
 };
 
@@ -99,12 +99,68 @@ const FALLBACK_DELIVERY_DATES: FilterOption[] = [
   { value: "2029+", label: "2029+" },
 ];
 
-const labelOf = (options: FilterOption[], value: string) => options.find((o) => o.value === value)?.label || value;
+import { formatPropertyType } from "@/utils/formatters";
 
-const FALLBACK_PROPERTY_TYPES: FilterOption[] = [
+const labelOf = (options: FilterOption[], value: string) => options.find((o) => o.value === value)?.label || formatPropertyType(value);
+
+export const NEW_PROJECTS_PROPERTY_TYPES: FilterOption[] = [
+  { value: "APARTMENT", label: "Apartment" },
+  { value: "PENTHOUSE", label: "Penthouse" },
+  { value: "TOWNHOUSE", label: "Townhouse" },
+  { value: "DUPLEX", label: "Duplex" },
+  { value: "VILLA", label: "Villa" },
+];
+
+export const RESIDENTIAL_PROPERTY_TYPES: FilterOption[] = [
   { value: "APARTMENT", label: "Apartment" },
   { value: "VILLA", label: "Villa" },
+  { value: "TOWNHOUSE", label: "Townhouse" },
+  { value: "PENTHOUSE", label: "Penthouse" },
+  { value: "COMPOUND", label: "Compound" },
+  { value: "DUPLEX", label: "Duplex" },
+  { value: "FULL_FLOOR", label: "Full Floor" },
+  { value: "HALF_FLOOR", label: "Half Floor" },
+  { value: "BUILDING", label: "Whole Building" },
+  { value: "WHOLE_BUILDING", label: "Whole Building" },
   { value: "LAND", label: "Land" },
+  { value: "BULK_RENT_UNIT", label: "Bulk Rent Unit" },
+  { value: "BULK_SALE_UNIT", label: "Bulk Sale Unit" },
+  { value: "BULK_UNIT", label: "Bulk Unit" },
+  { value: "BUNGALOW", label: "Bungalow" },
+  { value: "HOTEL_APARTMENT", label: "Hotel & Hotel Apartment" },
+];
+
+export const COMMERCIAL_PROPERTY_TYPES: FilterOption[] = [
+  { value: "OFFICES", label: "Office Space" },
+  { value: "RETAIL", label: "Retail" },
+  { value: "SHOP", label: "Shop" },
+  { value: "SHOWROOM", label: "Showroom" },
+  { value: "WAREHOUSE", label: "Warehouse" },
+  { value: "COMMERCIAL_VILLA", label: "Commercial Villa" },
+  { value: "BUILDING", label: "Building" },
+  { value: "WHOLE_BUILDING", label: "Whole Building" },
+  { value: "FULL_FLOOR", label: "Full Floor" },
+  { value: "HALF_FLOOR", label: "Half Floor" },
+  { value: "COMMERCIAL_LAND", label: "Commercial Land" },
+  { value: "LAND", label: "Land" },
+  { value: "BULK_RENT_UNIT", label: "Bulk Rent Unit" },
+  { value: "BULK_SALE_UNIT", label: "Bulk Sale Unit" },
+  { value: "BULK_UNIT", label: "Bulk Unit" },
+  { value: "FACTORY", label: "Factory" },
+  { value: "LABOR_CAMP", label: "Labor Camp" },
+  { value: "STAFF_ACCOMMODATION", label: "Staff Accommodation" },
+  { value: "BUSINESS_CENTRE", label: "Business Centre" },
+  { value: "CO_WORKING_SPACE", label: "Co-working Space" },
+  { value: "COWORKING_SPACE", label: "Co-working Space" },
+  { value: "FARM", label: "Farm" },
+  { value: "HOTEL_APARTMENT", label: "Hotel Apartment" },
+];
+
+export const ALL_PROPERTY_TYPES: FilterOption[] = [
+  ...RESIDENTIAL_PROPERTY_TYPES,
+  ...COMMERCIAL_PROPERTY_TYPES.filter(
+    (c) => !RESIDENTIAL_PROPERTY_TYPES.some((r) => r.value === c.value)
+  ),
 ];
 
 export const ALL_AMENITIES: FilterOption[] = [
@@ -284,7 +340,20 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const findFilter = (key: string) => activeConfig?.filters.find((f) => f.key === key);
   const optionsOf = (key: string, fallback: FilterOption[] = []) => findFilter(key)?.options || fallback;
 
-  const propertyTypes = optionsOf("propertyType", FALLBACK_PROPERTY_TYPES);
+  const fallbackTypes =
+    activeTab === "NEW_PROJECTS"
+      ? NEW_PROJECTS_PROPERTY_TYPES
+      : isAgentTab
+      ? selectedAgentSegment.startsWith("COMMERCIAL")
+        ? COMMERCIAL_PROPERTY_TYPES
+        : RESIDENTIAL_PROPERTY_TYPES
+      : selectedCategory === "COMMERCIAL"
+      ? COMMERCIAL_PROPERTY_TYPES
+      : selectedCategory === "RESIDENTIAL"
+      ? RESIDENTIAL_PROPERTY_TYPES
+      : ALL_PROPERTY_TYPES;
+
+  const propertyTypes = activeTab === "NEW_PROJECTS" ? NEW_PROJECTS_PROPERTY_TYPES : optionsOf("propertyType", fallbackTypes);
   const amenityOptions = ALL_AMENITIES;
   const categoryOptions = optionsOf("category", FALLBACK_CATEGORIES);
   const bedOptions = optionsOf("beds", FALLBACK_BEDS);
@@ -469,6 +538,12 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     setActiveTab(tabKey);
     setSuggestions(EMPTY_SUGGESTIONS);
     setShowDropdown(false);
+    if (tabKey === "NEW_PROJECTS") {
+      setSelectedCategory("RESIDENTIAL");
+      setSelectedPropertyTypes((prev) =>
+        prev.filter((t) => NEW_PROJECTS_PROPERTY_TYPES.some((np) => np.value === t))
+      );
+    }
   };
 
   const getSearchPlaceholder = () => {
@@ -912,7 +987,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         {/* Quick Filter Pills Row for RENT / BUY / NEW PROJECTS (order follows the v2 filter definitions) */}
         {!isAgentTab && (
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 py-1 pt-2 border-t border-gray-100 dark:border-[#1A3626] relative z-30">
-            {renderPill("category", labelOf(categoryOptions, selectedCategory), true)}
+            {hasFilter("category") && renderPill("category", labelOf(categoryOptions, selectedCategory), true)}
             {renderPill("propertyType", summarize(propertyTypes, selectedPropertyTypes, "Property type"), selectedPropertyTypes.length > 0)}
             {renderPill("bedsBaths", bedsBathsLabel(), selectedBeds.length > 0 || selectedBaths.length > 0)}
             {renderPill(
@@ -957,7 +1032,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       {/* INLINE FILTER DROPDOWN POPUPS (Rendered via React Portal onto document.body) */}
       {renderPopup(
         "propertyType",
-        "w-[340px] sm:w-[400px]",
+        activeTab === "NEW_PROJECTS" ? "w-[300px] sm:w-[350px]" : "w-[340px] sm:w-[400px]",
         <>
           <div className="flex items-center justify-between">
             <h4 className="text-base font-bold text-gray-900 dark:text-white">Property type</h4>
@@ -973,9 +1048,18 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
           </div>
 
           <div className="flex flex-wrap gap-2.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5">
+            {activeTab === "NEW_PROJECTS" && (
+              <button
+                type="button"
+                onClick={() => setSelectedPropertyTypes([])}
+                className={chipClass(selectedPropertyTypes.length === 0)}
+              >
+                Property type
+              </button>
+            )}
             {propertyTypes.length === 0
               ? renderLoadingOrEmpty()
-              : (showAllTypes ? propertyTypes : propertyTypes.slice(0, 7)).map((item) => (
+              : (showAllTypes || activeTab === "NEW_PROJECTS" ? propertyTypes : propertyTypes.slice(0, 7)).map((item) => (
                   <button
                     type="button"
                     key={item.value}
@@ -987,7 +1071,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                 ))}
           </div>
 
-          {propertyTypes.length > 7 && (
+          {activeTab !== "NEW_PROJECTS" && propertyTypes.length > 7 && (
             <button
               type="button"
               onClick={() => setShowAllTypes(!showAllTypes)}

@@ -28,6 +28,7 @@ import {
   FileText,
   Tag
 } from "lucide-react";
+import { formatPropertyType, formatRentalPeriodShort } from "@/utils/formatters";
 import { useDictionary } from "@/components/DictionaryProvider";
 import api from "@/lib/api";
 
@@ -673,11 +674,11 @@ export default function SellerDetailPage() {
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
                               <span className="text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] uppercase tracking-wider">
-                                {prop.propertyType || "Apartment"}
+                                {formatPropertyType(prop.propertyType)}
                               </span>
                               {prop.propertyPrice && (
                                 <span className="text-lg font-extrabold text-gray-900 dark:text-white">
-                                  {prop.propertyPrice.amount.toLocaleString()} <span className="text-xs font-semibold text-gray-500">{prop.propertyPrice.currency || 'AED'}{prop.rentalPeriod === 'PER_YEAR' ? '/yr' : prop.rentalPeriod === 'PER_MONTH' ? '/mo' : ''}</span>
+                                  {prop.propertyPrice.amount.toLocaleString()} <span className="text-xs font-semibold text-gray-500">{prop.propertyPrice.currency || 'AED'}{formatRentalPeriodShort(prop.rentalPeriod)}</span>
                                 </span>
                               )}
                             </div>
@@ -873,7 +874,7 @@ export default function SellerDetailPage() {
                                   {item.dealType}
                                 </span>
                               </td>
-                              <td className="py-4 px-5 font-semibold">{item.propertyType}</td>
+                              <td className="py-4 px-5 font-semibold">{formatPropertyType(item.propertyType)}</td>
                               <td className="py-4 px-5">{item.bedrooms || "Studio"}</td>
                               <td className="py-4 px-5 font-bold text-gray-900 dark:text-white">
                                 {item.price ? `${item.price.toLocaleString()} ${item.currency || 'AED'}` : "N/A"}

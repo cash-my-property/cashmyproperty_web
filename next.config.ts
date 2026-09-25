@@ -66,6 +66,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  onDemandEntries: {
+  maxInactiveAge: 25 * 1000, // 25 seconds baad inactive page memory se clear
+  pagesBufferLength: 2,      // Sirf 2 active pages RAM mein rahenge
+},
+
 };
 
 export default nextConfig;

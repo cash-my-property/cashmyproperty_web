@@ -12,6 +12,7 @@ import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
 import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import { formatPropertyCategory, formatPropertyType, formatPropertyPlan } from "@/utils/formatters";
 import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function HomePage() {
@@ -370,15 +371,15 @@ export default function HomePage() {
                   <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
                     <div className="flex flex-col items-center justify-center text-center px-1">
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyCategory(details.propertyCategory)}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyType(details.propertyType || type)}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Plan</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyPlan || "Ready"}</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyPlan(details.propertyPlan)}</span>
                     </div>
                   </div>
                 </div>
@@ -473,15 +474,15 @@ export default function HomePage() {
                   <div className="bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-2.5 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626] mb-1">
                     <div className="flex flex-col items-center justify-center text-center px-1">
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyCategory(details.propertyCategory)}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
                       <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyType(details.propertyType || type)}</span>
                     </div>
                     <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
+                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Plan</span>
+                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyPlan(details.propertyPlan || item.status)}</span>
                     </div>
                   </div>
 

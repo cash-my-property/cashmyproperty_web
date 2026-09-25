@@ -294,7 +294,7 @@ export default function AddPropertyPage() {
   };
 
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  const ALLOWED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const ALLOWED_DOC_TYPES = ["application/pdf"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -328,10 +328,10 @@ export default function AddPropertyPage() {
       const file = e.target.files[0];
       const type = file.type.toLowerCase();
       const name = file.name.toLowerCase();
-      const isValid = ALLOWED_DOC_TYPES.includes(type) || /\.(pdf|jpg|jpeg|png|webp)$/i.test(name);
+      const isValid = ALLOWED_DOC_TYPES.includes(type) || /\.pdf$/i.test(name);
       
       if (!isValid) {
-        setError(`Invalid file type for document. Only PDF, JPG, JPEG, PNG, and WEBP formats are supported.`);
+        setError(`Invalid file type for document. Only PDF format (.pdf) is allowed.`);
         return;
       }
       setError(null);
@@ -797,7 +797,7 @@ export default function AddPropertyPage() {
                         <input 
                           required
                           type="file" 
-                          accept=".pdf,image/*" 
+                          accept=".pdf,application/pdf" 
                           onChange={(e) => handleDocumentChange(doc, e)}
                           className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer"
                         />

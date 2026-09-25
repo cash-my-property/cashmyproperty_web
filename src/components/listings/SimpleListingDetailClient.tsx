@@ -28,6 +28,16 @@ import {
   FileText,
   Hash
 } from "lucide-react";
+import { 
+  formatPropertyType, 
+  formatPropertyCategory, 
+  formatPropertyPlan, 
+  formatListingPurpose, 
+  formatFurnishingStatus, 
+  formatRentalPeriod, 
+  formatRentalPeriodShort, 
+  formatAmenity 
+} from "@/utils/formatters";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -504,7 +514,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate" title={type}>{type}</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
                 </div>
               </div>
 
@@ -544,8 +554,8 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
                     {parkingSpaces ? "Parking" : "Property Plan"}
                   </p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate">
-                    {parkingSpaces ? `${parkingSpaces} Spaces` : (plan || "Ready")}
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                    {parkingSpaces ? `${parkingSpaces} Spaces` : formatPropertyPlan(plan)}
                   </p>
                 </div>
               </div>
@@ -582,13 +592,13 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 {purpose && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{purpose.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose)}</span>
                   </div>
                 )}
                 {isForRent && rentalPeriod && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Rental Period</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1A3626] dark:text-[#5CD284] capitalize truncate">
+                    <span className="text-xs sm:text-sm font-extrabold text-[#1A3626] dark:text-[#5CD284] truncate">
                       {formatRentalPeriod(rentalPeriod)}
                     </span>
                   </div>
@@ -596,13 +606,13 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 {category && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{category.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category)}</span>
                   </div>
                 )}
                 {plan && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{plan === "READY" ? "Ready" : plan === "OFF_PLAN" ? "Off-Plan" : plan.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan)}</span>
                   </div>
                 )}
                 {availability && (
@@ -614,14 +624,8 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 {furnishingStatus && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {furnishingStatus.toUpperCase() === "NOT_FURNISHED"
-                        ? "Not Furnished"
-                        : furnishingStatus.toUpperCase() === "SEMI"
-                        ? "Semi Furnished"
-                        : furnishingStatus.toUpperCase() === "FULL"
-                        ? "Fully Furnished"
-                        : furnishingStatus.replace(/_/g, " ")}
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                      {formatFurnishingStatus(furnishingStatus)}
                     </span>
                   </div>
                 )}
@@ -658,7 +662,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
-                    <span>{feature}</span>
+                    <span>{formatAmenity(feature)}</span>
                   </span>
                 ))}
               </div>

@@ -105,8 +105,24 @@ export default function ListingsPage() {
       if (activeType && activeType !== 'All') {
         if (activeType === 'Commercial') {
           queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.delete('propertyType');
+        } else if (activeType === 'Office' || activeType === 'Office Space') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'OFFICES');
+        } else if (activeType === 'Retail') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'RETAIL');
+        } else if (activeType === 'Warehouse') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'WAREHOUSE');
+        } else if (activeType === 'Building') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'BUILDING');
+        } else if (activeType === 'Land') {
+          queryParams.set('propertyCategory', 'RESIDENTIAL');
+          queryParams.set('propertyType', 'LAND');
         } else {
-          queryParams.set('propertyType', activeType.toUpperCase());
+          queryParams.set('propertyType', activeType.toUpperCase().replace(/\s+/g, '_'));
         }
       } else if (paramType) {
         queryParams.set('propertyType', paramType.toUpperCase());
@@ -259,61 +275,61 @@ export default function ListingsPage() {
       {/* SIMPLE LISTINGS GRID */}
       {(!isAuthenticated || !isSeller) && (
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-          <div>
-            <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Listings
-            </h2>
-            <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
-              Explore direct properties for rent or purchase with verified details and direct agent contact.
-            </p>
+        {/* Header Block */}
+        <div className="mb-8">
+          <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            Listings
+          </h2>
+          <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
+            Explore direct properties for rent or purchase with verified details and direct agent contact.
+          </p>
+        </div>
+
+        {/* Filter & View Controls Bar */}
+        <div className="flex items-center justify-between mb-10 gap-4">
+          {/* Property Category Pills (Left Side) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-1 min-w-0">
+            {["All", "Apartment", "Villa", "Townhouse", "Penthouse", "Land", "Commercial", "Office", "Retail", "Warehouse"].map((type) => (
+              <button
+                key={type}
+                onClick={() => setActiveType(type)}
+                className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                  activeType === type
+                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
+                    : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                }`}
+              >
+                {type}
+              </button>
+            ))}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Property Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              {["All", "Apartment", "Villa", "Commercial"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setActiveType(type)}
-                  className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    activeType === type
-                      ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
-                      : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-
-            {/* View Mode Toggle: Grid / List (Only visible on laptop/desktop screens) */}
-            <div className="hidden md:flex items-center bg-white dark:bg-[#102418] p-1 rounded-2xl border border-gray-100 dark:border-[#1A3626] shadow-sm shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("grid")}
-                title="Grid View"
-                className={`p-2 rounded-xl transition-all cursor-pointer ${
-                  viewMode === "grid"
-                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                title="List View"
-                className={`p-2 rounded-xl transition-all cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
+          {/* View Mode Toggle: Grid / List (Right Side) */}
+          <div className="hidden sm:flex items-center bg-white dark:bg-[#102418] p-1 rounded-full border border-gray-100 dark:border-[#1A3626] shadow-sm shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                viewMode === "grid"
+                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              title="List View"
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
           </div>
         </div>
 

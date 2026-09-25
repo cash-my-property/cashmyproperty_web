@@ -27,6 +27,7 @@ import { useDictionary } from "@/components/DictionaryProvider";
 import api from "@/lib/api";
 import axios from "axios";
 import Dirham from "@/components/Dirham";
+import { formatPropertyType, formatPropertyCategory } from "@/utils/formatters";
 
 interface TransactionItem {
   _id: string;
@@ -451,7 +452,7 @@ export default function TransactionsPage() {
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate">{tx.propertyTitle}</h3>
-                      <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{tx.propertyCategory} • {tx.propertyType}</span>
+                      <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{formatPropertyCategory(tx.propertyCategory)} • {formatPropertyType(tx.propertyType)}</span>
                     </div>
                   </div>
                   {tx.dealType === "SALE" || tx.status === "SOLD" ? (
@@ -605,7 +606,7 @@ export default function TransactionsPage() {
                       {/* Specs */}
                       <td className="py-4 px-4">
                         <div className="flex flex-col gap-0.5 text-gray-700 dark:text-gray-300">
-                          <span className="font-bold text-gray-900 dark:text-white uppercase">{tx.propertyType}</span>
+                          <span className="font-bold text-gray-900 dark:text-white uppercase">{formatPropertyType(tx.propertyType)}</span>
                           <span className="text-[11px] text-gray-500 font-medium">
                             {[
                               tx.bedrooms && tx.bedrooms !== "-" ? `${tx.bedrooms} Beds` : null,

@@ -258,16 +258,49 @@ export default function EditPropertyPage() {
     setAmenities(prev => prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]);
   };
 
+  const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const ALLOWED_DOC_TYPES = ["application/pdf"];
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setImages(prev => [...prev, ...newFiles]);
+      const validFiles: File[] = [];
+      let hasInvalid = false;
+
+      newFiles.forEach(file => {
+        const type = file.type.toLowerCase();
+        const name = file.name.toLowerCase();
+        const isValid = ALLOWED_IMAGE_TYPES.includes(type) || /\.(jpg|jpeg|png|webp)$/i.test(name);
+        if (isValid) {
+          validFiles.push(file);
+        } else {
+          hasInvalid = true;
+        }
+      });
+
+      if (hasInvalid) {
+        setError("Invalid file type detected. Only JPG, JPEG, PNG, and WEBP image formats are supported for property images.");
+      } else {
+        setError(null);
+      }
+
+      setImages(prev => [...prev, ...validFiles]);
     }
   };
 
   const handleDocumentChange = (docName: string, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setDocuments(prev => ({ ...prev, [docName]: e.target.files![0] }));
+      const file = e.target.files[0];
+      const type = file.type.toLowerCase();
+      const name = file.name.toLowerCase();
+      const isValid = ALLOWED_DOC_TYPES.includes(type) || /\.pdf$/i.test(name);
+      
+      if (!isValid) {
+        setError(`Invalid file type for document. Only PDF format (.pdf) is allowed.`);
+        return;
+      }
+      setError(null);
+      setDocuments(prev => ({ ...prev, [docName]: file }));
     }
   };
 
@@ -680,7 +713,7 @@ export default function EditPropertyPage() {
                             </button>
                           </div>
                         ) : (
-                          <input required={isRequired} type="file" accept=".pdf,image/*" onChange={(e) => handleDocumentChange(doc, e)} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer" />
+                          <input required={isRequired} type="file" accept=".pdf,application/pdf" onChange={(e) => handleDocumentChange(doc, e)} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer" />
                         )}
                       </div>
                     );

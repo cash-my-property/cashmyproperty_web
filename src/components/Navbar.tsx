@@ -679,7 +679,7 @@ export default function Navbar() {
             </nav>
 
             <div className="mt-2 pt-4 border-t border-gray-200 dark:border-[#1A3626]">
-              {isAuthenticated ? (
+              {isAuth ? (
                 <Link
                   href={`/${locale}/dashboard`}
                   className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"

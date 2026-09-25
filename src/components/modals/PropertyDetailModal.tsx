@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Building, MapPin, Bed, Bath, Maximize, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, FileText, Phone } from "lucide-react";
 import Image from "next/image";
+import { formatPropertyType, formatPropertyCategory, formatPropertyPlan, formatListingPurpose } from "@/utils/formatters";
 
 interface PropertyDetailModalProps {
   property: any;
@@ -208,25 +209,25 @@ export default function PropertyDetailModal({ property, onClose }: PropertyDetai
                 {purpose && (
                   <div className="flex justify-between items-center p-2 rounded-xl bg-white dark:bg-[#102418] border border-gray-100/80 dark:border-[#1A3626]">
                     <span className="text-gray-400 font-medium">Purpose:</span>
-                    <span className="font-bold text-gray-900 dark:text-white uppercase">{purpose}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{formatListingPurpose(purpose)}</span>
                   </div>
                 )}
                 {category && (
                   <div className="flex justify-between items-center p-2 rounded-xl bg-white dark:bg-[#102418] border border-gray-100/80 dark:border-[#1A3626]">
                     <span className="text-gray-400 font-medium">Category:</span>
-                    <span className="font-bold text-gray-900 dark:text-white uppercase">{category}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{formatPropertyCategory(category)}</span>
                   </div>
                 )}
                 {plan && (
                   <div className="flex justify-between items-center p-2 rounded-xl bg-white dark:bg-[#102418] border border-gray-100/80 dark:border-[#1A3626]">
                     <span className="text-gray-400 font-medium">Plan:</span>
-                    <span className="font-bold text-gray-900 dark:text-white uppercase">{plan}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{formatPropertyPlan(plan)}</span>
                   </div>
                 )}
                 {type && (
                   <div className="flex justify-between items-center p-2 rounded-xl bg-white dark:bg-[#102418] border border-gray-100/80 dark:border-[#1A3626]">
                     <span className="text-gray-400 font-medium">Type:</span>
-                    <span className="font-bold text-gray-900 dark:text-white uppercase">{type}</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{formatPropertyType(type)}</span>
                   </div>
                 )}
                 {whatsapp && (

@@ -6,6 +6,7 @@ import { Loader2, ListOrdered, User, Clock, ShieldCheck, FileText } from "lucide
 import Image from "next/image";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useSocket } from "@/context/SocketContext";
+import { formatPropertyType } from "@/utils/formatters";
 
 export default function ReceivedBidsPage() {
   const { locale } = useDictionary();
@@ -77,7 +78,7 @@ export default function ReceivedBidsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{bid.propertyId?.propertyTitle || "Unknown Property"}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{bid.propertyId?.propertyType || "Property"}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{formatPropertyType(bid.propertyId?.propertyType)}</p>
                         </div>
                       </div>
                     </td>

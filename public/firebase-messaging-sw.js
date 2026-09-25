@@ -3,14 +3,13 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
 // Initialize Firebase App in Service Worker
-// Values will be populated or overridden by client registration
 const firebaseConfig = {
-  apiKey: "AIzaSy_placeholder_key",
-  authDomain: "cmp-dubai.firebaseapp.com",
-  projectId: "cmp-dubai",
-  storageBucket: "cmp-dubai.appspot.com",
-  messagingSenderId: "100000000000",
-  appId: "1:100000000000:web:placeholder"
+  apiKey: "AIzaSyDVyRq0Ru34wD-5pomdHwvRXu2vjyShGsI",
+  authDomain: "cashmyproperty-2c6f9.firebaseapp.com",
+  projectId: "cashmyproperty-2c6f9",
+  storageBucket: "cashmyproperty-2c6f9.firebasestorage.app",
+  messagingSenderId: "388934698811",
+  appId: "1:388934698811:web:74175bfc2988fe858d191e"
 };
 
 if (!firebase.apps.length) {

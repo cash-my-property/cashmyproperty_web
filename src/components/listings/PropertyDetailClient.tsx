@@ -33,6 +33,14 @@ import { useAuth } from "@/context/AuthContext";
 import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
+import { 
+  formatPropertyType, 
+  formatPropertyCategory, 
+  formatPropertyPlan, 
+  formatListingPurpose, 
+  formatFurnishingStatus, 
+  formatAmenity 
+} from "@/utils/formatters";
 import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
@@ -653,7 +661,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate" title={type}>{type}</p>
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
                 </div>
               </div>
 
@@ -687,8 +695,8 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Plan</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate">
-                    {details.propertyPlan ? details.propertyPlan.replace('_', ' ') : "Ready"}
+                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                    {formatPropertyPlan(details.propertyPlan)}
                   </p>
                 </div>
               </div>
@@ -713,33 +721,27 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 {details.listingPurpose && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.listingPurpose.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatListingPurpose(details.listingPurpose)}</span>
                   </div>
                 )}
                 {details.propertyCategory && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyCategory.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatPropertyCategory(details.propertyCategory)}</span>
                   </div>
                 )}
                 {details.furnishingStatus && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {details.furnishingStatus.toUpperCase() === "NOT_FURNISHED"
-                        ? "Not Furnished"
-                        : details.furnishingStatus.toUpperCase() === "SEMI"
-                        ? "Semi Furnished"
-                        : details.furnishingStatus.toUpperCase() === "FULL"
-                        ? "Fully Furnished"
-                        : details.furnishingStatus.replace(/_/g, " ")}
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                      {formatFurnishingStatus(details.furnishingStatus)}
                     </span>
                   </div>
                 )}
                 {details.propertyPlan && (
                   <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyPlan.toLowerCase().replace('_', ' ')}</span>
+                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatPropertyPlan(details.propertyPlan)}</span>
                   </div>
                 )}
                 {details.unitNumber && (
@@ -776,7 +778,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
                     >
                       <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
-                      <span>{feature}</span>
+                      <span>{formatAmenity(feature)}</span>
                     </span>
                   ))}
                 </div>
