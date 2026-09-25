@@ -121,11 +121,8 @@ export const RESIDENTIAL_PROPERTY_TYPES: FilterOption[] = [
   { value: "FULL_FLOOR", label: "Full Floor" },
   { value: "HALF_FLOOR", label: "Half Floor" },
   { value: "BUILDING", label: "Whole Building" },
-  { value: "WHOLE_BUILDING", label: "Whole Building" },
   { value: "LAND", label: "Land" },
-  { value: "BULK_RENT_UNIT", label: "Bulk Rent Unit" },
   { value: "BULK_SALE_UNIT", label: "Bulk Sale Unit" },
-  { value: "BULK_UNIT", label: "Bulk Unit" },
   { value: "BUNGALOW", label: "Bungalow" },
   { value: "HOTEL_APARTMENT", label: "Hotel & Hotel Apartment" },
 ];
@@ -350,10 +347,17 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       : selectedCategory === "COMMERCIAL"
       ? COMMERCIAL_PROPERTY_TYPES
       : selectedCategory === "RESIDENTIAL"
-      ? RESIDENTIAL_PROPERTY_TYPES
+      ? activeTab === "RENT"
+        ? RESIDENTIAL_PROPERTY_TYPES.map((t) => (t.value === "BULK_SALE_UNIT" ? { value: "BULK_RENT_UNIT", label: "Bulk Rent Unit" } : t))
+        : RESIDENTIAL_PROPERTY_TYPES
       : ALL_PROPERTY_TYPES;
 
-  const propertyTypes = activeTab === "NEW_PROJECTS" ? NEW_PROJECTS_PROPERTY_TYPES : optionsOf("propertyType", fallbackTypes);
+  const propertyTypes =
+    activeTab === "NEW_PROJECTS"
+      ? NEW_PROJECTS_PROPERTY_TYPES
+      : activeTab === "BUY" || activeTab === "RENT"
+      ? fallbackTypes
+      : optionsOf("propertyType", fallbackTypes);
   const amenityOptions = ALL_AMENITIES;
   const categoryOptions = optionsOf("category", FALLBACK_CATEGORIES);
   const bedOptions = optionsOf("beds", FALLBACK_BEDS);
@@ -385,7 +389,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
         // Drop selections the new tab / category / plan no longer offers
         const prune = (key: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-          const allowed = (key === "amenities" ? amenityOptions : filters.find((f) => f.key === key)?.options)?.map((o) => o.value);
+          const allowed = (key === "propertyType" ? fallbackTypes : key === "amenities" ? amenityOptions : filters.find((f) => f.key === key)?.options)?.map((o) => o.value);
           if (!allowed) return;
           setter((prev) => (prev.every((v) => allowed.includes(v)) ? prev : prev.filter((v) => allowed.includes(v))));
         };
@@ -1048,18 +1052,16 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
           </div>
 
           <div className="flex flex-wrap gap-2.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5">
-            {activeTab === "NEW_PROJECTS" && (
-              <button
-                type="button"
-                onClick={() => setSelectedPropertyTypes([])}
-                className={chipClass(selectedPropertyTypes.length === 0)}
-              >
-                Property type
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setSelectedPropertyTypes([])}
+              className={chipClass(selectedPropertyTypes.length === 0)}
+            >
+              Property type
+            </button>
             {propertyTypes.length === 0
               ? renderLoadingOrEmpty()
-              : (showAllTypes || activeTab === "NEW_PROJECTS" ? propertyTypes : propertyTypes.slice(0, 7)).map((item) => (
+              : (showAllTypes || activeTab === "NEW_PROJECTS" ? propertyTypes : propertyTypes.slice(0, 6)).map((item) => (
                   <button
                     type="button"
                     key={item.value}
@@ -1071,7 +1073,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                 ))}
           </div>
 
-          {activeTab !== "NEW_PROJECTS" && propertyTypes.length > 7 && (
+          {activeTab !== "NEW_PROJECTS" && propertyTypes.length > 6 && (
             <button
               type="button"
               onClick={() => setShowAllTypes(!showAllTypes)}
