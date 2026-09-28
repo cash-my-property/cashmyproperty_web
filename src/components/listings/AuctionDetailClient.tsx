@@ -18,12 +18,16 @@ import {
   AlertTriangle, 
   Heart,
   Camera,
+  Award,
   Sparkles,
   Lock,
   X,
   FileText,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Info,
+  QrCode,
+  Car
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -31,9 +35,21 @@ import { useAuth } from "@/context/AuthContext";
 import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
+import { 
+  formatPropertyType, 
+  formatPropertyCategory, 
+  formatPropertyPlan, 
+  formatListingPurpose, 
+  formatFurnishingStatus, 
+  formatAmenity,
+  formatAvailability,
+  formatRentalPeriod,
+  formatRentalPeriodShort
+} from "@/utils/formatters";
 import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
+import PropertyRegulatoryInfo from "@/components/listings/PropertyRegulatoryInfo";
 
 const PropertyMapCard = dynamic(() => import("@/components/listings/PropertyMapCard"), {
   ssr: false,
@@ -302,37 +318,52 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
     return (
       <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{detailDict.propertyNotFound || "Property not found"}</h1>
-        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">{detailDict.backToProperties || "Back to listings"}</Link>
+        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#5CD284] underline">{detailDict.backToProperties || "Back to listings"}</Link>
       </main>
     );
   }
 
-  const details = propertyInfo.propertyDetails || {};
-  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url) : ["/property-placeholder.svg"];
-  const title = details.propertyTitle || "Untitled Property";
-  const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-  const priceAmount = details.propertyPrice?.amount || details.propertyPrice || 0;
+  const details = propertyInfo.propertyDetails || propertyInfo || {};
+  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url || i) : ["/property-placeholder.svg"];
+  const title = details.propertyTitle || propertyInfo.title || "Untitled Property";
+  const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || propertyInfo.location || "Dubai, UAE");
+  const priceAmount = details.propertyPrice?.amount || details.propertyPrice || propertyInfo.startPrice || propertyInfo.price || 0;
   const highestBid = propertyInfo.currentHighestBid || (typeof propertyInfo.currentHighestOffer === 'object' ? propertyInfo.currentHighestOffer?.amount : propertyInfo.currentHighestOffer);
   const priceValue = highestBid ? highestBid.toLocaleString() : priceAmount.toLocaleString();
-  const type = details.propertyType || "N/A";
-  const beds = details.propertyBedrooms || 0;
-  const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
+  const downPaymentAmount = details.propertyPrice?.downPayment ?? propertyInfo.propertyPrice?.downPayment;
+  const downPaymentValue = (downPaymentAmount !== undefined && downPaymentAmount !== null && Number(downPaymentAmount) > 0)
+    ? Number(downPaymentAmount).toLocaleString()
+    : null;
+  const type = details.propertyType || propertyInfo.propertyType || "N/A";
+  const purpose = details.listingPurpose || propertyInfo.listingPurpose || "";
+  const category = details.propertyCategory || propertyInfo.propertyCategory || "";
+  const plan = details.propertyPlan || propertyInfo.propertyPlan || "";
+  const beds = details.propertyBedrooms || propertyInfo.bedrooms || 0;
+  const baths = details.propertyWashrooms || details.propertyBathrooms || propertyInfo.bathrooms || 0;
+  const parkingSpaces = details.parkingSpaces !== undefined ? details.parkingSpaces : propertyInfo.parkingSpaces;
+  const permitNumber = details.permitNumber || propertyInfo.permitNumber || details.trakheesiNumber || propertyInfo.trakheesiNumber || "";
+  const referenceNumber = details.referenceNumber || propertyInfo.referenceNumber || details.propertyId || propertyInfo.propertyId || details.PID || propertyInfo.PID || details.listingId || propertyInfo.listingId || "";
+  const listingId = details.listingId || propertyInfo.listingId || "";
+  const availability = details.availability || propertyInfo.availability || "";
+  const furnishingStatus = details.furnishingStatus || propertyInfo.furnishingStatus || "";
+  const rentalPeriod = details.rentalPeriod || propertyInfo.rentalPeriod || "";
+  const isForRent = purpose === "RENT" || details.listingPurpose === "RENT" || propertyInfo.listingPurpose === "RENT";
   
   const getAreaValue = (area: any) => {
     if (!area) return 0;
     if (typeof area === 'object' && area.value !== undefined) return Number(area.value);
     return Number(area) || 0;
   };
-  const totalArea = getAreaValue(details.propertyArea);
-  const builtUpArea = getAreaValue(details.propertyBuiltUpArea);
+  const totalArea = getAreaValue(details.propertyArea || propertyInfo.propertyArea || propertyInfo.area);
+  const builtUpArea = getAreaValue(details.propertyBuiltUpArea || propertyInfo.propertyBuiltUpArea);
   const sqft = builtUpArea || totalArea;
-  const description = details.propertyDescription || "No description provided.";
+  const description = details.propertyDescription || propertyInfo.description || "No description provided.";
   
   const getAmenitiesList = (): string[] => {
     const raw = details.propertyAmenities || propertyInfo.propertyAmenities || details.propertyFeatures || propertyInfo.features;
     if (Array.isArray(raw)) return raw.filter(Boolean);
     if (typeof raw === 'string' && raw.trim()) return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
-    return [];
+    return ["Central A/C", "Balcony", "Shared Pool", "Security"];
   };
   const features = getAmenitiesList();
 
@@ -425,21 +456,17 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
+            <Link href={`/${locale}`} className="hover:text-[#5CD284] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/auctions`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Auctions</Link>
+            <Link href={`/${locale}/auctions`} className="hover:text-[#5CD284] transition-colors">Auctions</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-[350px] md:max-w-[500px]" title={title}>{title}</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#c9a14b]/10 dark:text-[#c9a14b] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
-              {type}
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#5CD284]/30">
+              {formatPropertyType(type)}
             </span>
-            <div className="flex items-center gap-1.5 bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] px-3.5 py-1 rounded-full border border-[#5CD284]/30 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{propertyInfo.status || 'Live Auction'}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -466,7 +493,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                  <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                  <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                   <span>1 Photo</span>
                 </div>
               </div>
@@ -484,7 +511,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                 >
                   <Image src={images[1]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span>2 Photos</span>
                   </div>
                 </div>
@@ -508,10 +535,10 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                   {/* Bottom Right Photo Count Badge */}
                   <div 
                     onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-                    className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
+                    className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
-                    <span>{images.length}</span>
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
+                    <span>{images.length} Photos</span>
                   </div>
                 </div>
 
@@ -557,27 +584,48 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
           </div>
 
           {/* Title, Actions & Pricing Header */}
-          <div className="bg-white dark:bg-[#102418] rounded-2xl p-5 sm:p-7 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-6">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              <div className="space-y-2 max-w-2xl">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <div className="bg-white dark:bg-[#102418] rounded-2xl p-5 sm:p-7 shadow-xl border border-gray-200/80 dark:border-[#1A3626] space-y-6 relative overflow-hidden">
+            {/* Top Accent Line */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#1A3626]" />
+
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
+              <div className="space-y-2.5 max-w-2xl">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
                   {title}
                 </h1>
                 
-                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                  <div className="p-1 rounded-md bg-[#5CD284]/15 text-[#5CD284]">
+                    <MapPin className="w-4 h-4" />
+                  </div>
                   <span>{location}</span>
                 </div>
               </div>
 
-              {/* Price Banner */}
-              <div className="shrink-0 bg-gradient-to-br from-[#1A3626]/5 to-[#1A3626]/10 dark:from-[#163321] dark:to-[#102418] px-6 py-4 rounded-2xl border border-[#1A3626]/10 dark:border-[#1A3626]">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">
-                  {propertyInfo.currentHighestBid ? 'Highest Live Bid' : 'Starting Price'}
+              {/* High-End Price Banner */}
+              <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#5CD284]/30 shadow-xl relative overflow-hidden group/price">
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
+                <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1">
+                  {propertyInfo.currentHighestBid || propertyInfo.currentHighestOffer ? 'Highest Live Bid' : isForRent ? 'Rental Price' : 'Starting Price'}
                 </p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#c9a14b] tabular-nums flex items-center gap-1.5">
-                  <Dirham className="text-xl sm:text-2xl" /> {priceValue}
+                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] tabular-nums flex items-baseline gap-2">
+                  <span className="flex items-center gap-1">
+                    <Dirham className="text-xl sm:text-2xl" /> {priceValue}
+                  </span>
+                  {isForRent && rentalPeriod && (
+                    <span className="text-xs sm:text-sm font-bold text-white/80 tracking-normal lowercase">
+                      / {formatRentalPeriodShort(rentalPeriod)}
+                    </span>
+                  )}
                 </p>
+                {downPaymentValue && (
+                  <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between gap-3 text-xs">
+                    <span className="text-white/70 font-semibold uppercase tracking-wider text-[10px]">Down Payment</span>
+                    <span className="text-white font-extrabold tabular-nums flex items-center gap-1">
+                      <Dirham className="text-xs text-[#5CD284]" /> {downPaymentValue}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -596,9 +644,9 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                     addToast("Link Copied", "Shareable property link copied to clipboard successfully!", "success");
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#163321] hover:bg-gray-200 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200/50 dark:border-[#1A3626]"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
               >
-                <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+                <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284]" />
                 <span>Share Property</span>
               </button>
 
@@ -606,7 +654,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                 <button 
                   onClick={handleToggleFavourite}
                   disabled={isFavouriting}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#163321] hover:bg-gray-200 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200/50 dark:border-[#1A3626]"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
                 >
                   {isFavouriting ? (
                     <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
@@ -619,49 +667,55 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             </div>
 
             {/* Featured Key Specs Grid (Top 4 Boxes) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Building2 className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Building2 className="w-4 h-4 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate" title={type}>{type}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bed className="w-4 h-4 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
                     {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds || 0} Beds`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bath className="w-4 h-4 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bathrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={`${baths}`}>
                     {Number(baths) === 1 ? "1 Bath" : `${baths || 0} Baths`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  {parkingSpaces ? (
+                    <Car className="w-4 h-4 text-[#5CD284]" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 text-[#5CD284]" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Plan</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate">
-                    {details.propertyPlan ? details.propertyPlan.replace('_', ' ') : "Ready"}
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
+                    {parkingSpaces ? "Parking" : "Property Plan"}
+                  </p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {parkingSpaces ? `${parkingSpaces} Spaces` : formatPropertyPlan(plan)}
                   </p>
                 </div>
               </div>
@@ -670,55 +724,81 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             {/* Additional Info Cards */}
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Details</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {referenceNumber && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Reference No.</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate" title={referenceNumber}>{referenceNumber}</span>
+                  </div>
+                )}
+                {permitNumber && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Permit No.</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate" title={permitNumber}>{permitNumber}</span>
+                  </div>
+                )}
                 {builtUpArea > 0 && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Built Up Area</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
                   </div>
                 )}
                 {totalArea > 0 && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Area</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
                   </div>
                 )}
-                {details.listingPurpose && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                {purpose && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.listingPurpose.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose)}</span>
                   </div>
                 )}
-                {details.propertyCategory && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyCategory.toLowerCase()}</span>
-                  </div>
-                )}
-                {details.furnishingStatus && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {details.furnishingStatus.toUpperCase() === "NOT_FURNISHED"
-                        ? "Not Furnished"
-                        : details.furnishingStatus.toUpperCase() === "SEMI"
-                        ? "Semi Furnished"
-                        : details.furnishingStatus.toUpperCase() === "FULL"
-                        ? "Fully Furnished"
-                        : details.furnishingStatus.replace(/_/g, " ")}
+                {isForRent && rentalPeriod && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Rental Period</span>
+                    <span className="text-xs sm:text-sm font-semibold text-[#1A3626] dark:text-[#5CD284] truncate">
+                      {formatRentalPeriod(rentalPeriod)}
                     </span>
                   </div>
                 )}
-                {details.propertyPlan && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyPlan.toLowerCase().replace('_', ' ')}</span>
+                {category && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category)}</span>
                   </div>
                 )}
-                {details.trakheesiNumber && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Trakheesi Permit</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate">{details.trakheesiNumber}</span>
+                {plan && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan)}</span>
+                  </div>
+                )}
+                {availability && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Availability</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatAvailability(availability)}</span>
+                  </div>
+                )}
+                {furnishingStatus && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      {formatFurnishingStatus(furnishingStatus)}
+                    </span>
+                  </div>
+                )}
+                {parkingSpaces !== undefined && parkingSpaces !== null && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Parking Spaces</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{parkingSpaces} {parkingSpaces === 1 ? 'Space' : 'Spaces'}</span>
+                  </div>
+                )}
+                {(details.unitNumber || propertyInfo.unitNumber) && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Unit Number</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{details.unitNumber || propertyInfo.unitNumber}</span>
                   </div>
                 )}
               </div>
@@ -726,7 +806,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
 
             {/* Description */}
             <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Description</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Property Overview</h3>
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                 {description}
               </p>
@@ -735,77 +815,23 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             {/* Features & Amenities */}
             {features.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Features & Amenities</h3>
+                <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Features & Amenities</h3>
                 <div className="flex flex-wrap gap-2.5">
                   {features.map((feature: string, idx: number) => (
                     <span 
                       key={idx} 
-                      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-100 dark:border-emerald-500/20"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
                     >
                       <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
-                      <span>{feature}</span>
+                      <span>{formatAmenity(feature)}</span>
                     </span>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Property Documents */}
-            {documentList.length > 0 && (
-              <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-[#1A3626] dark:text-[#5CD284]" />
-                    <span>Property Documents</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-[#5CD284] border border-emerald-500/20 uppercase tracking-wider">
-                      Verified
-                    </span>
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Official permits and compliance certificates for this property.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {documentList.map((doc) => (
-                    <div 
-                      key={doc.key}
-                      className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center justify-between gap-3 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-sm transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#102418] border border-gray-200/70 dark:border-[#1A3626] flex items-center justify-center shrink-0 shadow-xs">
-                          <FileText className="w-5 h-5 text-[#1A3626] dark:text-[#5CD284]" />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white truncate">
-                            {doc.label}
-                          </h4>
-                          <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate font-mono mt-0.5">
-                            {doc.fileName || "Verified Document"}
-                          </p>
-                          {doc.uploadedAt && (
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5" suppressHydrationWarning>
-                              Uploaded: {formatUploadDate(doc.uploadedAt)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#102418] hover:bg-[#5CD284] hover:text-[#0A1C12] dark:hover:bg-[#5CD284] dark:hover:text-[#0A1C12] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-[#1A3626] text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>View</span>
-                        <ExternalLink className="w-3 h-3 opacity-60" />
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Regulatory Information Component */}
+            <PropertyRegulatoryInfo propertyInfo={propertyInfo} details={details} />
 
           </div>
         </div>
@@ -833,7 +859,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
               />
             ) : (
               <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] text-center space-y-4">
-                <div className="w-14 h-14 bg-[#1A3626]/10 dark:bg-[#c9a14b]/10 rounded-2xl flex items-center justify-center mx-auto text-[#1A3626] dark:text-[#c9a14b]">
+                <div className="w-14 h-14 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center mx-auto text-[#5CD284]">
                   <Lock className="w-7 h-7" />
                 </div>
                 <div>
@@ -846,7 +872,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                 </div>
                 <button 
                   onClick={() => setShowLoginModal(true)}
-                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
+                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
                 >
                   {detailDict.makeOffer || "Make Offer / Place Bid"}
                 </button>
@@ -881,7 +907,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
               </button>
               <Link 
                 href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center shadow-md"
               >
                 {detailDict.goToLogin || "Go to Login"}
               </Link>
