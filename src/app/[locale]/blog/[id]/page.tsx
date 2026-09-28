@@ -89,22 +89,22 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
       />
 
       {/* 1. HERO ARTICLE HEADER */}
-      <section className="pt-10 pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full">
+      <section className="pt-10 pb-8 px-4 sm:px-6 lg:px-12 max-w-5xl mx-auto w-full">
         <div className="flex flex-col gap-6">
           
           {/* Category Badge */}
           <div className="flex items-center gap-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b] border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
+            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/30">
               {currentPost.category}
             </span>
             <span className="text-xs font-medium text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> {articleData.readTime}
+              <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {articleData.readTime}
             </span>
           </div>
 
           {/* Article H1 Title (Primary SEO Heading) */}
           <h1 
-            className="text-[32px] sm:text-[46px] lg:text-[54px] font-bold text-gray-900 dark:text-white leading-[1.15] tracking-tight"
+            className="text-[30px] sm:text-[44px] lg:text-[52px] font-bold text-gray-900 dark:text-white leading-[1.15] tracking-tight"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
             {currentPost.title}
@@ -124,7 +124,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
                 alt={articleData.author.name}
                 width={48}
                 height={48}
-                className="w-12 h-12 rounded-full object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
+                className="w-12 h-12 rounded-full object-cover border-2 border-[#5CD284]"
               />
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-gray-900 dark:text-white">{articleData.author.name}</span>
@@ -134,11 +134,11 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
 
             <div className="flex items-center gap-5 text-xs text-gray-500 dark:text-gray-400 font-semibold">
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+                <Calendar className="w-4 h-4 text-[#5CD284]" />
                 {currentPost.date}
               </span>
               <span className="flex items-center gap-1.5">
-                <Eye className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+                <Eye className="w-4 h-4 text-[#5CD284]" />
                 {articleData.views}
               </span>
             </div>
@@ -149,8 +149,8 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
       </section>
 
       {/* 2. FEATURED COVER GRAPHIC BANNER */}
-      <section className="px-6 lg:px-12 max-w-6xl mx-auto w-full mb-12">
-        <div className="relative h-[300px] sm:h-[450px] lg:h-[520px] w-full rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-[#1A3626] group">
+      <section className="px-4 sm:px-6 lg:px-12 max-w-6xl mx-auto w-full mb-12">
+        <div className="relative h-[280px] sm:h-[450px] lg:h-[520px] w-full rounded-3xl overflow-hidden shadow-2xl border border-gray-150 dark:border-[#1A3626] group">
           <Image 
             src={articleData.heroImage} 
             alt={currentPost.title}
@@ -168,9 +168,9 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </section>
 
-      {/* 3. MAIN ARTICLE CONTENT & SIDEBAR (Structured HTML5 <article> & <aside>) */}
-      <section className="px-6 lg:px-12 max-w-6xl mx-auto w-full pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      {/* 3. MAIN ARTICLE CONTENT & SIDEBAR */}
+      <section className="px-4 sm:px-6 lg:px-12 max-w-6xl mx-auto w-full pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
           
           {/* Main Article Body (8 Cols) */}
           <article className="lg:col-span-8 flex flex-col gap-8">
@@ -187,9 +187,9 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* Featured Quote Callout Box */}
-            <blockquote className="bg-gradient-to-r from-green-50/80 to-amber-50/50 dark:from-[#163321]/60 dark:to-[#091711] p-6 sm:p-8 rounded-3xl border-l-4 border-[#1A3626] dark:border-[#c9a14b] shadow-md my-2">
+            <blockquote className="bg-gradient-to-r from-emerald-50/80 to-green-50/40 dark:from-[#163321]/60 dark:to-[#091711] p-6 sm:p-8 rounded-3xl border-l-4 border-[#5CD284] shadow-md my-2">
               <div className="flex items-start gap-4">
-                <Sparkles className="w-8 h-8 text-[#1A3626] dark:text-[#c9a14b] shrink-0 mt-1" />
+                <Sparkles className="w-8 h-8 text-[#5CD284] shrink-0 mt-1" />
                 <div>
                   <p className="text-base sm:text-xl font-bold text-gray-900 dark:text-white italic leading-relaxed" style={{ fontFamily: "var(--font-playfair), serif" }}>
                     "{articleData.quote}"
@@ -204,14 +204,14 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
             {/* Section 2: Key Takeaways Card */}
             <div className="bg-white dark:bg-[#102418] p-6 sm:p-8 rounded-3xl border border-gray-200 dark:border-[#1A3626] shadow-sm">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2.5">
-                <CheckCircle2 className="w-6 h-6 text-[#1A3626] dark:text-[#5CD284]" />
+                <CheckCircle2 className="w-6 h-6 text-[#5CD284]" />
                 <span>Key Takeaways & Industry Impact</span>
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {articleData.keyTakeaways.map((point, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3.5 bg-gray-50 dark:bg-[#091711] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
-                    <span className="w-6 h-6 rounded-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-6 h-6 rounded-full bg-[#5CD284] text-[#0A1C12] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                       {idx + 1}
                     </span>
                     <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 leading-snug">
@@ -239,7 +239,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
                   { label: "Transaction Safety", val: "Bank-grade", desc: "Escrow & legal documentation" },
                 ].map((stat, i) => (
                   <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#102418] border border-gray-100 dark:border-[#1A3626] text-center shadow-xs">
-                    <span className="text-2xl font-extrabold text-[#1A3626] dark:text-[#c9a14b] block mb-1">{stat.val}</span>
+                    <span className="text-2xl font-extrabold text-[#5CD284] block mb-1">{stat.val}</span>
                     <span className="text-xs font-bold text-gray-900 dark:text-white block">{stat.label}</span>
                     <span className="text-[11px] text-gray-400 dark:text-gray-500 block mt-0.5">{stat.desc}</span>
                   </div>
@@ -265,7 +265,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
                       navigator.clipboard.writeText(window.location.href);
                     }
                   }}
-                  className="px-4 py-2.5 rounded-full bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-200 hover:bg-[#1A3626] hover:text-white dark:hover:bg-[#c9a14b] dark:hover:text-[#1A3626] transition-all cursor-pointer shadow-xs text-xs font-bold flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-full bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-200 hover:bg-[#5CD284] hover:text-[#0A1C12] transition-all cursor-pointer shadow-xs text-xs font-bold flex items-center gap-2"
                 >
                   <Link2 className="w-4 h-4" />
                   <span>Copy Article Link</span>
@@ -279,18 +279,18 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
           <aside className="lg:col-span-4 flex flex-col gap-8">
             
             {/* Author Profile Card */}
-            <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
+            <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-150 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <Image 
                   src={articleData.author.avatar} 
                   alt={articleData.author.name}
                   width={56}
                   height={56}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-[#5CD284]"
                 />
                 <div>
                   <h3 className="text-base font-bold text-gray-900 dark:text-white">{articleData.author.name}</h3>
-                  <span className="text-xs text-[#1A3626] dark:text-[#5CD284] font-semibold">{articleData.author.role}</span>
+                  <span className="text-xs text-[#5CD284] font-semibold">{articleData.author.role}</span>
                 </div>
               </div>
               <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
@@ -299,8 +299,8 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* Newsletter CTA Widget */}
-            <div className="bg-gradient-to-br from-[#1A3626] to-[#091711] dark:from-[#102418] dark:to-[#091711] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] text-white shadow-xl flex flex-col gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 dark:bg-[#c9a14b]/20 flex items-center justify-center text-[#5CD284] dark:text-[#c9a14b]">
+            <div className="bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#102418] dark:to-[#091711] p-6 rounded-3xl border border-white/10 dark:border-[#1A3626] text-white shadow-xl flex flex-col gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-[#5CD284]/20 border border-[#5CD284]/30 flex items-center justify-center text-[#5CD284]">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div>
@@ -318,14 +318,14 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
                   placeholder="Enter your email" 
                   className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 text-xs outline-none focus:border-[#5CD284]"
                 />
-                <button className="w-full py-2.5 bg-[#5CD284] dark:bg-[#c9a14b] text-[#1A3626] font-bold text-xs rounded-xl hover:opacity-90 transition-opacity cursor-pointer shadow-md">
+                <button className="w-full py-2.5 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-md">
                   Subscribe Now
                 </button>
               </div>
             </div>
 
             {/* Related Articles Widget */}
-            <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
+            <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-150 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
               <h3 className="text-base font-bold text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-[#1A3626]">
                 Related Articles
               </h3>
@@ -337,10 +337,10 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
                     href={`/${locale}/blog/${(post as any).slug || post.id}`}
                     className="flex flex-col gap-1 group"
                   >
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1A3626] dark:text-[#c9a14b]">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#5CD284]">
                       {post.category}
                     </span>
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors leading-snug line-clamp-2">
+                    <h4 className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-[#5CD284] transition-colors leading-snug line-clamp-2">
                       {post.title}
                     </h4>
                     <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
@@ -356,13 +356,13 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </section>
 
-      {/* 4. BOTTOM MORE ARTICLES CAROUSEL/GRID */}
-      <section className="py-16 px-6 lg:px-12 bg-white dark:bg-[#102418] border-t border-gray-100 dark:border-[#1A3626]">
+      {/* 4. BOTTOM MORE ARTICLES GRID */}
+      <section className="py-16 px-4 sm:px-6 lg:px-12 bg-white dark:bg-[#102418] border-t border-gray-100 dark:border-[#1A3626]">
         <div className="max-w-6xl mx-auto flex flex-col gap-8">
           
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#1A3626] dark:text-[#c9a14b]">Keep Reading</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1A3626] dark:text-[#5CD284]">Keep Reading</span>
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
                 More Insights from CMP Blog
               </h2>
@@ -370,10 +370,10 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
 
             <Link 
               href={`/${locale}/blog`}
-              className="text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] flex items-center gap-1.5 hover:gap-2.5 transition-all"
+              className="text-xs font-bold text-[#1A3626] dark:text-[#5CD284] flex items-center gap-1.5 hover:gap-2.5 transition-all"
             >
               <span>View All Posts</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 text-[#5CD284]" />
             </Link>
           </div>
 
@@ -382,15 +382,15 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
               <Link 
                 key={post.id} 
                 href={`/${locale}/blog/${(post as any).slug || post.id}`} 
-                className="group flex flex-col bg-gray-50 dark:bg-[#091711] rounded-2xl overflow-hidden border border-gray-200/80 dark:border-[#1A3626] hover:-translate-y-1 transition-all duration-300"
+                className="group flex flex-col bg-gray-50 dark:bg-[#091711] rounded-2xl overflow-hidden border border-gray-200/80 dark:border-[#1A3626] hover:-translate-y-1 hover:border-[#5CD284]/40 transition-all duration-300"
               >
                 <div className="p-6 flex flex-col flex-1">
                   <div className="flex items-center gap-2 mb-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                    <Calendar className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#c9a14b]" />
+                    <Calendar className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span>{post.date}</span>
                   </div>
                   
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors leading-snug line-clamp-2" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 group-hover:text-[#5CD284] transition-colors leading-snug line-clamp-2" style={{ fontFamily: "var(--font-playfair), serif" }}>
                     {post.title}
                   </h3>
                   
@@ -398,9 +398,9 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
                     {post.excerpt}
                   </p>
                   
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] group-hover:gap-2.5 transition-all mt-auto">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#1A3626] dark:text-[#5CD284] group-hover:gap-2.5 transition-all mt-auto">
                     <span>Read Article</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#5CD284]" />
                   </div>
                 </div>
               </Link>

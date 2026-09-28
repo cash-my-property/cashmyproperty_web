@@ -100,7 +100,7 @@ export default function PropertySellerCardStrip({
       >
         {/* Avatar with ShieldCheck verified badge */}
         <div className="relative w-10 h-10 rounded-full shrink-0">
-          <div className="w-full h-full rounded-full overflow-hidden border border-gray-200 dark:border-[#2a5438] bg-gray-100 dark:bg-[#091711] shadow-sm relative">
+          <div className="w-full h-full rounded-full overflow-hidden border border-gray-200 dark:border-[#5CD284]/40 bg-gray-100 dark:bg-[#091711] shadow-sm relative">
             {seller.thumbnail ? (
               <Image
                 src={getOptimizedImageUrl(seller.thumbnail)}
@@ -110,14 +110,14 @@ export default function PropertySellerCardStrip({
                 className="object-cover group-hover/agent:scale-105 transition-transform duration-300"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center font-bold text-xs text-[#1A3626] dark:text-[#c9a14b] bg-emerald-50 dark:bg-[#163321]">
+              <div className="w-full h-full flex items-center justify-center font-bold text-xs text-[#0A1C12] bg-[#5CD284]">
                 {(seller.name || "A").charAt(0).toUpperCase()}
               </div>
             )}
           </div>
           {seller.isVerified && (
             <span
-              className="absolute -bottom-1 -right-1 p-0.5 bg-[#1A3626] dark:bg-[#c9a14b] text-[#5CD284] dark:text-[#1A3626] rounded-full shadow-md border border-white/20 flex items-center justify-center"
+              className="absolute -bottom-1 -right-1 p-0.5 bg-[#5CD284] text-[#0A1C12] rounded-full shadow-md border border-white/20 flex items-center justify-center"
               title="Verified RERA Agent"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -127,19 +127,19 @@ export default function PropertySellerCardStrip({
 
         {/* Text Details */}
         <div className="flex flex-col min-w-0">
-          <span className="text-[10px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider leading-none mb-0.5">
+          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider leading-none mb-0.5">
             Listed by
           </span>
           <div className="flex items-center gap-1">
-            <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate group-hover/agent:text-[#5CD284] dark:group-hover/agent:text-[#c9a14b] transition-colors leading-tight">
+            <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate group-hover/agent:text-[#5CD284] transition-colors leading-tight">
               {seller.name || "Real Estate Agent"}
             </span>
             {seller.agentId && (
-              <ArrowUpRight className="w-3 h-3 text-gray-400 group-hover/agent:text-[#5CD284] dark:group-hover/agent:text-[#c9a14b] transition-colors shrink-0 opacity-0 group-hover/agent:opacity-100" />
+              <ArrowUpRight className="w-3 h-3 text-gray-400 group-hover/agent:text-[#5CD284] transition-colors shrink-0 opacity-0 group-hover/agent:opacity-100" />
             )}
           </div>
           {(seller.officeName || seller.isVerified) && (
-            <span className="text-[11px] font-medium text-gray-500 dark:text-[#5CD284]/80 truncate leading-tight">
+            <span className="text-[11px] font-medium text-gray-500 dark:text-[#5CD284] truncate leading-tight">
               {seller.officeName || "Verified Agent"}
             </span>
           )}
@@ -153,7 +153,7 @@ export default function PropertySellerCardStrip({
             <button
               type="button"
               onClick={handleWhatsApp}
-              className="px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-[12.5px] font-bold flex items-center gap-1.5 shadow-sm hover:shadow-[0_0_12px_rgba(37,211,102,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-[12px] font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
               title="Chat on WhatsApp"
             >
               <WhatsAppIcon className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export default function PropertySellerCardStrip({
             <button
               type="button"
               onClick={handleCall}
-              className="px-3.5 py-1.5 rounded-xl bg-[#1A3626] hover:bg-[#142b1e] dark:bg-[#5CD284] dark:hover:bg-[#4bc273] text-white dark:text-[#0A1C12] text-[12.5px] font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-xl bg-[#1A3626] hover:bg-[#142b1e] dark:bg-[#5CD284] dark:hover:bg-[#4bc273] text-white dark:text-[#0A1C12] text-[12px] font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
               title={`Call: ${phoneClean}`}
             >
               <Phone className="w-3.5 h-3.5" />
@@ -177,10 +177,10 @@ export default function PropertySellerCardStrip({
             <button
               type="button"
               onClick={handleEmail}
-              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-100 dark:bg-[#163321] dark:hover:bg-[#1f452d] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-[#2a5438] text-[12.5px] font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+              className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-100 dark:bg-[#163321] dark:hover:bg-[#1f452d] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-[#2a5438] text-[12px] font-bold flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
               title={`Email: ${seller.email}`}
             >
-              <Mail className="w-3.5 h-3.5 text-gray-500 dark:text-gray-300" />
+              <Mail className="w-3.5 h-3.5 text-[#5CD284]" />
               <span>Email</span>
             </button>
           )}
@@ -191,11 +191,11 @@ export default function PropertySellerCardStrip({
             <button
               type="button"
               onClick={handleWhatsApp}
-              className="w-9 h-9 rounded-full bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white border border-[#25D366]/30 hover:border-[#25D366] flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-110 active:scale-95 hover:shadow-[0_0_12px_rgba(37,211,102,0.4)] cursor-pointer"
+              className="w-8 h-8 rounded-full bg-[#25D366]/15 text-[#25D366] hover:bg-[#25D366] hover:text-white border border-[#25D366]/30 flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-110 active:scale-95 cursor-pointer"
               title="Chat on WhatsApp"
               aria-label="WhatsApp"
             >
-              <WhatsAppIcon className="w-4 h-4" />
+              <WhatsAppIcon className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -203,11 +203,11 @@ export default function PropertySellerCardStrip({
             <button
               type="button"
               onClick={handleCall}
-              className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-[#5CD284] hover:bg-[#1A3626] hover:text-white dark:hover:bg-[#5CD284] dark:hover:text-[#0A1C12] border border-emerald-500/20 dark:border-[#5CD284]/30 flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-110 active:scale-95 cursor-pointer"
+              className="w-8 h-8 rounded-full bg-[#5CD284]/15 text-[#5CD284] hover:bg-[#5CD284] hover:text-[#0A1C12] border border-[#5CD284]/30 flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-110 active:scale-95 cursor-pointer"
               title={`Call: ${phoneClean}`}
               aria-label="Call"
             >
-              <Phone className="w-4 h-4" />
+              <Phone className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -215,11 +215,11 @@ export default function PropertySellerCardStrip({
             <button
               type="button"
               onClick={handleEmail}
-              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#163321] text-gray-600 dark:text-gray-300 hover:bg-gray-800 hover:text-white dark:hover:bg-[#c9a14b] dark:hover:text-[#0A1C12] border border-gray-200 dark:border-[#1A3626] flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-110 active:scale-95 cursor-pointer"
+              className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#163321] text-gray-600 dark:text-gray-300 hover:bg-[#5CD284] hover:text-[#0A1C12] border border-gray-200 dark:border-[#1A3626] flex items-center justify-center transition-all duration-200 shadow-sm hover:scale-110 active:scale-95 cursor-pointer"
               title={`Email: ${seller.email}`}
               aria-label="Email Agent"
             >
-              <Mail className="w-4 h-4" />
+              <Mail className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

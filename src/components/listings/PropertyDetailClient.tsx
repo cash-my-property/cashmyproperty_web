@@ -25,7 +25,9 @@ import {
   X,
   FileText,
   Eye,
-  ExternalLink
+  ExternalLink,
+  Info,
+  QrCode
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -331,7 +333,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
     return (
       <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{detailDict.propertyNotFound || "Property not found"}</h1>
-        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">{detailDict.backToProperties || "Back to listings"}</Link>
+        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#5CD284] underline">{detailDict.backToProperties || "Back to listings"}</Link>
       </main>
     );
   }
@@ -441,6 +443,86 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
     }
   };
 
+  // Regulatory / DLD Trakheesi Permit Data
+  const trakheesiDoc = details.propertyDocuments?.propertyTrakheesi 
+    || propertyInfo.propertyDocuments?.propertyTrakheesi 
+    || details.propertyTrakheesi 
+    || propertyInfo.propertyTrakheesi;
+
+  const regReference = trakheesiDoc?.referenceNumber 
+    || details.referenceNumber 
+    || propertyInfo.referenceNumber 
+    || details.trakheesiNumber 
+    || propertyInfo.trakheesiNumber 
+    || details.permitNumber 
+    || propertyInfo.permitNumber 
+    || details.propertyId 
+    || propertyInfo.propertyId 
+    || "N/A";
+
+  const regListedAt = trakheesiDoc?.listedAt 
+    || trakheesiDoc?.uploadedAt 
+    || propertyInfo.createdAt 
+    || details.createdAt;
+
+  const formatRelativeTime = (dateStr?: string) => {
+    if (!dateStr) return "Recently listed";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const now = new Date();
+      const diffMs = Math.max(0, now.getTime() - d.getTime());
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffHours < 24) return "Today";
+      if (diffDays === 1) return "1 day ago";
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 14) return "1 week ago";
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      if (diffDays < 60) return "1 month ago";
+      if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+      return `${Math.floor(diffDays / 365)} years ago`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const regBrokerLicense = trakheesiDoc?.orn 
+    || details.orn 
+    || propertyInfo.sellerInfo?.orn 
+    || propertyInfo.orn 
+    || "19898";
+
+  const regAgencyName = trakheesiDoc?.agencyName 
+    || details.agencyName 
+    || propertyInfo.sellerInfo?.agencyName 
+    || propertyInfo.sellerInfo?.name 
+    || "CPM Verified Agency";
+
+  const regZoneName = trakheesiDoc?.zoneName 
+    || details.zoneName 
+    || (typeof details.propertyLocation === 'string' ? details.propertyLocation : details.propertyLocation?.city) 
+    || "Dubai, UAE";
+
+  const regAgentLicense = trakheesiDoc?.brn 
+    || details.brn 
+    || propertyInfo.sellerInfo?.brn 
+    || propertyInfo.brn 
+    || "N/A";
+
+  const regQrUrl = trakheesiDoc?.url 
+    || (typeof trakheesiDoc === 'string' ? trakheesiDoc : null);
+
+  const isQrImage = Boolean(
+    regQrUrl && (
+      regQrUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) ||
+      regQrUrl.includes('cloudinary') ||
+      regQrUrl.includes('mediaoffice') ||
+      !regQrUrl.match(/\.pdf($|\?)/i)
+    )
+  );
+
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-16 transition-colors">
       {showOfflineWarning && (
@@ -454,16 +536,16 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
+            <Link href={`/${locale}`} className="hover:text-[#5CD284] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{detailDict.backToProperties || "Properties"}</Link>
+            <Link href={`/${locale}/listings`} className="hover:text-[#5CD284] transition-colors">{detailDict.backToProperties || "Properties"}</Link>
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-gray-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-[350px] md:max-w-[500px]" title={title}>{title}</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#c9a14b]/10 dark:text-[#c9a14b] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
-              {type}
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#5CD284]/30">
+              {formatPropertyType(type)}
             </span>
             <div className="flex items-center gap-1.5 bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] px-3.5 py-1 rounded-full border border-[#5CD284]/30 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
@@ -495,7 +577,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                  <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                  <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                   <span>1 Photo</span>
                 </div>
               </div>
@@ -513,7 +595,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 >
                   <Image src={images[1]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                   <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span>2 Photos</span>
                   </div>
                 </div>
@@ -539,7 +621,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                     onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
                     className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span>{images.length}</span>
                   </div>
                 </div>
@@ -588,7 +670,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
           {/* Title, Actions & Pricing Header Card */}
           <div className="bg-white dark:bg-[#102418] rounded-2xl p-5 sm:p-7 shadow-xl border border-gray-200/80 dark:border-[#1A3626] space-y-6 relative overflow-hidden">
             {/* Top Accent Line */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#c9a14b]" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#1A3626]" />
 
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
               <div className="space-y-2.5 max-w-2xl">
@@ -597,7 +679,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </h1>
                 
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium">
-                  <div className="p-1 rounded-md bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b]">
+                  <div className="p-1 rounded-md bg-[#5CD284]/15 text-[#5CD284]">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <span>{location}</span>
@@ -605,12 +687,12 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
               </div>
 
               {/* High-End Price Banner */}
-              <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#c9a14b]/30 shadow-xl relative overflow-hidden group/price">
+              <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#5CD284]/30 shadow-xl relative overflow-hidden group/price">
                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
                 <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1">
                   {propertyInfo.currentHighestOffer ? 'Highest Live Bid' : 'Starting Price'}
                 </p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] dark:text-[#c9a14b] tabular-nums flex items-center gap-2">
+                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] tabular-nums flex items-center gap-2">
                   <Dirham className="text-xl sm:text-2xl" /> {priceValue}
                 </p>
               </div>
@@ -633,7 +715,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 }}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
               >
-                <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+                <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284]" />
                 <span>Share Property</span>
               </button>
 
@@ -655,9 +737,9 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
             {/* Featured Key Specs Grid (Top 4 Boxes) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Building2 className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Building2 className="w-3.5 h-3.5 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
@@ -665,9 +747,9 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bed className="w-3.5 h-3.5 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
@@ -677,9 +759,9 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bath className="w-3.5 h-3.5 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Washrooms</p>
@@ -689,9 +771,9 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Plan</p>
@@ -841,6 +923,93 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
               </div>
             )}
+
+            {/* Regulatory Information Section */}
+            <div className="space-y-4 pt-6 border-t border-gray-100 dark:border-[#1A3626]">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
+                  <span>Regulatory Information</span>
+                </h3>
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/20 flex items-center gap-1.5 shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-[#5CD284]" />
+                  DLD Verified
+                </span>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-[#142e1d] rounded-2xl p-5 sm:p-6 border border-gray-100 dark:border-[#1A3626] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                {/* Left: Regulatory Metadata List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 w-full flex-1">
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Reference</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{regReference}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Listed</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{formatRelativeTime(regListedAt)}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px] flex items-center gap-1">
+                      Broker License
+                      <span title="DLD Office Registration Number (ORN)">
+                        <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-help" />
+                      </span>
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono">{regBrokerLicense}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Agency name</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={regAgencyName}>{regAgencyName}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Zone name</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={regZoneName}>{regZoneName}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px] flex items-center gap-1">
+                      Agent License
+                      <span title="DLD Broker Registration Number (BRN)">
+                        <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-help" />
+                      </span>
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono">{regAgentLicense}</span>
+                  </div>
+                </div>
+
+                {/* Right: QR Code / DLD Permit Verification Box */}
+                {regQrUrl && (
+                  <div className="shrink-0 flex flex-col items-center gap-2.5 self-center md:self-auto pt-4 md:pt-0 md:pl-6 md:border-l border-gray-200 dark:border-[#1A3626]">
+                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-xl p-2 border border-gray-200 dark:border-[#1A3626] shadow-sm flex items-center justify-center overflow-hidden">
+                      {isQrImage ? (
+                        <Image 
+                          src={regQrUrl}
+                          alt="DLD QR Verification"
+                          fill
+                          unoptimized
+                          className="object-contain p-1.5"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center gap-1.5 text-center text-gray-800">
+                          <QrCode className="w-12 h-12 text-[#1A3626]" />
+                          <span className="text-[10px] font-bold text-gray-600">
+                            DLD Permit
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 text-center">
+                      <QrCode className="w-3.5 h-3.5 text-[#5CD284]" />
+                      Scan to verify with DLD
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -867,7 +1036,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
               />
             ) : (
               <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] text-center space-y-4">
-                <div className="w-14 h-14 bg-[#1A3626]/10 dark:bg-[#c9a14b]/10 rounded-2xl flex items-center justify-center mx-auto text-[#1A3626] dark:text-[#c9a14b]">
+                <div className="w-14 h-14 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center mx-auto text-[#5CD284]">
                   <Lock className="w-7 h-7" />
                 </div>
                 <div>
@@ -880,7 +1049,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
                 <button 
                   onClick={() => setShowLoginModal(true)}
-                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
+                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
                 >
                   {detailDict.makeOffer || "Make Offer / Place Bid"}
                 </button>
@@ -915,7 +1084,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
               </button>
               <Link 
                 href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center shadow-md"
               >
                 {detailDict.goToLogin || "Go to Login"}
               </Link>

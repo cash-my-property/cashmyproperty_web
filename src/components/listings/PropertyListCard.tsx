@@ -21,7 +21,7 @@ export default function PropertyListCard({
 }: PropertyListCardProps) {
   const details = item.propertyDetails || item || {};
   let title = item.title || details.propertyTitle || "Untitled Property";
-  title = title.length > 30 ? title.slice(0, 30) : title;
+  title = title.length > 35 ? title.slice(0, 35) + "..." : title;
   const rawLocation =
     typeof details.propertyLocation === "string"
       ? details.propertyLocation
@@ -54,17 +54,17 @@ export default function PropertyListCard({
   return (
     <Link
       href={`/${locale}/simple-listings/${item._id || item.id}`}
-      className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col md:flex-row group cursor-pointer"
+      className="bg-white dark:bg-[#102418] rounded-3xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] border border-gray-100 dark:border-[#1A3626] hover:border-[#5CD284]/40 transition-all duration-300 flex flex-col md:flex-row group cursor-pointer p-1.5"
     >
-      {/* Left Column: Image Carousel (Edge-to-edge on card boundaries) */}
-      <div className="w-full md:w-[280px] lg:w-[330px] shrink-0 h-[210px] sm:h-[230px] md:h-auto md:min-h-[220px] relative overflow-hidden">
+      {/* Left Column: Image Carousel */}
+      <div className="w-full md:w-[280px] lg:w-[330px] shrink-0 h-[210px] sm:h-[230px] md:h-auto md:min-h-[220px] relative overflow-hidden rounded-2xl">
         <PropertyCardImageCarousel
           images={images}
           alt={title}
           priority={priority}
           aspectClass="h-full w-full min-h-[210px] md:min-h-[220px]"
           badge={
-            <div className="bg-[#1A3626]/85 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+            <div className="bg-[#1A3626]/85 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border border-white/10">
               {item.status || "Active"}
             </div>
           }
@@ -76,11 +76,11 @@ export default function PropertyListCard({
         <div>
           {/* Title & Price Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-1.5">
-            <h3 className="font-bold text-[18px] sm:text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">
+            <h3 className="font-bold text-[18px] sm:text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1 group-hover:text-[#5CD284] transition-colors">
               {title}
             </h3>
-            <span className="font-bold text-[20px] sm:text-[23px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap flex items-baseline shrink-0">
-              <Dirham className="mr-1 text-[18px] sm:text-[21px]" /> {price.toLocaleString()}
+            <span className="font-extrabold text-[20px] sm:text-[23px] text-gray-900 dark:text-white leading-none whitespace-nowrap flex items-baseline shrink-0">
+              <Dirham className="mr-1 text-[18px] sm:text-[21px] text-[#5CD284]" /> {price.toLocaleString()}
               {isRent && rentalPeriodLabel && (
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 lowercase">
                   /{rentalPeriodLabel}
@@ -92,32 +92,32 @@ export default function PropertyListCard({
           {/* Location */}
           <p
             title={rawLocation}
-            className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-2.5 line-clamp-1"
+            className="text-gray-500 dark:text-gray-400 text-[12.5px] font-medium flex items-center gap-1.5 mb-2.5 line-clamp-1"
           >
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            <MapPin className="w-3.5 h-3.5 text-[#5CD284] shrink-0" />
             <span className="truncate">{formattedLocation}</span>
           </p>
 
           {/* Specs: Beds, Baths, Area */}
           <div className="flex items-center gap-4 sm:gap-6 mb-2.5 flex-wrap">
             <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
-              <Bed className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+              <Bed className="w-4 h-4 text-[#5CD284]" />
               <span>{beds} Beds</span>
             </div>
             <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
-              <Bath className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+              <Bath className="w-4 h-4 text-[#5CD284]" />
               <span>{baths} Baths</span>
             </div>
             <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
-              <Square className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#c9a14b]" />
+              <Square className="w-3.5 h-3.5 text-[#5CD284]" />
               <span>{area}</span>
             </div>
           </div>
 
           {/* Property Meta Grid */}
-          <div className="bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-1.5 sm:p-2 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626] mb-1 max-w-md">
+          <div className="bg-[#F4F5F7] dark:bg-[#091711] rounded-2xl p-1.5 sm:p-2 grid grid-cols-3 divide-x divide-gray-200 dark:divide-[#1A3626] mb-1 max-w-md">
             <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[#1A3626] dark:text-[#c9a14b] text-[9.5px] font-bold uppercase tracking-wider mb-0.5">
+              <span className="text-[#1A3626] dark:text-[#5CD284] text-[9.5px] font-extrabold uppercase tracking-wider mb-0.5">
                 Category
               </span>
               <span className="text-gray-900 dark:text-white text-[11px] font-bold truncate w-full">
@@ -125,7 +125,7 @@ export default function PropertyListCard({
               </span>
             </div>
             <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[#1A3626] dark:text-[#c9a14b] text-[9.5px] font-bold uppercase tracking-wider mb-0.5">
+              <span className="text-[#1A3626] dark:text-[#5CD284] text-[9.5px] font-extrabold uppercase tracking-wider mb-0.5">
                 Type
               </span>
               <span className="text-gray-900 dark:text-white text-[11px] font-bold truncate w-full">
@@ -133,7 +133,7 @@ export default function PropertyListCard({
               </span>
             </div>
             <div className="flex flex-col items-center justify-center text-center px-1">
-              <span className="text-[#1A3626] dark:text-[#c9a14b] text-[9.5px] font-bold uppercase tracking-wider mb-0.5">
+              <span className="text-[#1A3626] dark:text-[#5CD284] text-[9.5px] font-extrabold uppercase tracking-wider mb-0.5">
                 Status
               </span>
               <span className="text-gray-900 dark:text-white text-[11px] font-bold truncate w-full">
@@ -143,7 +143,7 @@ export default function PropertyListCard({
           </div>
         </div>
 
-        {/* Seller / Agent Action Strip (Pinned to bottom) with proper CTA buttons */}
+        {/* Seller / Agent Action Strip */}
         <div className="mt-2">
           <PropertySellerCardStrip
             seller={seller}

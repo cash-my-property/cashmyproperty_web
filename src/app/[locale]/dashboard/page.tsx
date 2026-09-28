@@ -166,45 +166,75 @@ export default function DashboardOverviewPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-          {content.title}
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Clean Page Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+          {content.title || "Dashboard Overview"}
         </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Welcome back, <span className="font-semibold text-gray-800 dark:text-gray-200">{user?.fullName || user?.firstName || 'Valued User'}</span>. Track your active properties, bids, and market activity in real-time.
+        </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
         {stats.map((stat, i) => (
-          <Link key={i} href={stat.href || `/${locale}/dashboard`} className="bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
-              <stat.icon className="w-6 h-6" />
+          <Link
+            key={i}
+            href={stat.href || `/${locale}/dashboard`}
+            className="group relative bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-xs hover:shadow-md border border-gray-100 dark:border-[#1A3626] flex items-center justify-between transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-13 h-13 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 ${stat.bg} ${stat.color}`}>
+                <stat.icon className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.label}</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-0.5">{stat.value}</h3>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</h3>
+            <div className="w-8 h-8 rounded-full bg-gray-50 dark:bg-[#091711] flex items-center justify-center text-gray-400 group-hover:text-[#5CD284] transition-colors">
+              <ChevronRight className="w-4 h-4" />
             </div>
           </Link>
         ))}
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
+      <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-xs border border-gray-100 dark:border-[#1A3626] overflow-hidden">
         <div className="p-6 border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{content.recentActivity}</h2>
-          <Link href={role === 'buyer' && buyerType === 'SIMPLE' ? `/${locale}/sellers` : `/${locale}/dashboard/bids`} className="text-sm font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:underline flex items-center gap-1">
-            {content.viewAll} <ChevronRight className="w-4 h-4" />
+          <div>
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">{content.recentActivity}</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Real-time updates on your offers and interactions</p>
+          </div>
+          <Link
+            href={role === 'buyer' && buyerType === 'SIMPLE' ? `/${locale}/sellers` : `/${locale}/dashboard/bids`}
+            className="text-xs font-bold text-[#1A3626] dark:text-[#5CD284] hover:underline flex items-center gap-1"
+          >
+            <span>{content.viewAll}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-4">
           {recentActivity.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No recent activity found.</p>
+            <div className="py-10 text-center flex flex-col items-center justify-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-[#163321] flex items-center justify-center text-gray-400">
+                <Clock className="w-6 h-6" />
+              </div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No recent activity found</p>
+              <p className="text-xs text-gray-400">Activity on properties and bids will appear here automatically.</p>
+            </div>
           ) : (
             recentActivity.map((activity, i) => (
-              <div key={activity.id + '-' + i} className="flex gap-4">
-                <div className="mt-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    activity.type === 'offer' || activity.type === 'won' ? 'bg-blue-500/10 text-blue-500' :
+              <div
+                key={activity.id + '-' + i}
+                className="flex items-start gap-4 p-3.5 rounded-xl hover:bg-gray-50 dark:hover:bg-[#163321]/40 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-[#1A3626]"
+              >
+                <div className="shrink-0 mt-0.5">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                    activity.type === 'offer' || activity.type === 'won' ? 'bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284]' :
                     activity.type === 'outbid' || activity.type === 'lost' ? 'bg-orange-500/10 text-orange-500' :
                     'bg-rose-500/10 text-rose-500'
                   }`}>
@@ -214,13 +244,13 @@ export default function DashboardOverviewPage() {
                      <Heart className="w-4 h-4" />}
                   </div>
                 </div>
-                <div>
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-200 leading-relaxed">
                     {activity.text}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                    <Clock className="w-3.5 h-3.5" />
-                    {activity.time}
+                  <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-gray-400">
+                    <Clock className="w-3 h-3" />
+                    <span>{activity.time}</span>
                   </div>
                 </div>
               </div>

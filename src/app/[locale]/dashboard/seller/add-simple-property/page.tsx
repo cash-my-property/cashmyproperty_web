@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
@@ -316,16 +316,35 @@ export default function AddSimplePropertyPage() {
     unitNumber: "",
     parkingSpaces: "0",
     furnishingStatus: "NOT_FURNISHED",
-    availability: "Vacant"
+    availability: "Immediately"
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [availabilityType, setAvailabilityType] = useState<"immediate" | "date">("immediate");
+  const [availabilityDate, setAvailabilityDate] = useState<string>("");
 
   const [amenities, setAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [documents, setDocuments] = useState<Record<string, File>>({});
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvailabilityTypeChange = (type: "immediate" | "date") => {
+    setAvailabilityType(type);
+    if (type === "immediate") {
+      setFormData((prev) => ({ ...prev, availability: "Immediately" }));
+    } else {
+      const dateToSet = availabilityDate || new Date().toISOString().split("T")[0];
+      setAvailabilityDate(dateToSet);
+      setFormData((prev) => ({ ...prev, availability: dateToSet }));
+    }
+  };
+
+  const handleAvailabilityDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setAvailabilityDate(val);
+    setFormData((prev) => ({ ...prev, availability: val }));
+  };
 
   // 1. Restore draft on mount if within 1 hour and matches formType
   // 1. Restore draft on mount (from IndexedDB or legacy localStorage fallback)
@@ -339,7 +358,17 @@ export default function AddSimplePropertyPage() {
 
         if (indexedDBDraft && (now - indexedDBDraft.updatedAt < DRAFT_EXPIRY_MS)) {
           if (!isMounted) return;
-          if (indexedDBDraft.formData) setFormData(indexedDBDraft.formData as any);
+          if (indexedDBDraft.formData) {
+            setFormData(indexedDBDraft.formData as any);
+            const avail = (indexedDBDraft.formData as any).availability;
+            if (avail && avail !== "Immediately" && avail !== "Immediate" && avail !== "Vacant") {
+              setAvailabilityType("date");
+              setAvailabilityDate(avail);
+            } else {
+              setAvailabilityType("immediate");
+              setAvailabilityDate("");
+            }
+          }
           if (indexedDBDraft.amenities) setAmenities(indexedDBDraft.amenities);
           if (indexedDBDraft.images?.length) setImages(indexedDBDraft.images);
           if (indexedDBDraft.documents && Object.keys(indexedDBDraft.documents).length) setDocuments(indexedDBDraft.documents);
@@ -353,7 +382,17 @@ export default function AddSimplePropertyPage() {
           const draft = JSON.parse(savedDraftStr);
           if (draft.savedAt && (now - draft.savedAt < DRAFT_EXPIRY_MS)) {
             if (!isMounted) return;
-            if (draft.formData) setFormData(draft.formData);
+            if (draft.formData) {
+              setFormData(draft.formData);
+              const avail = draft.formData.availability;
+              if (avail && avail !== "Immediately" && avail !== "Immediate" && avail !== "Vacant") {
+                setAvailabilityType("date");
+                setAvailabilityDate(avail);
+              } else {
+                setAvailabilityType("immediate");
+                setAvailabilityDate("");
+              }
+            }
             if (draft.amenities) setAmenities(draft.amenities);
             if (draft.step) setStep(draft.step);
             setDraftRestored(true);
@@ -480,6 +519,11 @@ export default function AddSimplePropertyPage() {
         return false;
       }
 
+      if (availabilityType === "date" && !formData.availability.trim()) {
+        setError("Please select an availability date.");
+        return false;
+      }
+
       if (!formData.availability.trim()) {
         setError("Availability is required.");
         return false;
@@ -502,6 +546,7 @@ export default function AddSimplePropertyPage() {
       const fieldRules = currentConfig?.fields || {};
       const isBuiltUpAreaValid = fieldRules.propertyBuiltUpArea !== "required" || (!!formData.propertyBuiltUpArea && Number(formData.propertyBuiltUpArea) > 0);
       const isUnitNumberValid = fieldRules.unitNumber !== "required" || !!formData.unitNumber.trim();
+      const isAvailabilityValid = availabilityType === "immediate" || (availabilityType === "date" && !!formData.availability.trim());
       return !!formData.propertyTitle.trim() && 
              !!formData.propertyLocation.trim() && 
              (!!formData.propertyPrice && Number(formData.propertyPrice) > 0) &&
@@ -511,7 +556,7 @@ export default function AddSimplePropertyPage() {
              !!formData.propertyDescription.trim() &&
              !!formData.whatsappNumber.trim() &&
              !!formData.permitNumber.trim() &&
-             !!formData.availability.trim() &&
+             isAvailabilityValid &&
              amenities.length > 0;
     }
     return true;
@@ -992,7 +1037,50 @@ export default function AddSimplePropertyPage() {
               )}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Availability *</label>
-                <input required name="availability" value={formData.availability} onChange={handleChange} placeholder="e.g. Vacant, or Date" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                
+                {/* Segmented Control: Immediately vs From Date */}
+                <div className="grid grid-cols-2 p-1 bg-gray-100 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl mb-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleAvailabilityTypeChange("immediate")}
+                    className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      availabilityType === "immediate"
+                        ? "bg-[#0A3622] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                        : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Immediately
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAvailabilityTypeChange("date")}
+                    className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      availabilityType === "date"
+                        ? "bg-[#0A3622] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                        : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    From Date
+                  </button>
+                </div>
+
+                {/* Date Input displayed when "From Date" is selected */}
+                {availabilityType === "date" && (
+                  <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0A3622] dark:text-[#5CD284]">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      required
+                      type="date"
+                      name="availabilityDate"
+                      min={new Date().toISOString().split("T")[0]}
+                      value={availabilityDate}
+                      onChange={handleAvailabilityDateChange}
+                      className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl pl-10 pr-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] text-sm transition-colors cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

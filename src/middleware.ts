@@ -18,9 +18,20 @@ function getLocale(request: NextRequest) {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Completely bypass locale redirects for .well-known files
-  if (pathname.includes('/.well-known')) {
-    if (pathname.startsWith('/en/.well-known') || pathname.startsWith('/ar/.well-known')) {
+  // Completely bypass locale redirects for .well-known, apple, and android association files
+  if (
+    pathname.includes('.well-known') ||
+    pathname.includes('apple-app-site-association') ||
+    pathname.includes('assetlinks.json')
+  ) {
+    if (
+      pathname.startsWith('/en/.well-known') ||
+      pathname.startsWith('/ar/.well-known') ||
+      pathname.startsWith('/en/apple-app-site-association') ||
+      pathname.startsWith('/ar/apple-app-site-association') ||
+      pathname.startsWith('/en/assetlinks.json') ||
+      pathname.startsWith('/ar/assetlinks.json')
+    ) {
       const targetPath = pathname.replace(/^\/(en|ar)/, '');
       return NextResponse.rewrite(new URL(targetPath, request.url));
     }
@@ -52,6 +63,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Skip all internal paths (_next), service worker, well-known, and static files
-    '/((?!_next|images|favicon.ico|firebase-messaging-sw.js|\\.well-known|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.ico|.*\\.pdf|api).*)',
+    '/((?!_next|images|favicon.ico|firebase-messaging-sw.js|\\.well-known|apple-app-site-association|assetlinks\\.json|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.ico|.*\\.pdf|api).*)',
   ],
 }

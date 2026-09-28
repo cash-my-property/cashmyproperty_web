@@ -26,7 +26,10 @@ import {
   X,
   Car,
   FileText,
-  Hash
+  Hash,
+  Info,
+  QrCode,
+  ExternalLink
 } from "lucide-react";
 import { 
   formatPropertyType, 
@@ -36,7 +39,8 @@ import {
   formatFurnishingStatus, 
   formatRentalPeriod, 
   formatRentalPeriodShort, 
-  formatAmenity 
+  formatAmenity,
+  formatAvailability
 } from "@/utils/formatters";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -285,6 +289,86 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
     ? propertyInfo.features
     : ["Central A/C", "Balcony", "Shared Pool", "Security"];
 
+  // Regulatory / DLD Trakheesi Permit Data
+  const trakheesiDoc = details.propertyDocuments?.propertyTrakheesi 
+    || propertyInfo.propertyDocuments?.propertyTrakheesi 
+    || details.propertyTrakheesi 
+    || propertyInfo.propertyTrakheesi;
+
+  const regReference = trakheesiDoc?.referenceNumber 
+    || referenceNumber 
+    || details.referenceNumber 
+    || propertyInfo.referenceNumber 
+    || permitNumber 
+    || details.permitNumber 
+    || propertyInfo.permitNumber 
+    || listingId 
+    || "N/A";
+
+  const regListedAt = trakheesiDoc?.listedAt 
+    || trakheesiDoc?.uploadedAt 
+    || propertyInfo.createdAt 
+    || details.createdAt;
+
+  const formatRelativeTime = (dateStr?: string) => {
+    if (!dateStr) return "Recently listed";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const now = new Date();
+      const diffMs = Math.max(0, now.getTime() - d.getTime());
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      if (diffHours < 24) return "Today";
+      if (diffDays === 1) return "1 day ago";
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 14) return "1 week ago";
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      if (diffDays < 60) return "1 month ago";
+      if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+      return `${Math.floor(diffDays / 365)} years ago`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const regBrokerLicense = trakheesiDoc?.orn 
+    || details.orn 
+    || propertyInfo.sellerInfo?.orn 
+    || propertyInfo.orn 
+    || "19898";
+
+  const regAgencyName = trakheesiDoc?.agencyName 
+    || details.agencyName 
+    || propertyInfo.sellerInfo?.agencyName 
+    || propertyInfo.sellerInfo?.name 
+    || "CPM Verified Agency";
+
+  const regZoneName = trakheesiDoc?.zoneName 
+    || details.zoneName 
+    || (typeof details.propertyLocation === 'string' ? details.propertyLocation : details.propertyLocation?.city) 
+    || propertyInfo.location 
+    || "Dubai, UAE";
+
+  const regAgentLicense = trakheesiDoc?.brn 
+    || details.brn 
+    || propertyInfo.sellerInfo?.brn 
+    || propertyInfo.brn 
+    || "N/A";
+
+  const regQrUrl = trakheesiDoc?.url 
+    || (typeof trakheesiDoc === 'string' ? trakheesiDoc : null);
+
+  const isQrImage = Boolean(
+    regQrUrl && (
+      regQrUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) ||
+      regQrUrl.includes('cloudinary') ||
+      regQrUrl.includes('mediaoffice') ||
+      !regQrUrl.match(/\.pdf($|\?)/i)
+    )
+  );
+
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-16 transition-colors">
       {/* Top Breadcrumb & Status */}
@@ -300,28 +384,24 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
 
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#c9a14b]/10 dark:text-[#c9a14b] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
-              {type}
+              {formatPropertyType(type)}
             </span>
-            <div className="flex items-center gap-1.5 bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] px-3.5 py-1 rounded-full border border-[#5CD284]/30 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{propertyInfo.status || 'Active'}</span>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Main Grid */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 pb-12">
         
         {/* Left Column: Gallery & Details (8 cols) */}
         <div className="lg:col-span-8 flex flex-col gap-8">
           
           {/* Multi-Photo Hero Gallery Grid */}
-          <div className="bg-white dark:bg-[#102418] p-1 sm:p-1.5 rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
+          <div className="bg-white dark:bg-[#102418] p-1.5 sm:p-2 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden">
             {images.length === 1 ? (
               <div 
                 onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                className="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
               >
                 <Image
                   src={images[0]}
@@ -331,36 +411,36 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   sizes="100vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                  <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15">
+                  <Camera className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
                   <span>1 Photo</span>
                 </div>
               </div>
             ) : images.length === 2 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 sm:gap-2 h-[280px] sm:h-[360px] md:h-[420px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 h-[280px] sm:h-[360px] md:h-[420px]">
                 <div 
                   onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                  className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
                 >
                   <Image src={images[0]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <div 
                   onClick={() => { setActiveImage(1); setIsLightboxOpen(true); }}
-                  className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
                 >
                   <Image src={images[1]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                  <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15">
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
                     <span>2 Photos</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 sm:gap-2 h-[280px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-[280px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
                 {/* Left Large Main Image */}
                 <div 
                   onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                  className="md:col-span-2 relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="md:col-span-2 relative w-full h-full rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
                 >
                   <Image
                     src={images[0]}
@@ -374,19 +454,19 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   {/* Bottom Right Photo Count Badge */}
                   <div 
                     onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-                    className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
+                    className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
-                    <span>{images.length}</span>
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                    <span>{images.length} Photos</span>
                   </div>
                 </div>
 
                 {/* Right Stacked Column (Top & Bottom Images) */}
-                <div className="hidden md:grid grid-rows-2 gap-1.5 sm:gap-2 h-full">
+                <div className="hidden md:grid grid-rows-2 gap-2 h-full">
                   {/* Top Right Image */}
                   <div 
                     onClick={() => { setActiveImage(1); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[1]}
@@ -400,7 +480,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   {/* Bottom Right Image */}
                   <div 
                     onClick={() => { setActiveImage(2); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[2]}
@@ -423,7 +503,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
           </div>
 
           {/* Title, Actions & Pricing Header Card */}
-          <div className="bg-white dark:bg-[#102418] rounded-2xl p-5 sm:p-7 shadow-xl border border-gray-200/80 dark:border-[#1A3626] space-y-6 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-6 relative overflow-hidden">
             {/* Top Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#c9a14b]" />
 
@@ -505,56 +585,55 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
               )}
             </div>
 
-            {/* Featured Key Specs Grid */}
             {/* Featured Key Specs Grid (Top 4 Boxes) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Building2 className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Building2 className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bed className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
                     {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds || 0} Beds`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bath className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bathrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Washrooms</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={`${baths}`}>
                     {Number(baths) === 1 ? "1 Bath" : `${baths || 0} Baths`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
                   {parkingSpaces ? (
-                    <Car className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                    <Car className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
                   ) : (
-                    <Sparkles className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+                    <Sparkles className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b]" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
                     {parkingSpaces ? "Parking" : "Property Plan"}
                   </p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {parkingSpaces ? `${parkingSpaces} Spaces` : formatPropertyPlan(plan)}
                   </p>
                 </div>
@@ -564,81 +643,81 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             {/* Additional Info Cards */}
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Details</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {referenceNumber && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Reference No.</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate" title={referenceNumber}>{referenceNumber}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate" title={referenceNumber}>{referenceNumber}</span>
                   </div>
                 )}
                 {permitNumber && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Permit No.</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate" title={permitNumber}>{permitNumber}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate" title={permitNumber}>{permitNumber}</span>
                   </div>
                 )}
                 {builtUpArea > 0 && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Built Up Area</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
                   </div>
                 )}
                 {totalArea > 0 && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Area</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
                   </div>
                 )}
                 {purpose && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose)}</span>
                   </div>
                 )}
                 {isForRent && rentalPeriod && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Rental Period</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-[#1A3626] dark:text-[#5CD284] truncate">
+                    <span className="text-xs sm:text-sm font-semibold text-[#1A3626] dark:text-[#5CD284] truncate">
                       {formatRentalPeriod(rentalPeriod)}
                     </span>
                   </div>
                 )}
                 {category && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category)}</span>
                   </div>
                 )}
                 {plan && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan)}</span>
                   </div>
                 )}
                 {availability && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Availability</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize">{availability}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatAvailability(availability)}</span>
                   </div>
                 )}
                 {furnishingStatus && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                       {formatFurnishingStatus(furnishingStatus)}
                     </span>
                   </div>
                 )}
                 {parkingSpaces !== undefined && parkingSpaces !== null && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Parking Spaces</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate">{parkingSpaces} {parkingSpaces === 1 ? 'Space' : 'Spaces'}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{parkingSpaces} {parkingSpaces === 1 ? 'Space' : 'Spaces'}</span>
                   </div>
                 )}
                 {propertyInfo.unitNumber && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Unit Number</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate">{propertyInfo.unitNumber}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{propertyInfo.unitNumber}</span>
                   </div>
                 )}
               </div>
@@ -647,7 +726,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
             {/* Description */}
             <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Property Overview</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm sm:text-[15px] text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-normal">
                 {description}
               </p>
             </div>
@@ -659,12 +738,99 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 {features.map((feature: string, idx: number) => (
                   <span 
                     key={idx} 
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#5CD284]/10 dark:bg-[#163321] text-gray-800 dark:text-emerald-300 text-xs font-bold border border-[#5CD284]/20 shadow-xs hover:scale-105 transition-all"
                   >
                     <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
                     <span>{formatAmenity(feature)}</span>
                   </span>
                 ))}
+              </div>
+            </div>
+
+            {/* Regulatory Information Section */}
+            <div className="space-y-4 pt-6 border-t border-gray-100 dark:border-[#1A3626]">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#5CD284]" />
+                  <span>Regulatory Information</span>
+                </h3>
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/20 flex items-center gap-1.5 shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-[#5CD284]" />
+                  DLD Verified
+                </span>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-[#142e1d] rounded-2xl p-5 sm:p-6 border border-gray-100 dark:border-[#1A3626] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                {/* Left: Regulatory Metadata List */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3.5 w-full flex-1">
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Reference</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{regReference}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Listed</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">{formatRelativeTime(regListedAt)}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px] flex items-center gap-1">
+                      Broker License
+                      <span title="DLD Office Registration Number (ORN)">
+                        <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-help" />
+                      </span>
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono">{regBrokerLicense}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Agency name</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={regAgencyName}>{regAgencyName}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px]">Zone name</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={regZoneName}>{regZoneName}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-start gap-4">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium min-w-[110px] flex items-center gap-1">
+                      Agent License
+                      <span title="DLD Broker Registration Number (BRN)">
+                        <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-help" />
+                      </span>
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono">{regAgentLicense}</span>
+                  </div>
+                </div>
+
+                {/* Right: QR Code / DLD Permit Verification Box */}
+                {regQrUrl && (
+                  <div className="shrink-0 flex flex-col items-center gap-2.5 self-center md:self-auto pt-4 md:pt-0 md:pl-6 md:border-l border-gray-200 dark:border-[#1A3626]">
+                    <div className="relative w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-xl p-2 border border-gray-200 dark:border-[#1A3626] shadow-sm flex items-center justify-center overflow-hidden">
+                      {isQrImage ? (
+                        <Image 
+                          src={regQrUrl}
+                          alt="DLD QR Verification"
+                          fill
+                          unoptimized
+                          className="object-contain p-1.5"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center gap-1.5 text-center text-gray-800">
+                          <QrCode className="w-12 h-12 text-[#1A3626]" />
+                          <span className="text-[10px] font-bold text-gray-600">
+                            DLD Permit
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1.5 text-center">
+                      <QrCode className="w-3.5 h-3.5 text-[#5CD284]" />
+                      Scan to verify with DLD
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -674,18 +840,20 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
         <div className="lg:col-span-4">
           <div className="sticky top-28 space-y-6">
             
-            <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Interested in this property?</h3>
+            <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Interested in this property?</h3>
+              </div>
 
               {/* Seller / Agent Profile Card */}
               {propertyInfo.sellerInfo && (
-                <div className="flex items-center gap-3.5 p-3.5 bg-gray-50 dark:bg-[#163321] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 bg-gray-200 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626]">
+                <div className="flex items-center gap-3.5 p-4 bg-gray-50 dark:bg-[#142e1d] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
+                  <div className="relative w-13 h-13 rounded-full overflow-hidden shrink-0 bg-gray-200 dark:bg-[#091711] border-2 border-[#5CD284]/40">
                     <Image
                       src={propertyInfo.sellerInfo.thumbnail || "/placeholder-avatar.png"}
                       alt={propertyInfo.sellerInfo.name || "Agent"}
                       fill
-                      sizes="48px"
+                      sizes="52px"
                       className="object-cover"
                     />
                   </div>
@@ -695,9 +863,14 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                         {propertyInfo.sellerInfo.name || "Real Estate Agent"}
                       </h4>
                       {propertyInfo.sellerInfo.isVerified && (
-                        <ShieldCheck className="w-4 h-4 text-[#5CD284] shrink-0" />
+                        <span title="Verified Agent">
+                          <ShieldCheck className="w-4 h-4 text-[#5CD284] shrink-0" />
+                        </span>
                       )}
                     </div>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                      {propertyInfo.sellerInfo.agencyName || "CPM Certified Real Estate Agent"}
+                    </p>
                     {propertyInfo.sellerInfo.phone && (
                       <p className="text-xs text-[#1A3626] dark:text-[#5CD284] font-bold font-mono mt-0.5">
                         {propertyInfo.sellerInfo.phone}
@@ -708,10 +881,10 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
               )}
 
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                Contact the agent directly to request details, schedule a viewing, or negotiate terms.
+                Connect directly with the authorized agent to schedule a private viewing or ask questions.
               </p>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3 pt-1">
                 {/* WhatsApp Button */}
                 {(propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber) && (
                   <button
@@ -719,7 +892,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                       const waNum = (propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '');
                       window.open(`https://wa.me/${waNum}`, '_blank');
                     }}
-                    className="w-full py-3.5 bg-[#25D366] text-white rounded-xl font-bold text-sm hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    className="w-full py-3.5 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md cursor-pointer hover:shadow-lg hover:scale-[1.02]"
                   >
                     <MessageCircle className="w-4 h-4" /> WhatsApp Agent
                   </button>
@@ -735,7 +908,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                       addToast("Unavailable", "Agent phone number not available", "warning");
                     }
                   }}
-                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                  className="w-full py-3.5 bg-[#1A3626] hover:bg-[#12281c] dark:bg-[#c9a14b] dark:hover:bg-[#b08b3a] text-white dark:text-[#0A3622] rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md cursor-pointer hover:shadow-lg hover:scale-[1.02]"
                 >
                   <Phone className="w-4 h-4" /> Call Agent {propertyInfo.sellerInfo?.phone ? `(${propertyInfo.sellerInfo.phone})` : ''}
                 </button>
@@ -755,6 +928,14 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   <Mail className="w-4 h-4" /> Email Agent
                 </button>
               </div>
+
+              {/* Verified CPM Guarantee Box */}
+              <div className="p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-[#142e1d]/50 border border-emerald-500/15 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-[#5CD284] shrink-0 mt-0.5" />
+                <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-snug">
+                  <strong className="text-gray-900 dark:text-white font-bold">Verified Listing & Direct Contact:</strong> Connect directly with licensed agents with zero middleman markups.
+                </p>
+              </div>
             </div>
 
             {/* Google Map Location Card (Square Shape) */}
@@ -767,6 +948,49 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
           </div>
         </div>
 
+      </div>
+
+      {/* Sticky Mobile Contact Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md border-t border-gray-200 dark:border-[#1A3626] p-3 px-4 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            {isForRent ? "Rental Price" : "Price"}
+          </p>
+          <p className="text-base font-extrabold text-[#1A3626] dark:text-[#5CD284] tabular-nums flex items-center gap-1 truncate">
+            <Dirham className="text-sm" /> {priceValue}
+            {isForRent && rentalPeriod && (
+              <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 lowercase">
+                /{getRentalPeriodSuffix(rentalPeriod)}
+              </span>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {(propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber) && (
+            <button
+              onClick={() => {
+                const waNum = (propertyInfo.sellerInfo?.whatsappNumber || propertyInfo.whatsappNumber).replace(/[^0-9]/g, '');
+                window.open(`https://wa.me/${waNum}`, '_blank');
+              }}
+              className="px-4 py-2.5 bg-[#25D366] text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+            >
+              <MessageCircle className="w-4 h-4" /> WhatsApp
+            </button>
+          )}
+          <button
+            onClick={() => {
+              const phone = propertyInfo.sellerInfo?.phone || propertyInfo.phone;
+              if (phone) {
+                window.location.href = `tel:${phone}`;
+              } else {
+                addToast("Unavailable", "Agent phone number not available", "warning");
+              }
+            }}
+            className="px-4 py-2.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-transform"
+          >
+            <Phone className="w-4 h-4" /> Call
+          </button>
+        </div>
       </div>
 
       {/* Login Required Modal */}

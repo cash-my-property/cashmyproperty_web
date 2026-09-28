@@ -35,6 +35,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.pexels.com",
       },
+      {
+        protocol: "https",
+        hostname: "mediaoffice.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
     ],
   },
   async headers() {
@@ -53,7 +61,15 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
+        source: "/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/:locale(en|ar)/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
+        source: "/:locale(en|ar)/apple-app-site-association",
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
@@ -61,7 +77,15 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
+        source: "/assetlinks.json",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/:locale(en|ar)/.well-known/assetlinks.json",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
+        source: "/:locale(en|ar)/assetlinks.json",
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
     ];

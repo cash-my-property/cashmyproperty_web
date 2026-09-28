@@ -78,17 +78,177 @@ const FALLBACK_SEGMENTS: FilterOption[] = [
   { value: "COMMERCIAL_RENT", label: "Commercial For Rent" },
 ];
 const FALLBACK_LANGUAGES = toOptions([
-  "English", "Arabic", "Hindi", "Urdu", "Russian", "French", "German", "Spanish",
-  "Italian", "Chinese (Mandarin)", "Turkish", "Persian (Farsi)", "Tagalog", "Bengali",
-  "Punjabi", "Pashto", "Portuguese", "Dutch", "Polish", "Swedish", "Ukrainian",
-  "Greek", "Romanian", "Czech", "Korean", "Japanese"
+  "Afrikaans",
+  "Albanian",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Bengali",
+  "Bosnian",
+  "Bulgarian",
+  "Chinese (Cantonese)",
+  "Chinese (Mandarin)",
+  "Croatian",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "English",
+  "Farsi (Persian)",
+  "Filipino (Tagalog)",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Greek",
+  "Hebrew",
+  "Hindi",
+  "Hungarian",
+  "Indonesian",
+  "Italian",
+  "Japanese",
+  "Kazakh",
+  "Korean",
+  "Kurdish",
+  "Kyrgyz",
+  "Latvian",
+  "Lithuanian",
+  "Malay",
+  "Malayalam",
+  "Marathi",
+  "Norwegian",
+  "Pashto",
+  "Polish",
+  "Portuguese",
+  "Punjabi",
+  "Romanian",
+  "Russian",
+  "Serbian",
+  "Sinhala",
+  "Slovak",
+  "Spanish",
+  "Swahili",
+  "Swedish",
+  "Tamil",
+  "Telugu",
+  "Thai",
+  "Turkish",
+  "Turkmen",
+  "Ukrainian",
+  "Urdu",
+  "Uzbek",
+  "Vietnamese"
 ]);
 const FALLBACK_NATIONALITIES = toOptions([
-  "Emirati", "Indian", "British", "Pakistani", "Egyptian", "Russian", "Canadian",
-  "Lebanese", "French", "German", "Italian", "Syrian", "Jordanian", "American",
-  "Australian", "Turkish", "Filipino", "Chinese", "Iranian", "Moroccan",
-  "South African", "Spanish", "Ukrainian", "Saudi", "Nigerian", "Dutch",
-  "Swedish", "Polish", "Greek", "Swiss", "Irish", "Brazilian"
+  "Afghan",
+  "Albanian",
+  "Algerian",
+  "American",
+  "Andorran",
+  "Angolan",
+  "Argentine",
+  "Armenian",
+  "Australian",
+  "Austrian",
+  "Azerbaijani",
+  "Bahraini",
+  "Bangladeshi",
+  "Belarusian",
+  "Belgian",
+  "Bolivian",
+  "Bosnian",
+  "Brazilian",
+  "British",
+  "Bulgarian",
+  "Canadian",
+  "Chilean",
+  "Chinese",
+  "Colombian",
+  "Croatian",
+  "Cypriot",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "Egyptian",
+  "Emirati",
+  "Estonian",
+  "Ethiopian",
+  "Filipino",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Ghanaian",
+  "Greek",
+  "Hungarian",
+  "Icelandic",
+  "Indian",
+  "Indonesian",
+  "Iranian",
+  "Iraqi",
+  "Irish",
+  "Italian",
+  "Japanese",
+  "Jordanian",
+  "Kazakh",
+  "Kenyan",
+  "Kuwaiti",
+  "Kyrgyz",
+  "Latvian",
+  "Lebanese",
+  "Libyan",
+  "Lithuanian",
+  "Luxembourgish",
+  "Macedonian",
+  "Malaysian",
+  "Maltese",
+  "Mauritian",
+  "Mexican",
+  "Moldovan",
+  "Montenegrin",
+  "Moroccan",
+  "Nepalese",
+  "New Zealander",
+  "Nigerian",
+  "Norwegian",
+  "Omani",
+  "Pakistani",
+  "Palestinian",
+  "Peruvian",
+  "Polish",
+  "Portuguese",
+  "Qatari",
+  "Romanian",
+  "Russian",
+  "Saudi",
+  "Scottish",
+  "Serbian",
+  "Singaporean",
+  "Slovak",
+  "Slovenian",
+  "South African",
+  "South Korean",
+  "Spanish",
+  "Sri Lankan",
+  "Sudanese",
+  "Swedish",
+  "Swiss",
+  "Syrian",
+  "Taiwanese",
+  "Tajik",
+  "Tanzanian",
+  "Thai",
+  "Tunisian",
+  "Turkish",
+  "Turkmen",
+  "Ugandan",
+  "Ukrainian",
+  "Uruguayan",
+  "Uzbek",
+  "Venezuelan",
+  "Vietnamese",
+  "Welsh",
+  "Yemeni",
+  "Zimbabwean"
 ]);
 const FALLBACK_DELIVERY_DATES: FilterOption[] = [
   { value: "READY", label: "Ready" },
@@ -297,6 +457,8 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const [selectedAgentSegment, setSelectedAgentSegment] = useState<string>("RESIDENTIAL_SALE");
   const [selectedAgentLanguage, setSelectedAgentLanguage] = useState<string>("");
   const [selectedAgentNationality, setSelectedAgentNationality] = useState<string>("");
+  const [languageSearchQuery, setLanguageSearchQuery] = useState<string>("");
+  const [nationalitySearchQuery, setNationalitySearchQuery] = useState<string>("");
 
   // Buy specific sub-tabs (All, Off-plan, Ready)
   const [buySubTab, setBuySubTab] = useState<"ALL" | "OFF_PLAN" | "READY">("ALL");
@@ -685,7 +847,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       <div
         data-dropdown-popup="true"
         style={{ top: `${dropdownCoords.top}px`, left: `${dropdownCoords.left}px` }}
-        className={`absolute z-[99999] ${widthClass} bg-white dark:bg-[#102418] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-gray-200 dark:border-[#1A3626] ${padding} flex flex-col animate-in fade-in zoom-in-95 duration-150`}
+        className={`absolute z-[99999] ${widthClass} bg-white dark:bg-[#102418] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-gray-200 dark:border-[#1A3626] ${padding} flex flex-col animate-in fade-in zoom-in-95 duration-150 overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -892,7 +1054,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               <div
                 data-dropdown-popup="true"
                 onMouseDown={(e) => e.preventDefault()}
-                className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3"
+                className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3 overflow-hidden"
               >
                 {/* Locations Section */}
                 {suggestions.locations.length > 0 && (
@@ -1051,7 +1213,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5">
+          <div className="flex flex-wrap gap-2.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5 pr-2">
             <button
               type="button"
               onClick={() => setSelectedPropertyTypes([])}
@@ -1177,7 +1339,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             <input
               type="number"
               min={0}
-              placeholder={priceRange ? `Min. ${priceRange.min.toLocaleString()} AED` : "Min. Price (AED)"}
+              placeholder="Min"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
@@ -1186,7 +1348,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             <input
               type="number"
               min={0}
-              placeholder={priceRange ? `Max. ${priceRange.max.toLocaleString()} AED` : "Max. Price (AED)"}
+              placeholder="Max"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
@@ -1249,7 +1411,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             <input
               type="number"
               min={0}
-              placeholder={areaRange ? `Min. ${areaRange.min.toLocaleString()}` : "Min. Area"}
+              placeholder="Min"
               value={minArea}
               onChange={(e) => setMinArea(e.target.value)}
               className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
@@ -1258,7 +1420,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             <input
               type="number"
               min={0}
-              placeholder={areaRange ? `Max. ${areaRange.max.toLocaleString()}` : "Max. Area"}
+              placeholder="Max"
               value={maxArea}
               onChange={(e) => setMaxArea(e.target.value)}
               className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
@@ -1292,7 +1454,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto custom-scrollbar p-1">
+          <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto custom-scrollbar p-1 pr-2">
             {amenityOptions.length === 0
               ? renderLoadingOrEmpty()
               : amenityOptions.map((amenity) => {
@@ -1436,44 +1598,162 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
       {renderPopup(
         "agentLanguage",
-        "w-56",
+        "w-64",
         <>
-          {[{ value: "", label: "All Languages" }, ...languageOptions].map((lang) => (
-            <button
-              key={lang.value || "all"}
-              type="button"
-              onClick={() => {
-                setSelectedAgentLanguage(lang.value);
-                closeDropdown();
-              }}
-              className={menuItemClass(selectedAgentLanguage === lang.value)}
-            >
-              {lang.label}
-            </button>
-          ))}
+          <div className="p-2 border-b border-gray-100 dark:border-[#1A3626]">
+            <input
+              type="text"
+              value={languageSearchQuery}
+              onChange={(e) => setLanguageSearchQuery(e.target.value)}
+              placeholder="Search language..."
+              className="w-full px-3 py-1.5 rounded-xl text-xs bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="p-1.5 pr-2 max-h-72 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+            {!languageSearchQuery && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentLanguage("");
+                    setLanguageSearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentLanguage === "")}
+                >
+                  All Languages
+                </button>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Popular
+                </div>
+                <div className="flex flex-wrap gap-1 px-1.5 pb-2">
+                  {["English", "Arabic", "Russian", "French", "Hindi", "Urdu", "German", "Spanish"].map((popLang) => (
+                    <button
+                      key={popLang}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAgentLanguage(popLang);
+                        setLanguageSearchQuery("");
+                        closeDropdown();
+                      }}
+                      className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                        selectedAgentLanguage === popLang
+                          ? "bg-[#5CD284] text-[#0A1C12] font-semibold"
+                          : "bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1A3626]"
+                      }`}
+                    >
+                      {popLang}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100 dark:border-[#1A3626]">
+                  All Languages (A-Z)
+                </div>
+              </>
+            )}
+            {languageOptions
+              .filter((lang) => lang.label.toLowerCase().includes(languageSearchQuery.toLowerCase()))
+              .map((lang) => (
+                <button
+                  key={lang.value || "all"}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentLanguage(lang.value);
+                    setLanguageSearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentLanguage === lang.value)}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            {languageOptions.filter((lang) => lang.label.toLowerCase().includes(languageSearchQuery.toLowerCase())).length === 0 && (
+              <div className="p-3 text-center text-xs text-gray-400">No language found</div>
+            )}
+          </div>
         </>,
-        "p-2 gap-1 max-h-72 overflow-y-auto custom-scrollbar"
+        "p-0 gap-0"
       )}
 
       {renderPopup(
         "agentNationality",
-        "w-56",
+        "w-64",
         <>
-          {[{ value: "", label: "All Nationalities" }, ...nationalityOptions].map((nat) => (
-            <button
-              key={nat.value || "all"}
-              type="button"
-              onClick={() => {
-                setSelectedAgentNationality(nat.value);
-                closeDropdown();
-              }}
-              className={menuItemClass(selectedAgentNationality === nat.value)}
-            >
-              {nat.label}
-            </button>
-          ))}
+          <div className="p-2 border-b border-gray-100 dark:border-[#1A3626]">
+            <input
+              type="text"
+              value={nationalitySearchQuery}
+              onChange={(e) => setNationalitySearchQuery(e.target.value)}
+              placeholder="Search nationality..."
+              className="w-full px-3 py-1.5 rounded-xl text-xs bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="p-1.5 pr-2 max-h-72 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+            {!nationalitySearchQuery && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentNationality("");
+                    setNationalitySearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentNationality === "")}
+                >
+                  All Nationalities
+                </button>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Popular
+                </div>
+                <div className="flex flex-wrap gap-1 px-1.5 pb-2">
+                  {["Emirati", "British", "Pakistani", "Indian", "Egyptian", "Russian", "Lebanese", "French", "Canadian"].map((popNat) => (
+                    <button
+                      key={popNat}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAgentNationality(popNat);
+                        setNationalitySearchQuery("");
+                        closeDropdown();
+                      }}
+                      className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                        selectedAgentNationality === popNat
+                          ? "bg-[#5CD284] text-[#0A1C12] font-semibold"
+                          : "bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1A3626]"
+                      }`}
+                    >
+                      {popNat}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100 dark:border-[#1A3626]">
+                  All Nationalities (A-Z)
+                </div>
+              </>
+            )}
+            {nationalityOptions
+              .filter((nat) => nat.label.toLowerCase().includes(nationalitySearchQuery.toLowerCase()))
+              .map((nat) => (
+                <button
+                  key={nat.value || "all"}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentNationality(nat.value);
+                    setNationalitySearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentNationality === nat.value)}
+                >
+                  {nat.label}
+                </button>
+              ))}
+            {nationalityOptions.filter((nat) => nat.label.toLowerCase().includes(nationalitySearchQuery.toLowerCase())).length === 0 && (
+              <div className="p-3 text-center text-xs text-gray-400">No nationality found</div>
+            )}
+          </div>
         </>,
-        "p-2 gap-1 max-h-72 overflow-y-auto custom-scrollbar"
+        "p-0 gap-0"
       )}
 
     </div>

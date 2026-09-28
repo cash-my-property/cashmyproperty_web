@@ -78,21 +78,27 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         )}
       </div>
 
-      <nav className="flex-1 px-4 py-8 space-y-2">
+      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
         {links.map((link) => {
           const isActive = pathname === link.href || (link.href !== `/${locale}/dashboard` && pathname.startsWith(link.href));
           return (
             <Link
               key={link.name}
               href={link.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+              className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
                 isActive 
-                  ? "bg-[#1A3626] dark:bg-[#c9a14b]/10 text-white dark:text-[#c9a14b] font-semibold" 
-                  : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#102418]/50 hover:text-gray-900 dark:hover:text-gray-200"
+                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284]/15 dark:text-[#5CD284] dark:border dark:border-[#5CD284]/30 font-bold shadow-xs" 
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#163321]/60 hover:text-gray-900 dark:hover:text-white font-medium"
               }`}
             >
-              <link.icon className={`w-5 h-5 ${isActive ? "opacity-100" : "opacity-70"}`} />
-              <span className="text-[14px]">{link.name}</span>
+              <div className="flex items-center gap-3">
+                <link.icon className={`w-4 h-4 transition-colors ${
+                  isActive 
+                    ? "text-[#5CD284]" 
+                    : "text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
+                }`} />
+                <span className="text-[13px]">{link.name}</span>
+              </div>
             </Link>
           );
         })}

@@ -1,12 +1,207 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { User, Lock, Bell, Camera, Loader2, Trash2, AlertTriangle, AlertCircle } from "lucide-react";
+import { User, Lock, Bell, Camera, Loader2, Trash2, AlertTriangle, AlertCircle, Globe, Plus, X, ChevronDown, Check, Search, FileText } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import Image from "next/image";
 import { compressImage } from "@/utils/imageCompressor";
+
+const POPULAR_LANGUAGES = [
+  "English",
+  "Arabic",
+  "Urdu",
+  "Hindi",
+  "Russian",
+  "French",
+  "Spanish",
+  "German",
+  "Chinese",
+  "Farsi",
+  "Turkish",
+  "Italian",
+  "Tagalog",
+  "Bengali",
+  "Punjabi",
+];
+
+const ALL_LANGUAGES = [
+  "Afrikaans",
+  "Albanian",
+  "Amharic",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Bengali",
+  "Bosnian",
+  "Bulgarian",
+  "Burmese",
+  "Chinese (Cantonese)",
+  "Chinese (Mandarin)",
+  "Croatian",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "English",
+  "Farsi (Persian)",
+  "Filipino (Tagalog)",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Greek",
+  "Hebrew",
+  "Hindi",
+  "Hungarian",
+  "Indonesian",
+  "Italian",
+  "Japanese",
+  "Kazakh",
+  "Korean",
+  "Kurdish",
+  "Kyrgyz",
+  "Latvian",
+  "Lithuanian",
+  "Malay",
+  "Malayalam",
+  "Marathi",
+  "Norwegian",
+  "Pashto",
+  "Polish",
+  "Portuguese",
+  "Punjabi",
+  "Romanian",
+  "Russian",
+  "Serbian",
+  "Sinhala",
+  "Slovak",
+  "Spanish",
+  "Swahili",
+  "Swedish",
+  "Tamil",
+  "Telugu",
+  "Thai",
+  "Turkish",
+  "Turkmen",
+  "Ukrainian",
+  "Urdu",
+  "Uzbek",
+  "Vietnamese"
+];
+
+const ALL_NATIONALITIES = [
+  "Afghan",
+  "Albanian",
+  "Algerian",
+  "American",
+  "Andorran",
+  "Angolan",
+  "Argentine",
+  "Armenian",
+  "Australian",
+  "Austrian",
+  "Azerbaijani",
+  "Bahraini",
+  "Bangladeshi",
+  "Belarusian",
+  "Belgian",
+  "Bolivian",
+  "Bosnian",
+  "Brazilian",
+  "British",
+  "Bulgarian",
+  "Canadian",
+  "Chilean",
+  "Chinese",
+  "Colombian",
+  "Croatian",
+  "Cypriot",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "Egyptian",
+  "Emirati",
+  "Estonian",
+  "Ethiopian",
+  "Filipino",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Ghanaian",
+  "Greek",
+  "Hungarian",
+  "Icelandic",
+  "Indian",
+  "Indonesian",
+  "Iranian",
+  "Iraqi",
+  "Irish",
+  "Italian",
+  "Japanese",
+  "Jordanian",
+  "Kazakh",
+  "Kenyan",
+  "Kuwaiti",
+  "Kyrgyz",
+  "Latvian",
+  "Lebanese",
+  "Libyan",
+  "Lithuanian",
+  "Luxembourgish",
+  "Macedonian",
+  "Malaysian",
+  "Maltese",
+  "Mauritian",
+  "Mexican",
+  "Moldovan",
+  "Montenegrin",
+  "Moroccan",
+  "Nepalese",
+  "New Zealander",
+  "Nigerian",
+  "Norwegian",
+  "Omani",
+  "Pakistani",
+  "Palestinian",
+  "Peruvian",
+  "Polish",
+  "Portuguese",
+  "Qatari",
+  "Romanian",
+  "Russian",
+  "Saudi",
+  "Scottish",
+  "Serbian",
+  "Singaporean",
+  "Slovak",
+  "Slovenian",
+  "South African",
+  "South Korean",
+  "Spanish",
+  "Sri Lankan",
+  "Sudanese",
+  "Swedish",
+  "Swiss",
+  "Syrian",
+  "Taiwanese",
+  "Tajik",
+  "Tanzanian",
+  "Thai",
+  "Tunisian",
+  "Turkish",
+  "Turkmen",
+  "Ugandan",
+  "Ukrainian",
+  "Uruguayan",
+  "Uzbek",
+  "Venezuelan",
+  "Vietnamese",
+  "Welsh",
+  "Yemeni",
+  "Zimbabwean"
+];
 
 export default function SettingsPage() {
   const { dict } = useDictionary();
@@ -21,6 +216,9 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [brn, setBrn] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [bio, setBio] = useState("");
   
   // Security states
   const [oldPassword, setOldPassword] = useState("");
@@ -42,7 +240,28 @@ export default function SettingsPage() {
   const [deleteError, setDeleteError] = useState("");
   const [deleteBlockers, setDeleteBlockers] = useState<string[]>([]);
   
+  // Dropdown states
+  const [isNationalityOpen, setIsNationalityOpen] = useState(false);
+  const [nationalitySearch, setNationalitySearch] = useState("");
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [languageSearch, setLanguageSearch] = useState("");
+
+  const nationalityRef = useRef<HTMLDivElement>(null);
+  const languageRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (nationalityRef.current && !nationalityRef.current.contains(event.target as Node)) {
+        setIsNationalityOpen(false);
+      }
+      if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
+        setIsLanguageOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -52,17 +271,49 @@ export default function SettingsPage() {
       setPhone(user.phone || "");
       setEmail(user.email || "");
       setBrn(user.brokerNumber || "");
+      setNationality(user.nationality || "");
+      setBio((user as any).bio || (user as any).about || (user as any).description || "");
+
+      let userLangs: string[] = [];
+      if (Array.isArray(user.languages)) {
+        userLangs = user.languages.map((l: any) => String(l).trim()).filter(Boolean);
+      } else if (typeof user.languages === 'string') {
+        try {
+          const parsed = JSON.parse(user.languages);
+          userLangs = Array.isArray(parsed) ? parsed.map((l: any) => String(l).trim()).filter(Boolean) : [user.languages.trim()];
+        } catch {
+          userLangs = user.languages.split(',').map((l: string) => l.trim()).filter(Boolean);
+        }
+      }
+      setLanguages(userLangs);
     }
   }, [user]);
+
+  const toggleLanguage = (lang: string) => {
+    setLanguages((prev) =>
+      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
+    );
+  };
+
+  const handleRemoveLanguage = (langToRemove: string) => {
+    setLanguages((prev) => prev.filter((l) => l !== langToRemove));
+  };
+
+  const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    if (val.length <= 1000) {
+      setBio(val);
+    }
+  };
 
   const handleProfileUpdate = async () => {
     setProfileMessage({ type: "", text: "" });
     setIsSavingProfile(true);
     try {
-      const fullName = `${firstName} ${lastName}`.trim();
       const response = await api.put('/auth/editProfile', {
-        fullName,
-        phone
+        nationality: nationality || "",
+        languages,
+        bio
       });
       
       setProfileMessage({ type: "success", text: response.data?.message || "Profile updated successfully!" });
@@ -77,17 +328,27 @@ export default function SettingsPage() {
   const handlePasswordUpdate = async () => {
     setSecurityMessage({ type: "", text: "" });
     if (!oldPassword || !newPassword) {
-      setSecurityMessage({ type: "error", text: "Please fill in both password fields." });
+      setSecurityMessage({ type: "error", text: "Old password and new password must be sent together." });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setSecurityMessage({ type: "error", text: "Password must be at least 6 characters long." });
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPassword) || !/[!@#$%^&*(),.?":{}|<>_~`\-+=/\\[\]]/.test(newPassword)) {
+      setSecurityMessage({ type: "error", text: "Password must contain at least one uppercase letter and one special character." });
       return;
     }
     
     setIsSavingSecurity(true);
     try {
-      await api.put('/auth/editProfile', {
+      const response = await api.put('/auth/editProfile', {
         oldPassword,
         newPassword
       });
-      setSecurityMessage({ type: "success", text: "Password updated successfully!" });
+      setSecurityMessage({ type: "success", text: response.data?.message || "Password updated successfully!" });
       setOldPassword("");
       setNewPassword("");
     } catch (error: any) {
@@ -222,19 +483,23 @@ export default function SettingsPage() {
 
               {/* Profile Picture */}
               <div className="flex items-center gap-6">
-                <div className="relative w-24 h-24 rounded-full bg-gray-100 dark:bg-[#102418] border-4 border-white dark:border-[#1A3626] shadow-sm flex items-center justify-center overflow-hidden">
-                  {isUploadingImage ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                  ) : user?.picture ? (
-                    <Image src={user.picture} alt="Profile" fill className="object-cover" />
-                  ) : (
-                    <User className="w-10 h-10 text-gray-400" />
-                  )}
+                <div className="relative w-24 h-24 shrink-0">
+                  <div className="w-full h-full rounded-full bg-gray-100 dark:bg-[#102418] border-2 border-gray-200 dark:border-[#1A3626] shadow-sm flex items-center justify-center overflow-hidden relative">
+                    {isUploadingImage ? (
+                      <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
+                    ) : user?.picture ? (
+                      <Image src={user.picture} alt="Profile" fill className="object-cover" />
+                    ) : (
+                      <User className="w-10 h-10 text-gray-400" />
+                    )}
+                  </div>
                   
                   <button 
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingImage}
-                    className="absolute bottom-0 right-0 w-8 h-8 bg-[#1A3626] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#091711] hover:scale-105 transition-transform shadow-md z-10 cursor-pointer"
+                    title="Change profile picture"
+                    className="absolute bottom-0 right-0 w-8 h-8 bg-[#1A3626] hover:bg-[#234833] dark:bg-[#5CD284] dark:hover:bg-[#4cb870] rounded-full flex items-center justify-center text-white dark:text-[#0A1C12] hover:scale-110 transition-all shadow-md z-10 cursor-pointer border-2 border-white dark:border-[#102418]"
                   >
                     <Camera className="w-4 h-4" />
                   </button>
@@ -254,59 +519,367 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.firstName}</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.firstName}</label>
+                    <span className="text-[10px] text-gray-400 font-medium">Protected</span>
+                  </div>
                   <input 
                     type="text" 
                     value={firstName} 
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
+                    disabled
+                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed text-sm" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.lastName}</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.lastName}</label>
+                    <span className="text-[10px] text-gray-400 font-medium">Protected</span>
+                  </div>
                   <input 
                     type="text" 
                     value={lastName} 
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
+                    disabled
+                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed text-sm" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.email}</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.email}</label>
+                    <span className="text-[10px] text-gray-400 font-medium">Protected</span>
+                  </div>
                   <input 
                     type="email" 
                     value={email} 
                     disabled
-                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-70 cursor-not-allowed" 
+                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed text-sm" 
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.phone}</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.phone}</label>
+                    <span className="text-[10px] text-gray-400 font-medium">Protected</span>
+                  </div>
                   <input 
                     type="tel" 
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)} 
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#c9a14b] transition-colors text-gray-900 dark:text-white" 
+                    value={phone} 
+                    disabled
+                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed text-sm" 
                   />
                 </div>
                 {brn && (
                   <div className="space-y-2">
-                    <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.brn}</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">{content.form.brn}</label>
+                      <span className="text-[10px] text-gray-400 font-medium">Official BRN</span>
+                    </div>
                     <input 
                       type="text" 
                       value={brn}
                       disabled
-                      className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-70 cursor-not-allowed" 
+                      className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-[#0a170f] border border-gray-200 dark:border-[#1A3626] text-gray-500 dark:text-gray-400 opacity-75 cursor-not-allowed text-sm" 
                     />
                   </div>
                 )}
+                {/* Nationality Dropdown */}
+                <div className="space-y-2 relative" ref={nationalityRef}>
+                  <label className="text-[13px] font-bold text-gray-700 dark:text-gray-300">
+                    {(content.form as any).nationality || "Nationality"}
+                  </label>
+                  
+                  <button 
+                    type="button"
+                    onClick={() => setIsNationalityOpen((prev) => !prev)}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#5CD284] transition-colors text-left flex items-center justify-between cursor-pointer"
+                  >
+                    <span className={nationality ? "text-gray-900 dark:text-white font-medium" : "text-gray-400 dark:text-gray-500 text-sm"}>
+                      {nationality || "Select nationality..."}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isNationalityOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isNationalityOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                      <div className="p-2 border-b border-gray-100 dark:border-[#1A3626]">
+                        <div className="relative">
+                          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="text"
+                            value={nationalitySearch}
+                            onChange={(e) => setNationalitySearch(e.target.value)}
+                            placeholder="Search nationality..."
+                            className="w-full pl-8 pr-3 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284]"
+                            onClick={(e) => e.stopPropagation()}
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="p-1.5 pr-2 max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+                        {!nationalitySearch && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNationality("");
+                                setNationalitySearch("");
+                                setIsNationalityOpen(false);
+                              }}
+                              className={`w-full px-3 py-2 rounded-lg text-xs text-left transition-colors flex items-center justify-between ${
+                                nationality === ""
+                                  ? "bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] font-bold"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
+                              }`}
+                            >
+                              <span>None / Clear</span>
+                              {nationality === "" && <Check className="w-3.5 h-3.5 text-[#5CD284]" />}
+                            </button>
+                            <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                              Popular
+                            </div>
+                            <div className="flex flex-wrap gap-1 px-1.5 pb-2">
+                              {["Emirati", "British", "Pakistani", "Indian", "Egyptian", "Russian", "Lebanese", "French", "Canadian"].map((popNat) => (
+                                <button
+                                  key={popNat}
+                                  type="button"
+                                  onClick={() => {
+                                    setNationality(popNat);
+                                    setNationalitySearch("");
+                                    setIsNationalityOpen(false);
+                                  }}
+                                  className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                                    nationality === popNat
+                                      ? "bg-[#5CD284] text-[#0A1C12] font-semibold"
+                                      : "bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1A3626]"
+                                  }`}
+                                >
+                                  {popNat}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100 dark:border-[#1A3626]">
+                              All Nationalities (A-Z)
+                            </div>
+                          </>
+                        )}
+                        {ALL_NATIONALITIES
+                          .filter((nat) => nat.toLowerCase().includes(nationalitySearch.toLowerCase()))
+                          .map((nat) => (
+                            <button
+                              key={nat}
+                              type="button"
+                              onClick={() => {
+                                setNationality(nat);
+                                setNationalitySearch("");
+                                setIsNationalityOpen(false);
+                              }}
+                              className={`w-full px-3 py-2 rounded-lg text-xs text-left transition-colors flex items-center justify-between ${
+                                nationality === nat
+                                  ? "bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] font-bold"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
+                              }`}
+                            >
+                              <span>{nat}</span>
+                              {nationality === nat && <Check className="w-3.5 h-3.5 text-[#5CD284]" />}
+                            </button>
+                          ))}
+                        {ALL_NATIONALITIES.filter((nat) => nat.toLowerCase().includes(nationalitySearch.toLowerCase())).length === 0 && (
+                          <div className="p-3 text-center text-xs text-gray-400">No nationality found</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Languages Spoken Section */}
+              <div className="pt-2 space-y-4 border-t border-gray-100 dark:border-[#1A3626]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#5CD284]/10 dark:bg-[#5CD284]/15 flex items-center justify-center text-[#1A3626] dark:text-[#5CD284]">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                        {(content.form as any).languages || "Languages Spoken"}
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Languages you can communicate in.
+                      </p>
+                    </div>
+                  </div>
+                  {languages.length > 0 && (
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284]">
+                      {languages.length} selected
+                    </span>
+                  )}
+                </div>
+
+                {/* Selected Languages Badges */}
+                {languages.length > 0 && (
+                  <div className="flex flex-wrap gap-2 p-3 bg-gray-50/80 dark:bg-[#091711] border border-gray-200/80 dark:border-[#1A3626] rounded-xl">
+                    {languages.map((lang) => (
+                      <span
+                        key={lang}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#091711] shadow-xs"
+                      >
+                        {lang}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLanguage(lang)}
+                          className="hover:opacity-75 transition-opacity cursor-pointer ml-0.5"
+                          title={`Remove ${lang}`}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Searchable Checkbox Dropdown */}
+                <div className="space-y-1.5 relative" ref={languageRef}>
+                  <label className="text-[12px] font-bold text-gray-700 dark:text-gray-300">
+                    Languages Dropdown (Select Multiple)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsLanguageOpen((prev) => !prev)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#5CD284] transition-colors text-left flex items-center justify-between cursor-pointer"
+                  >
+                    <span className={languages.length > 0 ? "text-gray-900 dark:text-white font-medium text-xs" : "text-gray-400 dark:text-gray-500 text-xs"}>
+                      {languages.length > 0 ? `${languages.length} language(s) selected` : "Choose from list..."}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isLanguageOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isLanguageOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                      <div className="p-2 border-b border-gray-100 dark:border-[#1A3626] flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="text"
+                            value={languageSearch}
+                            onChange={(e) => setLanguageSearch(e.target.value)}
+                            placeholder="Search languages..."
+                            className="w-full pl-8 pr-3 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284]"
+                            onClick={(e) => e.stopPropagation()}
+                            autoFocus
+                          />
+                        </div>
+                        {languages.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => setLanguages([])}
+                            className="px-2.5 py-1 text-[11px] font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors shrink-0"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <div className="p-1.5 pr-2 max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+                        {ALL_LANGUAGES
+                          .filter((lang) => lang.toLowerCase().includes(languageSearch.toLowerCase()))
+                          .map((lang) => {
+                            const isSelected = languages.includes(lang);
+                            return (
+                              <label
+                                key={lang}
+                                className={`w-full px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-between cursor-pointer select-none ${
+                                  isSelected
+                                    ? "bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] font-semibold"
+                                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => toggleLanguage(lang)}
+                                    className="w-3.5 h-3.5 rounded border-gray-300 text-[#5CD284] focus:ring-[#5CD284] accent-[#5CD284] cursor-pointer"
+                                  />
+                                  <span>{lang}</span>
+                                </div>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-[#5CD284]" />}
+                              </label>
+                            );
+                          })}
+                        {ALL_LANGUAGES.filter((lang) => lang.toLowerCase().includes(languageSearch.toLowerCase())).length === 0 && (
+                          <div className="p-3 text-center text-xs text-gray-400">No language found</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Popular Suggested Language Chips */}
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                    Quick Suggestions
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {POPULAR_LANGUAGES.map((lang) => {
+                      const isSelected = languages.includes(lang);
+                      return (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => toggleLanguage(lang)}
+                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#5CD284]/20 border border-[#5CD284] text-[#1A3626] dark:text-[#5CD284] font-semibold"
+                              : "bg-gray-100 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+                          }`}
+                        >
+                          {isSelected ? `✓ ${lang}` : `+ ${lang}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bio / About Section */}
+              <div className="pt-2 space-y-3 border-t border-gray-100 dark:border-[#1A3626]">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#5CD284]/10 dark:bg-[#5CD284]/15 flex items-center justify-center text-[#1A3626] dark:text-[#5CD284]">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                        About / Bio
+                      </h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        A brief professional summary highlighting your background and expertise.
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    bio.length >= 1000
+                      ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                      : "bg-gray-100 dark:bg-[#163321] text-gray-600 dark:text-gray-300"
+                  }`}>
+                    {bio.length} / 1000 characters
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <textarea
+                    rows={4}
+                    value={bio}
+                    maxLength={1000}
+                    onChange={handleBioChange}
+                    placeholder="Write a brief professional bio about yourself, your background, areas of expertise, and experience in the real estate market (or leave empty to clear)..."
+                    className="w-full p-4 rounded-xl bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] focus:outline-none focus:border-[#5CD284] dark:focus:border-[#5CD284] transition-colors text-sm text-gray-900 dark:text-white resize-y"
+                  />
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end">
                 <button 
                   onClick={handleProfileUpdate}
                   disabled={isSavingProfile}
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#091711] font-bold text-[14px] tracking-wide hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1A3626] hover:bg-[#234833] dark:bg-[#5CD284] dark:hover:bg-[#4cb870] text-white dark:text-[#0A1C12] font-bold text-[14px] tracking-wide hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingProfile && <Loader2 className="w-4 h-4 animate-spin" />}
                   {content.form.saveChanges}

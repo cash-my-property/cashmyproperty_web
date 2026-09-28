@@ -63,15 +63,15 @@ export default function PropertyMapCard({ coordinates, location, title }: Proper
     <div className="bg-white dark:bg-[#102418] rounded-[28px] p-5 sm:p-6 border border-gray-200/80 dark:border-[#1A3626] shadow-xl hover:shadow-2xl transition-all duration-500 space-y-4 relative overflow-hidden group">
       
       {/* Top Accent Gradient Glow Line */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#c9a14b]" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#1A3626]" />
 
       {/* Ambient Radial Glow */}
-      <div className="absolute -top-20 -right-20 w-44 h-44 bg-[#5CD284]/10 dark:bg-[#c9a14b]/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -top-20 -right-20 w-44 h-44 bg-[#5CD284]/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header Bar */}
       <div className="flex items-center justify-between gap-3 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] text-[#5CD284] dark:text-[#c9a14b] border border-white/10 dark:border-[#c9a14b]/30 shadow-md">
+          <div className="p-2.5 rounded-2xl bg-[#5CD284]/15 text-[#5CD284] border border-[#5CD284]/30 shadow-md">
             <MapPin className="w-5 h-5" />
           </div>
           <div>
@@ -103,7 +103,7 @@ export default function PropertyMapCard({ coordinates, location, title }: Proper
 
         {/* Top Control Overlay Tag */}
         <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl text-white text-[10px] font-bold tracking-wider uppercase flex items-center gap-1.5 shadow-lg border border-white/10 pointer-events-none">
-          <Layers className="w-3 h-3 text-[#c9a14b]" />
+          <Layers className="w-3 h-3 text-[#5CD284]" />
           <span>Interactive Map</span>
         </div>
 
@@ -119,9 +119,9 @@ export default function PropertyMapCard({ coordinates, location, title }: Proper
         href={externalMapUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="w-full py-3 px-4 bg-gradient-to-r from-[#1A3626] to-[#102418] hover:from-[#163321] hover:to-[#1A3626] dark:from-[#102418] dark:to-[#163321] dark:hover:from-[#163321] dark:hover:to-[#1A3626] text-white font-bold text-xs rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.25)] dark:hover:shadow-[0_0_20px_rgba(201,161,75,0.25)] border border-white/15 dark:border-[#c9a14b]/30 group/btn"
+        className="w-full py-3 px-4 bg-gradient-to-r from-[#1A3626] to-[#102418] hover:from-[#163321] hover:to-[#1A3626] dark:from-[#102418] dark:to-[#163321] dark:hover:from-[#163321] dark:hover:to-[#1A3626] text-white font-bold text-xs rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.25)] border border-white/15 dark:border-[#5CD284]/30 group/btn"
       >
-        <ExternalLink className="w-4 h-4 text-[#5CD284] dark:text-[#c9a14b] group-hover/btn:scale-110 transition-transform" />
+        <ExternalLink className="w-4 h-4 text-[#5CD284] group-hover/btn:scale-110 transition-transform" />
         <span>Open Direct Google Maps</span>
       </a>
     </div>

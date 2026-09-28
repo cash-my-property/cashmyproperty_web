@@ -159,14 +159,14 @@ export default function FavoritesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href={`/${locale}/listings`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0a1c13] font-bold rounded-xl hover:opacity-90 transition-opacity"
+              href={`/${locale}/auctions`}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] font-bold rounded-xl shadow-md transition-all hover:-translate-y-0.5"
             >
               <Building2 className="w-4 h-4" /> {content.browseAuctions} <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href={`/${locale}/listings`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
             >
               {content.browseDirectListings} <ArrowRight className="w-4 h-4" />
             </Link>
@@ -199,9 +199,9 @@ export default function FavoritesPage() {
               <Link 
                 href={detailPath} 
                 key={item.favouriteId} 
-                className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group relative block cursor-pointer"
+                className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-xs hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group relative block cursor-pointer hover:-translate-y-1"
               >
-                <div className="relative h-[200px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711] w-full">
+                <div className="relative h-[210px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711] w-full">
                   <Image
                     src={image}
                     alt={details.propertyTitle || "Property"}
@@ -211,14 +211,14 @@ export default function FavoritesPage() {
                   />
                   
                   {/* Badges */}
-                  <div className="absolute top-4 left-4 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-md text-[#1A3626] dark:text-[#c9a14b]">
+                  <div className="absolute top-3 left-3 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md px-3 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-md text-[#1A3626] dark:text-[#5CD284] border border-gray-100/50 dark:border-[#1A3626]">
                     {isRegular ? (
                       <>
-                        <TrendingUp className="w-3.5 h-3.5" /> Realtime Offer
+                        <TrendingUp className="w-3.5 h-3.5 text-[#5CD284]" /> Realtime Offer
                       </>
                     ) : (
                       <>
-                        <Tag className="w-3.5 h-3.5" /> Direct Deal
+                        <Tag className="w-3.5 h-3.5 text-[#5CD284]" /> Direct Deal
                       </>
                     )}
                   </div>
@@ -227,31 +227,32 @@ export default function FavoritesPage() {
                   <button
                     onClick={(e) => handleRemoveFavourite(e, item)}
                     disabled={isRemovingId === item.favouriteId}
-                    className="absolute top-4 right-4 w-9 h-9 bg-white/90 dark:bg-[#102418]/90 hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-500 hover:text-red-500 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all cursor-pointer z-10"
+                    className="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-[#102418]/90 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-gray-500 hover:text-rose-600 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all cursor-pointer z-10"
+                    title="Remove from favorites"
                   >
                     {isRemovingId === item.favouriteId ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                      <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}
                   </button>
                 </div>
 
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <h3 className="font-bold text-[18px] text-gray-900 dark:text-white leading-tight line-clamp-2 mb-2 min-h-[44px]">
+                <div className="p-4 pt-4 flex flex-col flex-1">
+                  <h3 className="font-bold text-[16px] sm:text-[17px] text-gray-900 dark:text-white leading-snug line-clamp-2 mb-2 min-h-[44px] group-hover:text-[#5CD284] transition-colors">
                     {details.propertyTitle || "Untitled Property"}
                   </h3>
                   
-                  <p title={rawLocation} className="text-gray-500 dark:text-gray-400 text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                    <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" /> <span className="truncate">{formattedLocation}</span>
+                  <p title={rawLocation} className="text-gray-500 dark:text-gray-400 text-xs font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
+                    <MapPin className="w-3.5 h-3.5 text-[#5CD284] shrink-0" /> <span className="truncate">{formattedLocation}</span>
                   </p>
 
-                  <div className="mt-auto pt-4 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
-                    <span className="text-[12px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">
+                  <div className="mt-auto pt-3.5 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
+                    <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
                       {isRegular ? "Highest Bid" : "Price"}
                     </span>
-                    <span className="font-bold text-[20px] text-[#1A3626] dark:text-[#c9a14b] leading-none flex items-center gap-1">
-                      <Dirham className="text-[18px]" /> {price.toLocaleString()}
+                    <span className="font-bold text-lg sm:text-xl text-[#1A3626] dark:text-[#5CD284] leading-none flex items-center gap-1">
+                      <Dirham className="text-[15px]" /> {price.toLocaleString()}
                     </span>
                   </div>
                 </div>

@@ -8,19 +8,12 @@ import {
   Search, 
   MapPin, 
   Building, 
-  CheckCircle2, 
   SlidersHorizontal, 
   ChevronRight, 
   ChevronLeft, 
-  ArrowUpRight, 
-  Sparkles, 
   X, 
-  Bed, 
-  Bath, 
-  Square, 
   ShieldCheck, 
   Calendar, 
-  Tag, 
   FileText 
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
@@ -210,22 +203,15 @@ export default function TransactionsPage() {
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* 1. HERO BANNER */}
-      <section className="relative w-full pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-40 lg:pb-28 flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80")'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/95 via-[#0a1a13]/90 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
+      <section className="relative w-full pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-40 lg:pb-28 flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#1A3626] via-[#102418] to-[#091711] dark:from-[#091711] dark:via-[#0c2016] dark:to-[#091711]">
         
         {/* Ambient Glows */}
-        <div className="absolute top-1/4 left-1/4 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-[#5CD284]/15 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[180px] sm:w-[250px] h-[180px] sm:h-[250px] bg-[#c9a14b]/15 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[250px] sm:w-[350px] h-[250px] sm:h-[350px] bg-[#5CD284]/15 rounded-full blur-[110px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[200px] sm:w-[300px] h-[200px] sm:h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center">
-          <span className="text-[#5CD284] dark:text-[#c9a14b] font-bold tracking-[0.15em] sm:tracking-[0.2em] text-[10px] sm:text-[12px] mb-3 sm:mb-4 uppercase bg-white/10 dark:bg-white/5 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm flex items-center gap-1.5 sm:gap-2">
-            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#5CD284] dark:text-[#c9a14b]" />
+          <span className="text-[#5CD284] font-bold tracking-[0.15em] sm:tracking-[0.2em] text-[10px] sm:text-[12px] mb-3 sm:mb-4 uppercase bg-white/10 dark:bg-white/5 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm flex items-center gap-1.5 sm:gap-2">
+            <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#5CD284]" />
             Official Market Deals & Record Register
           </span>
           <h1 className="text-white text-[26px] sm:text-[44px] lg:text-[54px] font-bold mb-3 sm:mb-4 leading-[1.2] tracking-tight max-w-3xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -244,7 +230,7 @@ export default function TransactionsPage() {
           {/* Top Row: Search Input & Deal Purpose Tabs */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-3.5 sm:gap-4">
             {/* Main Search Input */}
-            <div className="flex-1 flex items-center bg-white dark:bg-[#091711] rounded-full px-4 py-3 sm:px-5 sm:py-3.5 w-full border border-gray-200 dark:border-[#1A3626] focus-within:border-[#1A3626] dark:focus-within:border-[#c9a14b] shadow-sm transition-all">
+            <div className="flex-1 flex items-center bg-gray-50 dark:bg-[#091711] rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 w-full border border-gray-200 dark:border-[#1A3626] focus-within:border-[#5CD284] shadow-sm transition-all">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mr-2.5 sm:mr-3 shrink-0" />
               <input
                 type="text"
@@ -282,10 +268,10 @@ export default function TransactionsPage() {
                     setSelectedPurpose(tab.value as any);
                     setPage(1);
                   }}
-                  className={`px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex-1 sm:flex-none text-center ${
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex-1 sm:flex-none text-center ${
                     selectedPurpose === tab.value
-                      ? "bg-gray-900 text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
-                      : "bg-white text-gray-700 border border-gray-200 dark:bg-[#091711] dark:text-gray-300 dark:border-[#1A3626] hover:bg-gray-50"
+                      ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                      : "bg-gray-50 text-gray-700 border border-gray-200 dark:bg-[#091711] dark:text-gray-300 dark:border-[#1A3626] hover:bg-gray-100 dark:hover:bg-[#163321]"
                   }`}
                 >
                   {tab.label}
@@ -294,7 +280,7 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          {/* Bottom Row: Simple White Property Type Filter Pills & Price Range */}
+          {/* Bottom Row: Property Type Filter Pills & Price Range */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-[#1A3626]">
             
             {/* Property Types */}
@@ -316,8 +302,8 @@ export default function TransactionsPage() {
                   }}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                     selectedPropertyType === pt.value
-                      ? "bg-[#1A3626] text-white dark:bg-white dark:text-[#1A3626] shadow-sm"
-                      : "bg-white text-gray-600 border border-gray-200/90 dark:bg-[#091711] dark:text-gray-400 dark:border-[#1A3626] hover:bg-gray-50"
+                      ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm font-bold"
+                      : "bg-gray-50 text-gray-600 border border-gray-200/90 dark:bg-[#091711] dark:text-gray-400 dark:border-[#1A3626] hover:bg-gray-100 dark:hover:bg-[#163321]"
                   }`}
                 >
                   {pt.label}
@@ -340,7 +326,7 @@ export default function TransactionsPage() {
                     setPage(1);
                   }
                 }}
-                className="w-24 sm:w-28 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#1A3626] shadow-xs"
+                className="w-24 sm:w-28 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284] shadow-xs"
               />
               <span className="text-gray-400 text-xs">-</span>
               <input
@@ -355,7 +341,7 @@ export default function TransactionsPage() {
                     setPage(1);
                   }
                 }}
-                className="w-24 sm:w-28 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#1A3626] shadow-xs"
+                className="w-24 sm:w-28 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284] shadow-xs"
               />
               {(minPrice || maxPrice) && (
                 <button
@@ -380,18 +366,18 @@ export default function TransactionsPage() {
       {/* 3. TRANSACTIONS SECTION */}
       <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto w-full flex-1">
         
-        {/* Results Counter & Simple White Header Bar */}
+        {/* Results Counter & Header Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
               Verified Property Transactions
             </h2>
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-gray-700 border border-gray-200 dark:bg-[#102418] dark:text-[#c9a14b] dark:border-[#1A3626] shadow-xs">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/30">
               {pagination.total} Records
             </span>
           </div>
 
-          {/* Simple White Sort Selector */}
+          {/* Sort Selector */}
           <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
             <span className="text-xs text-gray-500 font-medium sm:hidden">Sort by:</span>
             <div className="flex items-center gap-2 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] rounded-xl px-3.5 py-2 shadow-xs">
@@ -429,7 +415,7 @@ export default function TransactionsPage() {
               <p className="font-bold text-sm text-gray-900 dark:text-white">No transaction records match your filters.</p>
               <button 
                 onClick={() => { setSearchQuery(""); setSelectedPurpose("ALL"); setSelectedCategory("ALL"); setSelectedPropertyType("ALL"); setPage(1); }}
-                className="mt-3 px-4 py-1.5 rounded-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-xs"
+                className="mt-3 px-4 py-1.5 rounded-full bg-[#5CD284] text-[#0A1C12] font-bold text-xs"
               >
                 Reset Filters
               </button>
@@ -443,7 +429,7 @@ export default function TransactionsPage() {
                 {/* Header Row: Title + Deal Badge */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b] flex items-center justify-center shrink-0 border border-[#1A3626]/15 dark:border-[#c9a14b]/30">
+                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#5CD284]/15 text-[#5CD284] flex items-center justify-center shrink-0 border border-[#5CD284]/30">
                       {tx.thumbnail ? (
                         <Image src={tx.thumbnail} alt={tx.propertyTitle} width={40} height={40} className="w-full h-full object-cover" />
                       ) : (
@@ -456,8 +442,8 @@ export default function TransactionsPage() {
                     </div>
                   </div>
                   {tx.dealType === "SALE" || tx.status === "SOLD" ? (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] border border-emerald-500/20 shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/30 shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#5CD284]"></span>
                       SOLD
                     </span>
                   ) : (
@@ -470,14 +456,14 @@ export default function TransactionsPage() {
 
                 {/* Location */}
                 <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300 text-xs font-medium">
-                  <MapPin className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 text-[#5CD284] shrink-0" />
                   <span className="truncate">{tx.propertyLocation}</span>
                 </div>
 
                 {/* Price & Specs */}
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-[#1A3626]">
-                  <div className="font-extrabold text-base text-[#1A3626] dark:text-[#c9a14b] flex items-center gap-1">
-                    <Dirham className="text-xs" /> {tx.price.toLocaleString()}
+                  <div className="font-extrabold text-base text-gray-900 dark:text-white flex items-center gap-1">
+                    <Dirham className="text-xs text-[#5CD284]" /> {tx.price.toLocaleString()}
                   </div>
                   <span className="text-[11px] text-gray-500 font-medium bg-gray-50 dark:bg-[#091711] px-2.5 py-1 rounded-lg border border-gray-200/60 dark:border-[#1A3626]">
                     {[
@@ -515,7 +501,7 @@ export default function TransactionsPage() {
               
               {/* Table Header */}
               <thead>
-                <tr className="bg-white dark:bg-[#0d1f15] border-b border-gray-200 dark:border-[#1A3626] text-[11px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">
+                <tr className="bg-gray-50 dark:bg-[#0d1f15] border-b border-gray-200 dark:border-[#1A3626] text-[11px] font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300">
                   <th className="py-4 px-6">Property / Building</th>
                   <th className="py-4 px-4">Location</th>
                   <th className="py-4 px-4">Deal Type</th>
@@ -547,7 +533,7 @@ export default function TransactionsPage() {
                       <p className="font-bold text-sm">No transaction records match your filters.</p>
                       <button 
                         onClick={() => { setSearchQuery(""); setSelectedPurpose("ALL"); setSelectedCategory("ALL"); setSelectedPropertyType("ALL"); setPage(1); }}
-                        className="mt-3 px-4 py-1.5 rounded-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-xs"
+                        className="mt-3 px-4 py-1.5 rounded-full bg-[#5CD284] text-[#0A1C12] font-bold text-xs"
                       >
                         Reset Filters
                       </button>
@@ -562,7 +548,7 @@ export default function TransactionsPage() {
                       {/* Property Title */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b] flex items-center justify-center shrink-0 border border-[#1A3626]/15 dark:border-[#c9a14b]/30">
+                          <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#5CD284]/15 text-[#5CD284] flex items-center justify-center shrink-0 border border-[#5CD284]/30">
                             {tx.thumbnail ? (
                               <Image src={tx.thumbnail} alt={tx.propertyTitle} width={40} height={40} className="w-full h-full object-cover" />
                             ) : (
@@ -570,7 +556,7 @@ export default function TransactionsPage() {
                             )}
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-gray-900 dark:text-white text-sm truncate group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors" title={tx.propertyTitle}>
+                            <span className="font-bold text-gray-900 dark:text-white text-sm truncate group-hover:text-[#5CD284] transition-colors" title={tx.propertyTitle}>
                               {tx.propertyTitle}
                             </span>
                             <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -583,7 +569,7 @@ export default function TransactionsPage() {
                       {/* Location */}
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300 font-medium">
-                          <MapPin className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 text-[#5CD284] shrink-0" />
                           <span className="truncate max-w-[180px]" title={tx.propertyLocation}>{tx.propertyLocation}</span>
                         </div>
                       </td>
@@ -591,8 +577,8 @@ export default function TransactionsPage() {
                       {/* Deal Type Badge */}
                       <td className="py-4 px-4">
                         {tx.dealType === "SALE" || tx.status === "SOLD" ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-[#5CD284] border border-emerald-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#5CD284]"></span>
                             SOLD
                           </span>
                         ) : (
@@ -619,8 +605,8 @@ export default function TransactionsPage() {
 
                       {/* Price */}
                       <td className="py-4 px-4">
-                        <div className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-[#c9a14b] whitespace-nowrap flex items-center gap-1">
-                          <Dirham className="text-xs" /> {tx.price.toLocaleString()}
+                        <div className="font-extrabold text-sm sm:text-base text-gray-900 dark:text-white whitespace-nowrap flex items-center gap-1">
+                          <Dirham className="text-xs text-[#5CD284]" /> {tx.price.toLocaleString()}
                         </div>
                       </td>
 
@@ -669,7 +655,7 @@ export default function TransactionsPage() {
                 onClick={() => setPage(pNum)}
                 className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                   page === pNum
-                    ? "bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] shadow-md"
+                    ? "bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] shadow-sm"
                     : "bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#163321]"
                 }`}
               >

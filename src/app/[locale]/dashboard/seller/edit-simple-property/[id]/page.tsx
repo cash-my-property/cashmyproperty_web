@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
@@ -297,8 +297,11 @@ export default function EditSimplePropertyPage() {
     unitNumber: "",
     parkingSpaces: "0",
     furnishingStatus: "NOT_FURNISHED",
-    availability: "Vacant"
+    availability: "Immediately"
   });
+
+  const [availabilityType, setAvailabilityType] = useState<"immediate" | "date">("immediate");
+  const [availabilityDate, setAvailabilityDate] = useState<string>("");
 
   const [amenities, setAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
@@ -311,6 +314,23 @@ export default function EditSimplePropertyPage() {
   const [step, setStep] = useState(1);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvailabilityTypeChange = (type: "immediate" | "date") => {
+    setAvailabilityType(type);
+    if (type === "immediate") {
+      setFormData((prev) => ({ ...prev, availability: "Immediately" }));
+    } else {
+      const dateToSet = availabilityDate || new Date().toISOString().split("T")[0];
+      setAvailabilityDate(dateToSet);
+      setFormData((prev) => ({ ...prev, availability: dateToSet }));
+    }
+  };
+
+  const handleAvailabilityDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setAvailabilityDate(val);
+    setFormData((prev) => ({ ...prev, availability: val }));
+  };
 
   const currentConfig = PROPERTY_DOC_CONFIG[formData.listingPurpose]?.[formData.propertyCategory]?.[formData.propertyPlan]?.[formData.propertyType];
   const requiredDocs = currentConfig?.required || [];
@@ -347,6 +367,11 @@ export default function EditSimplePropertyPage() {
 
       if (!formData.permitNumber.trim()) { setError('Trakheesi permit number is required.'); return false; }
       if (!formData.referenceNumber.trim()) { setError('Reference number is required.'); return false; }
+      
+      if (availabilityType === "date" && !formData.availability.trim()) {
+        setError('Please select an availability date.');
+        return false;
+      }
       if (!formData.availability.trim()) { setError('Availability is required.'); return false; }
 
       if (!formData.propertyDescription.trim()) { setError('Description is required.'); return false; }
@@ -365,7 +390,8 @@ export default function EditSimplePropertyPage() {
     if (s >= 2) {
       const isBuiltUpAreaValid = fieldRules.propertyBuiltUpArea !== "required" || (!!formData.propertyBuiltUpArea && Number(formData.propertyBuiltUpArea) > 0);
       const isUnitNumberValid = fieldRules.unitNumber !== "required" || !!formData.unitNumber.trim();
-      if (!formData.propertyLocation.trim() || !formData.propertyPrice || !formData.propertyArea || !isBuiltUpAreaValid || !isUnitNumberValid || !formData.whatsappNumber.trim() || !formData.permitNumber.trim() || !formData.referenceNumber.trim() || !formData.propertyDescription.trim() || formData.propertyDescription.trim().length < 20 || amenities.length === 0) {
+      const isAvailabilityValid = availabilityType === "immediate" || (availabilityType === "date" && !!formData.availability.trim());
+      if (!formData.propertyLocation.trim() || !formData.propertyPrice || !formData.propertyArea || !isBuiltUpAreaValid || !isUnitNumberValid || !formData.whatsappNumber.trim() || !formData.permitNumber.trim() || !formData.referenceNumber.trim() || !isAvailabilityValid || !formData.propertyDescription.trim() || formData.propertyDescription.trim().length < 20 || amenities.length === 0) {
         return false;
       }
     }
@@ -380,6 +406,16 @@ export default function EditSimplePropertyPage() {
         const res = await api.get(`/seller/getEditSimpleListingDetails/${params.id}`);
         const data = res.data?.data || res.data;
         
+        const rawAvail = data.availability || "Immediately";
+        const isDateAvail = rawAvail && rawAvail !== "Immediately" && rawAvail !== "Immediate" && rawAvail !== "Vacant";
+        if (isDateAvail) {
+          setAvailabilityType("date");
+          setAvailabilityDate(rawAvail);
+        } else {
+          setAvailabilityType("immediate");
+          setAvailabilityDate("");
+        }
+
         setFormData({
           propertyTitle: data.propertyTitle || "",
           propertyCategory: data.propertyCategory || "RESIDENTIAL",
@@ -401,7 +437,7 @@ export default function EditSimplePropertyPage() {
           unitNumber: data.unitNumber || "",
           parkingSpaces: data.parkingSpaces?.toString() || "0",
           furnishingStatus: data.furnishingStatus || "NOT_FURNISHED",
-          availability: data.availability || "Vacant"
+          availability: isDateAvail ? rawAvail : "Immediately"
         });
         
         if (data.propertyAmenities) setAmenities(data.propertyAmenities);
@@ -867,7 +903,50 @@ export default function EditSimplePropertyPage() {
               )}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Availability *</label>
-                <input required name="availability" value={formData.availability} onChange={handleChange} placeholder="e.g. Vacant, or Date" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                
+                {/* Segmented Control: Immediately vs From Date */}
+                <div className="grid grid-cols-2 p-1 bg-gray-100 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl mb-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleAvailabilityTypeChange("immediate")}
+                    className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      availabilityType === "immediate"
+                        ? "bg-[#0A3622] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                        : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Immediately
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAvailabilityTypeChange("date")}
+                    className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      availabilityType === "date"
+                        ? "bg-[#0A3622] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                        : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    From Date
+                  </button>
+                </div>
+
+                {/* Date Input displayed when "From Date" is selected */}
+                {availabilityType === "date" && (
+                  <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0A3622] dark:text-[#5CD284]">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      required
+                      type="date"
+                      name="availabilityDate"
+                      min={new Date().toISOString().split("T")[0]}
+                      value={availabilityDate}
+                      onChange={handleAvailabilityDateChange}
+                      className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl pl-10 pr-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] text-sm transition-colors cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

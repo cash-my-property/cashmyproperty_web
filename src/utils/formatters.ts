@@ -158,3 +158,23 @@ export const formatAmenity = (amenity?: string | null): string => {
   }
   return toTitleCase(amenity);
 };
+
+export const formatAvailability = (availability?: string | null): string => {
+  if (!availability) return "Immediately";
+  const trimmed = availability.trim();
+  const lower = trimmed.toLowerCase();
+  if (lower === "immediate" || lower === "immediately" || lower === "vacant") {
+    return "Immediately";
+  }
+  // Check if it's a date e.g. YYYY-MM-DD
+  const dateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (dateMatch) {
+    try {
+      const d = new Date(trimmed);
+      if (!isNaN(d.getTime())) {
+        return `From ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`;
+      }
+    } catch {}
+  }
+  return trimmed;
+};

@@ -48,27 +48,46 @@
 
   /* Global Green Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
   }
   
   ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
+    background: transparent;
   }
   
   .dark ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: transparent;
   }
   
   ::-webkit-scrollbar-thumb {
     background: #5CD284;
-    border-radius: 10px;
+    border-radius: 9999px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
     background: #4ab872;
   }
+}
+
+/* Custom Scrollbar Utility */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #5CD284 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #5CD284;
+  border-radius: 9999px;
 }
 
 /* Glassmorphism Utilities */

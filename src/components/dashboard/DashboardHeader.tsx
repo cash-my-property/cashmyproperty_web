@@ -163,8 +163,8 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
               <ChevronDown className="w-3 h-3 opacity-60" />
             </div>
             <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-1 w-32 bg-white dark:bg-[#102418] rounded-xl shadow-lg border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden p-1 z-50">
-              <button onClick={() => switchLanguage('en')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'en' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>English</button>
-              <button onClick={() => switchLanguage('ar')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>العربية</button>
+              <button onClick={() => switchLanguage('en')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'en' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>English</button>
+              <button onClick={() => switchLanguage('ar')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>العربية</button>
             </div>
           </div>
 
@@ -234,7 +234,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                           <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                             notif.type === 'success' ? 'bg-green-500' :
                             notif.type === 'warning' ? 'bg-amber-500' :
-                            'bg-[#1A3626] dark:bg-[#c9a14b]'
+                            'bg-[#1A3626] dark:bg-[#5CD284]'
                           }`} />
                           <div className="flex-1 flex flex-col gap-0.5 pr-8">
                             <span className={`text-[12.5px] font-bold text-gray-900 dark:text-white leading-tight ${notif.read ? 'opacity-60' : ''}`}>
