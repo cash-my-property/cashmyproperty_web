@@ -521,7 +521,7 @@ export const content = {
   },
   auctions: {
     pageTitle: "Realtime Offers",
-    pageSubtitle: "Explore live competitive offers with transparent real-time bidding and verified sellers.",
+    pageSubtitle: "Explore live competitive offers with transparent real-time updates and verified sellers.",
     emptyTitle: "No Realtime Offers Available",
     emptyDesc: "No active or upcoming realtime offers match your selected criteria. Try adjusting your search filters.",
     loadMore: "Load More Offers",
