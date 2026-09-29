@@ -362,8 +362,9 @@ export default function EditSimplePropertyPage() {
         return false;
       }
 
-      if (!formData.whatsappNumber.trim()) { setError('WhatsApp number is required.'); return false; }
-      if (!/^[0-9+ ]{7,20}$/.test(formData.whatsappNumber.trim())) { setError('WhatsApp number must be a valid format (e.g. +971501234567).'); return false; }
+      const localWa = formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '').trim();
+      if (!localWa) { setError('WhatsApp number is required.'); return false; }
+      if (localWa.length < 7 || localWa.length > 12) { setError('Please enter a valid WhatsApp number (e.g. 50 123 4567).'); return false; }
 
       if (!formData.permitNumber.trim()) { setError('Trakheesi permit number is required.'); return false; }
       if (!formData.referenceNumber.trim()) { setError('Reference number is required.'); return false; }
@@ -391,7 +392,8 @@ export default function EditSimplePropertyPage() {
       const isBuiltUpAreaValid = fieldRules.propertyBuiltUpArea !== "required" || (!!formData.propertyBuiltUpArea && Number(formData.propertyBuiltUpArea) > 0);
       const isUnitNumberValid = fieldRules.unitNumber !== "required" || !!formData.unitNumber.trim();
       const isAvailabilityValid = availabilityType === "immediate" || (availabilityType === "date" && !!formData.availability.trim());
-      if (!formData.propertyLocation.trim() || !formData.propertyPrice || !formData.propertyArea || !isBuiltUpAreaValid || !isUnitNumberValid || !formData.whatsappNumber.trim() || !formData.permitNumber.trim() || !formData.referenceNumber.trim() || !isAvailabilityValid || !formData.propertyDescription.trim() || formData.propertyDescription.trim().length < 20 || amenities.length === 0) {
+      const localWa = formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '').trim();
+      if (!formData.propertyLocation.trim() || !formData.propertyPrice || !formData.propertyArea || !isBuiltUpAreaValid || !isUnitNumberValid || !localWa || localWa.length < 7 || localWa.length > 12 || !formData.permitNumber.trim() || !formData.referenceNumber.trim() || !isAvailabilityValid || !formData.propertyDescription.trim() || formData.propertyDescription.trim().length < 20 || amenities.length === 0) {
         return false;
       }
     }
@@ -416,6 +418,14 @@ export default function EditSimplePropertyPage() {
           setAvailabilityDate("");
         }
 
+        const normalizeWa = (wa: string) => {
+          if (!wa) return "";
+          let d = wa.replace(/\D/g, "");
+          if (d.startsWith("971")) d = d.slice(3);
+          if (d.startsWith("0")) d = d.replace(/^0+/, "");
+          return d ? `+971${d}` : "";
+        };
+
         setFormData({
           propertyTitle: data.propertyTitle || "",
           propertyCategory: data.propertyCategory || "RESIDENTIAL",
@@ -431,7 +441,7 @@ export default function EditSimplePropertyPage() {
           trakheesiNumber: data.trakheesiNumber || data.permitNumber || "",
           listingPurpose: data.listingPurpose || "SALE",
           rentalPeriod: data.rentalPeriod || "PER_YEAR",
-          whatsappNumber: data.whatsappNumber || "",
+          whatsappNumber: normalizeWa(data.whatsappNumber || ""),
           permitNumber: data.permitNumber || "",
           referenceNumber: data.referenceNumber || "",
           unitNumber: data.unitNumber || "",
@@ -452,6 +462,23 @@ export default function EditSimplePropertyPage() {
     };
     fetchProperty();
   }, [params.id]);
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let digits = e.target.value.replace(/\D/g, "");
+    if (digits.startsWith("971")) {
+      digits = digits.slice(3);
+    }
+    if (digits.startsWith("0")) {
+      digits = digits.replace(/^0+/, "");
+    }
+    if (digits.length > 12) {
+      digits = digits.slice(0, 12);
+    }
+    setFormData(prev => ({
+      ...prev,
+      whatsappNumber: digits ? `+971${digits}` : ""
+    }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -860,7 +887,21 @@ export default function EditSimplePropertyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">WhatsApp Number *</label>
-                <input required name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="e.g. +971501234567" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] focus-within:border-[#5CD284] focus-within:ring-1 focus-within:ring-[#5CD284] transition-all">
+                  <div className="flex items-center gap-1.5 px-3.5 bg-gray-100 dark:bg-[#142e1d] border-r border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-sm select-none shrink-0">
+                    <span className="text-base leading-none">🇦🇪</span>
+                    <span>+971</span>
+                  </div>
+                  <input 
+                    required 
+                    name="whatsappNumber" 
+                    type="tel"
+                    value={formData.whatsappNumber ? formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '') : ''} 
+                    onChange={handleWhatsappChange} 
+                    placeholder="50 123 4567" 
+                    className="w-full bg-transparent px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none text-sm font-medium" 
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Trakheesi Permit Number *</label>

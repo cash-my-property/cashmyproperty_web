@@ -12,6 +12,7 @@ import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
 import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import PropertyGridCard from "@/components/listings/PropertyGridCard";
 import { formatPropertyCategory, formatPropertyType, formatPropertyPlan } from "@/utils/formatters";
 import { extractPropertyImages } from "@/utils/imageUrl";
 
@@ -130,7 +131,7 @@ export default function HomePage() {
         {/* Full-width Background Image Layer */}
         <div className="absolute inset-0 overflow-hidden bg-[#091711]">
           {/* Main Full-Width Dubai Skyline with complete, uncropped Burj Khalifa */}
-          <div className="absolute left-0 right-0 bottom-0 top-12 sm:top-14 lg:top-16">
+          <div className="absolute inset-0">
             <Image
               src="/hero-dubai-skyline.jpeg"
               alt="Dubai Skyline with Burj Khalifa"
@@ -260,131 +261,16 @@ export default function HomePage() {
               </div>
             ))
           ) : [...liveProperties, ...upcomingProperties].length > 0 ? (
-            [...liveProperties, ...upcomingProperties].slice(0, 6).map((item) => {
-              const details = item.propertyDetails || {};
-              const title = details.propertyTitle || "Untitled Property";
-              const location = details.propertyLocation?.city || "Dubai";
-              const images = extractPropertyImages(item);
-              const beds = details.propertyBedrooms || 0;
-              const baths = details.propertyWashrooms || 0;
-              const getArea = (area: any) => {
-                if (!area) return "N/A";
-                if (typeof area === 'object' && area.value !== undefined) return `${area.value} ${area.unit || 'sqft'}`;
-                return `${area} sqft`;
-              };
-              const area = getArea(details.propertyArea || details.propertyBuiltUpArea);
-              const highestBid = item.currentHighestBid || (typeof item.currentHighestOffer === 'object' ? item.currentHighestOffer?.amount : item.currentHighestOffer);
-              const fallbackPrice = details.propertyPrice?.amount || details.propertyPrice || 0;
-              const price = highestBid ? `AED ${highestBid.toLocaleString()}` : `AED ${fallbackPrice.toLocaleString()}`;
-              
-              const endDate = new Date(item.endTime);
-              const startDate = new Date(item.startTime);
-              const now = new Date().getTime();
-              
-              let timeDisplay = "";
-              if (item.status === 'UPCOMING') {
-                timeDisplay = `Starts: ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-              } else {
-                const timeDiff = endDate.getTime() - now;
-                if (timeDiff > 0) {
-                  const d = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                  const h = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                  const m = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                  timeDisplay = `${d}d ${h}h ${m}m`;
-                } else {
-                  timeDisplay = 'Ended';
-                }
-              }
-
-              const priceValue = highestBid ? highestBid.toLocaleString() : fallbackPrice.toLocaleString();
-              const type = details.propertyType || "Property";
-
-              const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-              const formattedLocation = (() => {
-                const words = rawLocation.trim().split(/\s+/);
-                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
-              })();
-
-              return (
-              <Link href={`/${locale}/auctions/${item._id}`} key={item._id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer">
-                <PropertyCardImageCarousel
-                  images={images}
-                  alt={title}
-                  aspectClass="h-[240px]"
-                  badge={
-                    <div className="bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                       <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {item.status || 'ACTIVE'}
-                    </div>
-                  }
-                  topRightBadge={
-                    <div className="bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
-                       <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
-                    </div>
-                  }
-                >
-                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md z-10">
-                     PID-{item.PID || item._id.substring(0,8).toUpperCase()}
-                  </div>
-
-                  <div 
-                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors z-10 cursor-pointer"
-                    onClick={(e) => { 
-                      e.preventDefault(); 
-                      e.stopPropagation(); 
-                      const shareUrl = `${window.location.origin}/${locale}/auctions/${item._id}`;
-                      if (navigator.share) {
-                        navigator.share({ title: title, url: shareUrl }).catch(console.error);
-                      } else {
-                        navigator.clipboard.writeText(shareUrl);
-                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
-                      }
-                    }}
-                  >
-                     <Share2 className="w-4 h-4" />
-                  </div>
-                </PropertyCardImageCarousel>
-                
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {priceValue}</span>
-                  </div>
-                  
-                  <p title={rawLocation} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedLocation}</span>
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mb-5">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-[#c9a14b]"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
-                    <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                      Make Offer
-                    </div>
-                  </div>
-
-                  {/* Footer Grid */}
-                  <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyCategory(details.propertyCategory)}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyType(details.propertyType || type)}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Plan</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyPlan(details.propertyPlan)}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )})
+            [...liveProperties, ...upcomingProperties].slice(0, 6).map((item, idx) => (
+              <PropertyGridCard
+                key={item._id || idx}
+                item={item}
+                locale={locale}
+                priority={idx === 0}
+                isAuction={true}
+                href={`/${locale}/auctions/${item._id}`}
+              />
+            ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
               No live properties available at the moment.
@@ -426,76 +312,16 @@ export default function HomePage() {
               </div>
             ))
           ) : simpleLiveProperties.length > 0 ? (
-            simpleLiveProperties.slice(0, 6).map((item) => {
-              const details = item.propertyDetails || item || {};
-              const title = item.title || details.propertyTitle || "Untitled Property";
-              const rawSimpleLoc = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-              const formattedSimpleLoc = (() => {
-                const words = rawSimpleLoc.trim().split(/\s+/);
-                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawSimpleLoc;
-              })();
-              const simpleImages = extractPropertyImages(item);
-              const beds = item.specs?.beds || details.propertyBedrooms || 0;
-              const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
-              const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
-              const price = item.price?.amount || details.propertyPrice?.amount || details.propertyPrice || 0;
-              const type = details.propertyType || "Property";
-
-              return (
-              <Link href={`/${locale}/simple-listings/${item._id || item.id}`} key={item._id || item.id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer">
-                <PropertyCardImageCarousel
-                  images={simpleImages}
-                  alt={title}
-                  aspectClass="h-[240px]"
-                  badge={
-                    <div className="bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                       <span className="w-2 h-2 rounded-full bg-[#5CD284]"></span> ACTIVE
-                    </div>
-                  }
-                />
-                
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}</span>
-                  </div>
-                  
-                  <p title={rawSimpleLoc} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedSimpleLoc}</span>
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mb-4">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
-                  </div>
-                  
-                  {/* Property Meta Grid */}
-                  <div className="bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-2.5 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626] mb-1">
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyCategory(details.propertyCategory)}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyType(details.propertyType || type)}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Plan</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{formatPropertyPlan(details.propertyPlan || item.status)}</span>
-                    </div>
-                  </div>
-
-                  {/* Seller / Agent Info & Action CTAs Strip */}
-                  <div className="mt-auto">
-                    <PropertySellerCardStrip
-                      seller={item.sellerInfo || details.sellerInfo || item.seller || details.seller}
-                      propertyTitle={title}
-                    />
-                  </div>
-                </div>
-              </Link>
-            )})
+            simpleLiveProperties.slice(0, 6).map((item, idx) => (
+              <PropertyGridCard
+                key={item._id || item.id || idx}
+                item={item}
+                locale={locale}
+                priority={idx === 0}
+                isAuction={false}
+                href={`/${locale}/simple-listings/${item._id || item.id}`}
+              />
+            ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
               No listings available at the moment.

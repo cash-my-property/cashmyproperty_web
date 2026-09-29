@@ -178,3 +178,51 @@ export const formatAvailability = (availability?: string | null): string => {
   }
   return trimmed;
 };
+
+export const formatAuctionRemainingTime = (
+  endTime?: string | Date | null,
+  startTime?: string | Date | null,
+  status?: string
+): { label: string; isEnded: boolean; isUpcoming: boolean } | null => {
+  if (!endTime && !startTime) return null;
+
+  const now = Date.now();
+
+  if (status === "UPCOMING" && startTime) {
+    const startMs = new Date(startTime).getTime();
+    if (startMs > now) {
+      const diff = startMs - now;
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      if (d > 0) return { label: `Starts in ${d}d ${h}h`, isEnded: false, isUpcoming: true };
+      if (h > 0) return { label: `Starts in ${h}h ${m}m`, isEnded: false, isUpcoming: true };
+      return { label: `Starts in ${m}m`, isEnded: false, isUpcoming: true };
+    }
+  }
+
+  if (endTime) {
+    const endMs = new Date(endTime).getTime();
+    if (isNaN(endMs)) return null;
+
+    const diff = endMs - now;
+    if (diff <= 0) {
+      return { label: "Ended", isEnded: true, isUpcoming: false };
+    }
+
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (d > 0) {
+      return { label: `Ends in ${d}d ${h}h ${m}m`, isEnded: false, isUpcoming: false };
+    }
+    if (h > 0) {
+      return { label: `Ends in ${h}h ${m}m`, isEnded: false, isUpcoming: false };
+    }
+    return { label: `Ends in ${m}m`, isEnded: false, isUpcoming: false };
+  }
+
+  return null;
+};
+

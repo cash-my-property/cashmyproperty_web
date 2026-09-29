@@ -51,6 +51,7 @@ import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
 import PropertyRegulatoryInfo from "@/components/listings/PropertyRegulatoryInfo";
+import PropertyBreadcrumb from "@/components/listings/PropertyBreadcrumb";
 
 const PropertyMapCard = dynamic(() => import("@/components/listings/PropertyMapCard"), {
   ssr: false,
@@ -475,15 +476,20 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
       {/* Top Breadcrumb & Status */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#5CD284] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#5CD284] transition-colors">{detailDict.backToProperties || "Properties"}</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-gray-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-[350px] md:max-w-[500px]" title={title}>{title}</span>
+          <div className="flex-1 min-w-0">
+            <PropertyBreadcrumb
+              locale={locale}
+              basePath={`/${locale}/listings`}
+              propertyType={type}
+              propertyCategory={category}
+              listingPurpose={purpose}
+              location={location}
+              title={title}
+              accentColor="emerald"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#5CD284]/30">
               {formatPropertyType(type)}
             </span>
@@ -518,30 +524,30 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
               </div>
             ) : images.length === 2 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 sm:gap-2 h-[280px] sm:h-[360px] md:h-[420px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 h-[280px] sm:h-[360px] md:h-[420px]">
                 <div 
                   onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                  className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                 >
                   <Image src={images[0]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <div 
                   onClick={() => { setActiveImage(1); setIsLightboxOpen(true); }}
-                  className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                 >
                   <Image src={images[1]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
+                  <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15">
                     <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span>2 Photos</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 sm:gap-2 h-[280px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-[280px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
                 {/* Left Large Main Image */}
                 <div 
                   onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                  className="md:col-span-2 relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="md:col-span-2 relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                 >
                   <Image
                     src={images[0]}
@@ -555,19 +561,19 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   {/* Bottom Right Photo Count Badge */}
                   <div 
                     onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-                    className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
+                    className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
                   >
                     <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
-                    <span>{images.length}</span>
+                    <span>{images.length} Photos</span>
                   </div>
                 </div>
 
                 {/* Right Stacked Column (Top & Bottom Images) */}
-                <div className="hidden md:grid grid-rows-2 gap-1.5 sm:gap-2 h-full">
+                <div className="hidden md:grid grid-rows-2 gap-2 h-full">
                   {/* Top Right Image */}
                   <div 
                     onClick={() => { setActiveImage(1); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[1]}
@@ -581,7 +587,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   {/* Bottom Right Image with Blurred Overlay */}
                   <div 
                     onClick={() => { setActiveImage(2); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[2]}
@@ -591,8 +597,8 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     {images.length > 3 && (
-                      <div className="absolute inset-0 bg-black/40 backdrop-blur-md group-hover:bg-black/25 transition-all flex items-center justify-center z-10">
-                        <span className="bg-black/60 backdrop-blur-xl text-white text-xs sm:text-sm font-extrabold px-3.5 py-2 rounded-xl border border-white/20 shadow-lg group-hover:scale-105 transition-transform">
+                      <div className="absolute inset-0 rounded-2xl overflow-hidden bg-black/40 backdrop-blur-md group-hover:bg-black/25 transition-all flex items-center justify-center z-10">
+                        <span className="bg-black/70 backdrop-blur-xl text-white text-xs sm:text-sm font-extrabold px-4 py-2 rounded-xl border border-white/20 shadow-xl group-hover:scale-105 transition-transform select-none">
                           +{images.length - 3} More
                         </span>
                       </div>

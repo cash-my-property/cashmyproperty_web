@@ -1,7 +1,7 @@
 "use client";
 
 import { useDictionary } from "@/components/DictionaryProvider";
-import { Tag, Heart, Building2, TrendingUp, Clock, ChevronRight, CheckCircle2, UserCheck } from "lucide-react";
+import { Tag, Heart, Building2, TrendingUp, Clock, ChevronRight, CheckCircle2, UserCheck, Sparkles, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
 import { useState, useEffect } from "react";
@@ -19,7 +19,6 @@ export default function DashboardOverviewPage() {
   const [propertiesCount, setPropertiesCount] = useState("0");
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [quota, setQuota] = useState<any>(null);
 
   const { user, isLoading: authLoading } = useAuth();
   const { addToast } = useSocket();
@@ -35,10 +34,12 @@ export default function DashboardOverviewPage() {
         if (role === 'seller') {
           if (sellerType === 'SIMPLE') {
             try {
-              const quotaRes = await api.get('/seller/simpleListingQuota');
-              setQuota(quotaRes.data.data);
+              const propsRes = await api.get('/seller/mySimpleListings?page=1&limit=1');
+              const resData = propsRes.data?.result || propsRes.data;
+              const totalCount = resData?.pagination?.total ?? (resData?.data?.length ?? 0);
+              setPropertiesCount(totalCount.toString());
             } catch {
-              addToast("Error", "Failed to load quota information.", "warning");
+              // Soft handle
             }
           } else {
             try {
@@ -143,11 +144,11 @@ export default function DashboardOverviewPage() {
       { label: "Verified Agents", value: "Directory", icon: UserCheck, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/sellers` },
       { label: content.stats.savedProperties, value: "Saved", icon: Heart, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/favorites` },
     ];
-  } else if (role === 'seller' && sellerType === 'SIMPLE' && quota) {
+  } else if (role === 'seller' && sellerType === 'SIMPLE') {
     stats = [
-      { label: "Active Listings", value: `${quota.activeQuota?.used || 0} / ${quota.activeQuota?.limit || 0}`, icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/dashboard/seller/simple-listings` },
-      { label: "Total Quota Used", value: `${quota.totalQuota?.used || 0} / ${quota.totalQuota?.limit || 0}`, icon: TrendingUp, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/dashboard/seller/simple-listings` },
-      { label: "Tier", value: quota.tier || "SIMPLE", icon: CheckCircle2, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/seller/simple-listings` },
+      { label: "Free Plan", value: "5 Free Listings", icon: Sparkles, color: "text-[#5CD284]", bg: "bg-[#5CD284]/10", href: `/${locale}/dashboard/seller/simple-listings` },
+      { label: "My Listings", value: propertiesCount, icon: Building2, color: "text-blue-500", bg: "bg-blue-500/10", href: `/${locale}/dashboard/seller/simple-listings` },
+      { label: "Add Listing", value: "Create New", icon: PlusCircle, color: "text-rose-500", bg: "bg-rose-500/10", href: `/${locale}/dashboard/seller/add-simple-property` },
     ];
   } else if (role === 'seller' && sellerType === 'REGULAR') {
     stats = [

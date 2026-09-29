@@ -172,3 +172,110 @@
   animation: fadeIn 0.3s ease-out forwards;
 }
 
+/* ==========================================================================
+   Google Places Autocomplete (Light & Dark Mode)
+   ========================================================================== */
+
+.pac-container {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 0.875rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  font-family: inherit !important;
+  margin-top: 6px !important;
+  padding: 6px 0 !important;
+  z-index: 999999 !important;
+  overflow: hidden !important;
+}
+
+.pac-item {
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  color: #4B5563 !important;
+  border-top: 1px solid #F3F4F6 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+
+.pac-item:first-child {
+  border-top: none !important;
+}
+
+.pac-item:hover,
+.pac-item-selected,
+.pac-item-selected:hover {
+  background-color: #F4F5F7 !important;
+  color: #111827 !important;
+}
+
+.pac-item-query {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #111827 !important;
+  padding-right: 4px !important;
+}
+
+.pac-matched {
+  font-weight: 700 !important;
+  color: #1A3626 !important;
+}
+
+.pac-icon {
+  margin-top: 0 !important;
+  margin-right: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Dark Mode Google Places Autocomplete */
+.dark .pac-container,
+html.dark .pac-container {
+  background-color: #102418 !important;
+  border: 1px solid #1A3626 !important;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(201, 161, 75, 0.15) !important;
+}
+
+.dark .pac-item,
+html.dark .pac-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: #9CA3AF !important;
+}
+
+.dark .pac-item:first-child,
+html.dark .pac-item:first-child {
+  border-top: none !important;
+}
+
+.dark .pac-item:hover,
+.dark .pac-item-selected,
+.dark .pac-item-selected:hover,
+html.dark .pac-item:hover,
+html.dark .pac-item-selected,
+html.dark .pac-item-selected:hover {
+  background-color: #163321 !important;
+  color: #F9FAFB !important;
+}
+
+.dark .pac-item-query,
+html.dark .pac-item-query {
+  color: #F9FAFB !important;
+}
+
+.dark .pac-matched,
+html.dark .pac-matched {
+  color: #c9a14b !important;
+  font-weight: 700 !important;
+}
+
+.dark .pac-icon,
+html.dark .pac-icon {
+  filter: invert(85%) sepia(20%) saturate(500%) hue-rotate(90deg) brightness(95%) !important;
+}
+
+.dark .pac-logo:after,
+html.dark .pac-logo:after {
+  filter: invert(90%) hue-rotate(180deg) !important;
+}
+

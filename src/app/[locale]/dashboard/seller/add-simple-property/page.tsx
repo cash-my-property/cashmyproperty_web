@@ -505,12 +505,13 @@ export default function AddSimplePropertyPage() {
         return false;
       }
 
-      if (!formData.whatsappNumber.trim()) {
+      const localWa = formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '').trim();
+      if (!localWa) {
         setError("WhatsApp Number is required.");
         return false;
       }
-      if (!/^[0-9+ ]{7,20}$/.test(formData.whatsappNumber.trim())) {
-        setError("WhatsApp Number must be a valid phone format (e.g. +971501234567).");
+      if (localWa.length < 7 || localWa.length > 12) {
+        setError("Please enter a valid WhatsApp number (e.g. 50 123 4567).");
         return false;
       }
 
@@ -547,6 +548,7 @@ export default function AddSimplePropertyPage() {
       const isBuiltUpAreaValid = fieldRules.propertyBuiltUpArea !== "required" || (!!formData.propertyBuiltUpArea && Number(formData.propertyBuiltUpArea) > 0);
       const isUnitNumberValid = fieldRules.unitNumber !== "required" || !!formData.unitNumber.trim();
       const isAvailabilityValid = availabilityType === "immediate" || (availabilityType === "date" && !!formData.availability.trim());
+      const localWa = formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '').trim();
       return !!formData.propertyTitle.trim() && 
              !!formData.propertyLocation.trim() && 
              (!!formData.propertyPrice && Number(formData.propertyPrice) > 0) &&
@@ -554,12 +556,30 @@ export default function AddSimplePropertyPage() {
              isBuiltUpAreaValid &&
              isUnitNumberValid &&
              !!formData.propertyDescription.trim() &&
-             !!formData.whatsappNumber.trim() &&
+             !!localWa &&
+             localWa.length >= 7 && localWa.length <= 12 &&
              !!formData.permitNumber.trim() &&
              isAvailabilityValid &&
              amenities.length > 0;
     }
     return true;
+  };
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let digits = e.target.value.replace(/\D/g, "");
+    if (digits.startsWith("971")) {
+      digits = digits.slice(3);
+    }
+    if (digits.startsWith("0")) {
+      digits = digits.replace(/^0+/, "");
+    }
+    if (digits.length > 12) {
+      digits = digits.slice(0, 12);
+    }
+    setFormData(prev => ({
+      ...prev,
+      whatsappNumber: digits ? `+971${digits}` : ""
+    }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -1005,7 +1025,21 @@ export default function AddSimplePropertyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">WhatsApp Number *</label>
-                <input required name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="e.g. +971501234567" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] focus-within:border-[#5CD284] focus-within:ring-1 focus-within:ring-[#5CD284] transition-all">
+                  <div className="flex items-center gap-1.5 px-3.5 bg-gray-100 dark:bg-[#142e1d] border-r border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-sm select-none shrink-0">
+                    <span className="text-base leading-none">🇦🇪</span>
+                    <span>+971</span>
+                  </div>
+                  <input 
+                    required 
+                    name="whatsappNumber" 
+                    type="tel"
+                    value={formData.whatsappNumber ? formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '') : ''} 
+                    onChange={handleWhatsappChange} 
+                    placeholder="50 123 4567" 
+                    className="w-full bg-transparent px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none text-sm font-medium" 
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Trakheesi Permit Number *</label>

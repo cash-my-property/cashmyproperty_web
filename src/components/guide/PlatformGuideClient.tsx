@@ -77,10 +77,10 @@ export default function PlatformGuideClient() {
   );
 
   return (
-    <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-20 transition-colors">
+    <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pb-20 transition-colors">
       
       {/* 1. HERO BANNER */}
-      <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#1A3626] via-[#102418] to-[#091711] text-white py-14 sm:py-20 px-4 sm:px-6 lg:px-12 border-b border-[#1A3626]/50">
+      <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#1A3626] via-[#102418] to-[#091711] text-white pt-24 sm:pt-32 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-12 border-b border-[#1A3626]/50">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5CD284]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#c9a14b]/10 rounded-full blur-[100px] pointer-events-none" />
 

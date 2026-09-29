@@ -371,6 +371,13 @@ export const content = {
     }
   },
   listings: {
+    pageTitle: "Listings",
+    pageSubtitle: "Explore direct properties for rent or purchase with verified details and direct agent contact.",
+    emptyTitle: "No Properties Found",
+    emptyDesc: "We couldn't find any properties matching your current search criteria. Try adjusting your filters.",
+    loadMore: "Load More Listings",
+    loadingMore: "Loading More Listings...",
+    showingPage: "Showing page {page} of {totalPages}",
     hero: {
       tagline: "Property Listings",
       title: "Discover Your\nNext Property",
@@ -513,6 +520,13 @@ export const content = {
     }
   },
   auctions: {
+    pageTitle: "Realtime Offers",
+    pageSubtitle: "Explore live competitive offers with transparent real-time bidding and verified sellers.",
+    emptyTitle: "No Realtime Offers Available",
+    emptyDesc: "No active or upcoming realtime offers match your selected criteria. Try adjusting your search filters.",
+    loadMore: "Load More Offers",
+    loadingMore: "Loading More Offers...",
+    showingPage: "Showing page {page} of {totalPages}",
     hero: {
       tagline: "Realtime Offers",
       title: "Make Offers on\nPremium Properties",
@@ -1889,5 +1903,43 @@ export const content = {
       buyerButton: "Explore Realtime Offers",
       sellerButton: "List a Property Now"
     }
+  },
+  categories: {
+    all: "All",
+    apartment: "Apartment",
+    villa: "Villa",
+    townhouse: "Townhouse",
+    penthouse: "Penthouse",
+    land: "Land",
+    commercial: "Commercial",
+    office: "Office",
+    retail: "Retail",
+    warehouse: "Warehouse"
+  },
+  sellerModeBanner: {
+    title: "Seller Mode Active",
+    description: "You are currently logged in as a Seller. Buyer listings and real-time offer bidding are reserved exclusively for buyers.",
+    buttonText: "Go to My Listings"
+  },
+  propertyCards: {
+    beds: "Beds",
+    baths: "Baths",
+    sqft: "sqft",
+    category: "Category",
+    type: "Type",
+    status: "Status",
+    liveOffer: "Live Offer",
+    upcoming: "Upcoming",
+    active: "Active",
+    endsIn: "Ends in",
+    startsIn: "Starts in",
+    ended: "Ended",
+    listedBy: "Listed by",
+    verifiedSeller: "Verified Seller",
+    verifiedAgent: "Verified Agent",
+    verifiedPartner: "Verified Partner",
+    whatsapp: "WhatsApp",
+    call: "Call",
+    makeOffer: "Make Offer"
   }
 };

@@ -372,6 +372,13 @@ export const content = {
     }
   },
   listings: {
+    pageTitle: "العقارات المتاحة",
+    pageSubtitle: "استكشف العقارات المباشرة للإيجار أو الشراء مع تفاصيل موثقة وتواصل مباشر مع الوكلاء.",
+    emptyTitle: "لم يتم العثور على عقارات",
+    emptyDesc: "لم نتمكن من العثور على أي عقارات تطابق معايير بحثك الحالية. حاول تعديل الفلاتر.",
+    loadMore: "تحميل المزيد من العقارات",
+    loadingMore: "جاري تحميل المزيد من العقارات...",
+    showingPage: "عرض الصفحة {page} من {totalPages}",
     hero: {
       tagline: "قوائم العقارات",
       title: "اكتشف عقارك\nالتالي",
@@ -514,6 +521,13 @@ export const content = {
     }
   },
   auctions: {
+    pageTitle: "عروض الأسعار المباشرة",
+    pageSubtitle: "استكشف عروض الأسعار التنافسية المباشرة مع مزايدة شفافة في الوقت الفعلي وبائعين موثوقين.",
+    emptyTitle: "لا توجد عروض مباشرة حالياً",
+    emptyDesc: "لا توجد عروض أسعار مباشرة نشطة أو قادمة تطابق معايير البحث المحددة. حاول تعديل الفلاتر.",
+    loadMore: "تحميل المزيد من العروض",
+    loadingMore: "جاري تحميل المزيد من العروض...",
+    showingPage: "عرض الصفحة {page} من {totalPages}",
     hero: {
       tagline: "عروض حية",
       title: "قدم عروضك على\nعقارات متميزة",
@@ -1891,6 +1905,44 @@ export const content = {
       buyerButton: "استكشف العروض المباشرة",
       sellerButton: "أضف عقاراً الآن"
     }
+  },
+  categories: {
+    all: "الكل",
+    apartment: "شقة",
+    villa: "فيلا",
+    townhouse: "تاون هاوس",
+    penthouse: "بنتهاوس",
+    land: "أرض",
+    commercial: "تجاري",
+    office: "مكتب",
+    retail: "محل تجاري",
+    warehouse: "مستودع"
+  },
+  sellerModeBanner: {
+    title: "وضع البائع نشط",
+    description: "أنت مسجل الدخول حالياً كبائع. عروض المشترين والمزايدة في الوقت الفعلي مخصصة حصرياً للمشترين.",
+    buttonText: "الانتقال إلى عقاراتي"
+  },
+  propertyCards: {
+    beds: "غرف",
+    baths: "حمامات",
+    sqft: "قدم مربع",
+    category: "الفئة",
+    type: "النوع",
+    status: "الحالة",
+    liveOffer: "عرض مباشر",
+    upcoming: "قريباً",
+    active: "نشط",
+    endsIn: "ينتهي خلال",
+    startsIn: "يبدأ خلال",
+    ended: "انتهى",
+    listedBy: "مُدرج بواسطة",
+    verifiedSeller: "بائع موثق",
+    verifiedAgent: "وكيل موثق",
+    verifiedPartner: "شريك موثق",
+    whatsapp: "واتساب",
+    call: "اتصال",
+    makeOffer: "تقديم عرض"
   }
 }; 
  

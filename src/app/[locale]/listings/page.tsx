@@ -258,15 +258,17 @@ export default function ListingsPage() {
         <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
             <Building className="w-12 h-12 text-amber-500 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Mode Active</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              {dict.sellerModeBanner?.title || "Seller Mode Active"}
+            </h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
-              You are currently logged in as a Seller. Buyer simple listings are reserved exclusively for buyers.
+              {dict.sellerModeBanner?.description || "You are currently logged in as a Seller. Buyer simple listings are reserved exclusively for buyers."}
             </p>
             <Link
               href={`/${locale}/dashboard/seller/simple-listings`}
               className="px-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl text-sm"
             >
-              Go to My Simple Listings
+              {dict.sellerModeBanner?.buttonText || "Go to My Simple Listings"}
             </Link>
           </div>
         </section>
@@ -278,10 +280,10 @@ export default function ListingsPage() {
         {/* Header Block */}
         <div className="mb-8">
           <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-            Listings
+            {dict.listings?.pageTitle || "Listings"}
           </h2>
           <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
-            Explore direct properties for rent or purchase with verified details and direct agent contact.
+            {dict.listings?.pageSubtitle || "Explore direct properties for rent or purchase with verified details and direct agent contact."}
           </p>
         </div>
 
@@ -289,19 +291,33 @@ export default function ListingsPage() {
         <div className="flex items-center justify-between mb-10 gap-4">
           {/* Property Category Pills (Left Side) */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-1 min-w-0">
-            {["All", "Apartment", "Villa", "Townhouse", "Penthouse", "Land", "Commercial", "Office", "Retail", "Warehouse"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setActiveType(type)}
-                className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
-                  activeType === type
-                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
-                    : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+            {[
+              { key: "all", value: "All" },
+              { key: "apartment", value: "Apartment" },
+              { key: "villa", value: "Villa" },
+              { key: "townhouse", value: "Townhouse" },
+              { key: "penthouse", value: "Penthouse" },
+              { key: "land", value: "Land" },
+              { key: "commercial", value: "Commercial" },
+              { key: "office", value: "Office" },
+              { key: "retail", value: "Retail" },
+              { key: "warehouse", value: "Warehouse" },
+            ].map(({ key, value }) => {
+              const label = dict.categories?.[key as keyof typeof dict.categories] || value;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveType(value)}
+                  className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                    activeType === value
+                      ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
+                      : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* View Mode Toggle: Grid / List (Right Side) */}
@@ -390,8 +406,14 @@ export default function ListingsPage() {
 
           if (filteredProperties.length === 0) {
             return (
-              <div className="text-center py-12 text-gray-500">
-                No properties match the selected filters.
+              <div className="col-span-full py-16 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-100 dark:border-[#1A3626] p-8">
+                <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                  {dict.listings?.emptyTitle || "No Properties Found"}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+                  {dict.listings?.emptyDesc || "We couldn't find any properties matching your current search criteria. Try adjusting your filters."}
+                </p>
               </div>
             );
           }
@@ -451,16 +473,20 @@ export default function ListingsPage() {
               {isFetchingMore ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Loading More Properties...</span>
+                  <span>{dict.listings?.loadingMore || "Loading More Listings..."}</span>
                 </>
               ) : (
                 <>
-                  <span>Load More Properties</span>
+                  <span>{dict.listings?.loadMore || "Load More Listings"}</span>
                   <ChevronDown className="w-4 h-4" />
                 </>
               )}
             </button>
-            <span className="text-xs text-gray-500 font-medium">Showing page {page} of {totalPages}</span>
+            <span className="text-xs text-gray-500 font-medium">
+              {(dict.listings?.showingPage || "Showing page {page} of {totalPages}")
+                .replace("{page}", page.toString())
+                .replace("{totalPages}", totalPages.toString())}
+            </span>
           </div>
         )}
       </section>

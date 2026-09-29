@@ -39,24 +39,32 @@ export default function PropertySellerCardStrip({
   variant = "compact",
 }: PropertySellerCardStripProps) {
   const router = useRouter();
-  const { locale } = useDictionary();
+  const { dict, locale } = useDictionary();
+  const pc = dict.propertyCards;
 
-  if (!seller || (!seller.name && !seller.phone && !seller.whatsappNumber && !seller.email)) {
+  const sellerName = seller?.name || (seller as any)?.fullName || "";
+  const agentId = seller?.agentId || (seller as any)?._id || (seller as any)?.id;
+  const sellerThumbnail = seller?.thumbnail || (seller as any)?.profileImage || (seller as any)?.avatar || "";
+  const sellerPhone = seller?.phone || "";
+  const sellerWhatsapp = seller?.whatsappNumber || sellerPhone;
+  const sellerEmail = seller?.email || "";
+
+  if (!seller || (!sellerName && !sellerPhone && !sellerWhatsapp && !sellerEmail && !seller.isVerified)) {
     return null;
   }
 
-  const rawWhatsapp = seller.whatsappNumber || seller.phone || "";
+  const rawWhatsapp = sellerWhatsapp || sellerPhone || "";
   const whatsappClean = rawWhatsapp.replace(/[^0-9]/g, "");
-  const phoneClean = (seller.phone || seller.whatsappNumber || "").replace(/[^0-9+]/g, "");
+  const phoneClean = (sellerPhone || sellerWhatsapp || "").replace(/[^0-9+]/g, "");
   const hasWhatsapp = Boolean(whatsappClean);
   const hasPhone = Boolean(phoneClean);
-  const hasEmail = Boolean(seller.email);
+  const hasEmail = Boolean(sellerEmail);
 
   const handleAgentClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (seller.agentId) {
-      router.push(`/${locale}/sellers/${seller.agentId}`);
+    if (agentId) {
+      router.push(`/${locale}/sellers/${agentId}`);
     }
   };
 
@@ -65,7 +73,7 @@ export default function PropertySellerCardStrip({
     e.stopPropagation();
     if (whatsappClean) {
       const text = encodeURIComponent(
-        `Hi ${seller.name || ""}, I am interested in your property "${propertyTitle}" listed on Cash My Property.`
+        `Hi ${sellerName || ""}, I am interested in your property "${propertyTitle}" listed on Cash My Property.`
       );
       window.open(`https://wa.me/${whatsappClean}?text=${text}`, "_blank", "noopener,noreferrer");
     }
@@ -82,9 +90,9 @@ export default function PropertySellerCardStrip({
   const handleEmail = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (seller.email) {
+    if (sellerEmail) {
       const subject = encodeURIComponent(`Inquiry about ${propertyTitle}`);
-      window.location.href = `mailto:${seller.email}?subject=${subject}`;
+      window.location.href = `mailto:${sellerEmail}?subject=${subject}`;
     }
   };
 
@@ -94,28 +102,28 @@ export default function PropertySellerCardStrip({
       <div
         onClick={handleAgentClick}
         className={`flex items-center gap-2.5 min-w-0 flex-1 ${
-          seller.agentId ? "cursor-pointer group/agent" : ""
+          agentId ? "cursor-pointer group/agent" : ""
         }`}
-        title={seller.agentId ? "View Agent Profile" : undefined}
+        title={agentId ? "View Agent Profile" : undefined}
       >
         {/* Avatar with ShieldCheck verified badge */}
         <div className="relative w-10 h-10 rounded-full shrink-0">
           <div className="w-full h-full rounded-full overflow-hidden border border-gray-200 dark:border-[#5CD284]/40 bg-gray-100 dark:bg-[#091711] shadow-sm relative">
-            {seller.thumbnail ? (
+            {sellerThumbnail ? (
               <Image
-                src={getOptimizedImageUrl(seller.thumbnail)}
-                alt={seller.name || "Agent"}
+                src={getOptimizedImageUrl(sellerThumbnail)}
+                alt={sellerName || "Agent"}
                 fill
                 sizes="40px"
                 className="object-cover group-hover/agent:scale-105 transition-transform duration-300"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center font-bold text-xs text-[#0A1C12] bg-[#5CD284]">
-                {(seller.name || "A").charAt(0).toUpperCase()}
+                {(sellerName || "A").charAt(0).toUpperCase()}
               </div>
             )}
           </div>
-          {seller.isVerified && (
+          {(seller?.isVerified ?? true) && (
             <span
               className="absolute -bottom-1 -right-1 p-0.5 bg-[#5CD284] text-[#0A1C12] rounded-full shadow-md border border-white/20 flex items-center justify-center"
               title="Verified RERA Agent"
@@ -128,19 +136,19 @@ export default function PropertySellerCardStrip({
         {/* Text Details */}
         <div className="flex flex-col min-w-0">
           <span className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider leading-none mb-0.5">
-            Listed by
+            {pc?.listedBy || "Listed by"}
           </span>
           <div className="flex items-center gap-1">
             <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate group-hover/agent:text-[#5CD284] transition-colors leading-tight">
-              {seller.name || "Real Estate Agent"}
+              {sellerName || pc?.verifiedAgent || "Real Estate Agent"}
             </span>
-            {seller.agentId && (
+            {agentId && (
               <ArrowUpRight className="w-3 h-3 text-gray-400 group-hover/agent:text-[#5CD284] transition-colors shrink-0 opacity-0 group-hover/agent:opacity-100" />
             )}
           </div>
-          {(seller.officeName || seller.isVerified) && (
+          {(seller?.officeName || (seller?.isVerified ?? true)) && (
             <span className="text-[11px] font-medium text-gray-500 dark:text-[#5CD284] truncate leading-tight">
-              {seller.officeName || "Verified Agent"}
+              {seller?.officeName || pc?.verifiedAgent || "Verified Agent"}
             </span>
           )}
         </div>
@@ -157,7 +165,7 @@ export default function PropertySellerCardStrip({
               title="Chat on WhatsApp"
             >
               <WhatsAppIcon className="w-3.5 h-3.5" />
-              <span>WhatsApp</span>
+              <span>{pc?.whatsapp || "WhatsApp"}</span>
             </button>
           )}
 
@@ -169,7 +177,7 @@ export default function PropertySellerCardStrip({
               title={`Call: ${phoneClean}`}
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>Call</span>
+              <span>{pc?.call || "Call"}</span>
             </button>
           )}
 

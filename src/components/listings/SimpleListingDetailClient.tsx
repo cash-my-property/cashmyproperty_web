@@ -51,6 +51,7 @@ import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
 import PropertyRegulatoryInfo from "@/components/listings/PropertyRegulatoryInfo";
+import PropertyBreadcrumb from "@/components/listings/PropertyBreadcrumb";
 
 const PropertyMapCard = dynamic(() => import("@/components/listings/PropertyMapCard"), {
   ssr: false,
@@ -311,15 +312,20 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
       {/* Top Breadcrumb & Status */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/listings`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Listings</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-gray-900 dark:text-white font-bold truncate max-w-[200px] sm:max-w-[350px] md:max-w-[500px]" title={title}>{title}</span>
+          <div className="flex-1 min-w-0">
+            <PropertyBreadcrumb
+              locale={locale}
+              basePath={`/${locale}/listings`}
+              propertyType={type}
+              propertyCategory={propertyInfo.propertyCategory || propertyInfo.category}
+              listingPurpose={propertyInfo.listingPurpose || propertyInfo.purpose}
+              location={location}
+              title={title}
+              accentColor="gold"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#c9a14b]/10 dark:text-[#c9a14b] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
               {formatPropertyType(type)}
             </span>
@@ -417,7 +423,7 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                   {/* Bottom Right Image */}
                   <div 
                     onClick={() => { setActiveImage(2); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[2]}
@@ -427,8 +433,8 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     {images.length > 3 && (
-                      <div className="absolute inset-0 bg-black/40 backdrop-blur-md group-hover:bg-black/25 transition-all flex items-center justify-center z-10">
-                        <span className="bg-black/60 backdrop-blur-xl text-white text-xs sm:text-sm font-extrabold px-3.5 py-2 rounded-xl border border-white/20 shadow-lg group-hover:scale-105 transition-transform">
+                      <div className="absolute inset-0 rounded-2xl overflow-hidden bg-black/40 backdrop-blur-md group-hover:bg-black/25 transition-all flex items-center justify-center z-10">
+                        <span className="bg-black/70 backdrop-blur-xl text-white text-xs sm:text-sm font-extrabold px-4 py-2 rounded-xl border border-white/20 shadow-xl group-hover:scale-105 transition-transform select-none">
                           +{images.length - 3} More
                         </span>
                       </div>
