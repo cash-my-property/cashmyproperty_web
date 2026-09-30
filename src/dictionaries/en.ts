@@ -1941,5 +1941,12 @@ export const content = {
     whatsapp: "WhatsApp",
     call: "Call",
     makeOffer: "Make Offer"
+  },
+  recommendations: {
+    badge: "Handpicked For You",
+    title: "Recommended Properties",
+    subtitle: "Explore similar properties handpicked based on your preferences",
+    viewAll: "View All Listings",
+    noRecommendations: "No similar properties found at the moment."
   }
 };

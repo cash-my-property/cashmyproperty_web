@@ -45,6 +45,7 @@ import {
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import RecommendedProperties from "@/components/listings/RecommendedProperties";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
 import dynamic from "next/dynamic";
@@ -808,6 +809,17 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
         </div>
 
       </div>
+
+      {/* Recommended Properties Section (Full Width Grid Style) */}
+      <RecommendedProperties
+        currentPropertyId={id || propertyInfo._id || propertyInfo.id}
+        category={details.propertyCategory || propertyInfo.propertyCategory}
+        propertyType={details.propertyType || propertyInfo.propertyType}
+        location={location || details.propertyLocation || propertyInfo.propertyLocation}
+        price={priceValue}
+        isAuction={false}
+        locale={locale}
+      />
 
       {/* Sticky Mobile Contact Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md border-t border-gray-200 dark:border-[#1A3626] p-3 px-4 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">

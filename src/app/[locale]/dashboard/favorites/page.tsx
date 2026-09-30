@@ -249,7 +249,7 @@ export default function FavoritesPage() {
 
                   <div className="mt-auto pt-3.5 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
                     <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
-                      {isRegular ? "Highest Bid" : "Price"}
+                      {isRegular ? "Highest Offer" : "Price"}
                     </span>
                     <span className="font-bold text-lg sm:text-xl text-[#1A3626] dark:text-[#5CD284] leading-none flex items-center gap-1">
                       <Dirham className="text-[15px]" /> {price.toLocaleString()}

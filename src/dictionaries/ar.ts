@@ -1943,6 +1943,12 @@ export const content = {
     whatsapp: "واتساب",
     call: "اتصال",
     makeOffer: "تقديم عرض"
+  },
+  recommendations: {
+    badge: "مختارة خصيصاً لك",
+    title: "عقارات موصى بها",
+    subtitle: "استكشف عقارات مشابهة تم اختيارها بناءً على تفضيلاتك",
+    viewAll: "عرض جميع القوائم",
+    noRecommendations: "لا توجد عقارات مشابهة في الوقت الحالي."
   }
-}; 
- 
+};

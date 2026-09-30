@@ -33,6 +33,7 @@ import {
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import RecommendedProperties from "@/components/listings/RecommendedProperties";
 import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
@@ -632,7 +633,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
               <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#5CD284]/30 shadow-xl relative overflow-hidden group/price">
                 <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
                 <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1">
-                  {propertyInfo.currentHighestOffer ? 'Highest Live Bid' : isForRent ? 'Rental Price' : 'Starting Price'}
+                  {propertyInfo.currentHighestOffer || propertyInfo.currentHighestBid ? 'Highest Live Offer' : isForRent ? 'Rental Price' : 'Starting Price'}
                 </p>
                 <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] tabular-nums flex items-baseline gap-2">
                   <span className="flex items-center gap-1">
@@ -914,6 +915,17 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
         </div>
 
       </div>
+
+      {/* Recommended Properties Section (Full Width Grid Style) */}
+      <RecommendedProperties
+        currentPropertyId={id || propertyInfo._id || propertyInfo.id}
+        category={details.propertyCategory || propertyInfo.propertyCategory}
+        propertyType={details.propertyType || propertyInfo.propertyType}
+        location={location || details.propertyLocation || propertyInfo.propertyLocation}
+        price={highestBid || priceAmount}
+        isAuction={false}
+        locale={locale}
+      />
 
       {/* Login Modal */}
       {showLoginModal && (

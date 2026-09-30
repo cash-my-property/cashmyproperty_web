@@ -56,7 +56,7 @@ export default function ContractsPage() {
                 <tr className="bg-gray-50/50 dark:bg-[#102418]/50 border-b border-gray-100 dark:border-[#1A3626]">
                   <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property</th>
                   <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Highest Bid</th>
+                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Highest Offer</th>
                   <th className="px-6 py-4 text-right"></th>
                 </tr>
               </thead>
