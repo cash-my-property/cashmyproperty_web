@@ -7,15 +7,7 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "crypto-js",
-      "axios",
-      "socket.io-client",
-      "js-cookie",
-      "@vercel/analytics",
-      "@vercel/speed-insights",
-    ],
+    optimizePackageImports: ["lucide-react"],
   },
   images: {
     formats: ["image/avif", "image/webp"],
@@ -30,6 +22,26 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+      },
+      {
+        protocol: "https",
+        hostname: "fastly.picsum.photos",
+      },
+      {
+        protocol: "https",
+        hostname: "images.pexels.com",
+      },
+      {
+        protocol: "https",
+        hostname: "mediaoffice.ae",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
       },
     ],
   },
@@ -49,7 +61,15 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
+        source: "/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/:locale(en|ar)/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
+        source: "/:locale(en|ar)/apple-app-site-association",
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
@@ -57,11 +77,24 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
       {
+        source: "/assetlinks.json",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         source: "/:locale(en|ar)/.well-known/assetlinks.json",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
+        source: "/:locale(en|ar)/assetlinks.json",
         headers: [{ key: "Content-Type", value: "application/json" }],
       },
     ];
   },
+  onDemandEntries: {
+  maxInactiveAge: 25 * 1000, // 25 seconds baad inactive page memory se clear
+  pagesBufferLength: 2,      // Sirf 2 active pages RAM mein rahenge
+},
+
 };
 
 export default nextConfig;

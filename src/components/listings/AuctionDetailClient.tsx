@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
@@ -18,19 +18,40 @@ import {
   AlertTriangle, 
   Heart,
   Camera,
+  Award,
   Sparkles,
   Lock,
-  X
+  X,
+  FileText,
+  Eye,
+  ExternalLink,
+  Info,
+  QrCode,
+  Car
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import RecommendedProperties from "@/components/listings/RecommendedProperties";
 import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
 import api from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
+import { 
+  formatPropertyType, 
+  formatPropertyCategory, 
+  formatPropertyPlan, 
+  formatListingPurpose, 
+  formatFurnishingStatus, 
+  formatAmenity,
+  formatAvailability,
+  formatRentalPeriod,
+  formatRentalPeriodShort
+} from "@/utils/formatters";
 import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
+import PropertyRegulatoryInfo from "@/components/listings/PropertyRegulatoryInfo";
+import PropertyBreadcrumb from "@/components/listings/PropertyBreadcrumb";
 
 const PropertyMapCard = dynamic(() => import("@/components/listings/PropertyMapCard"), {
   ssr: false,
@@ -46,6 +67,7 @@ interface AuctionDetailClientProps {
 export default function AuctionDetailClient({ id, initialData, locale }: AuctionDetailClientProps) {
   const { dict } = useDictionary();
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
+  const { socket, isConnected, joinRoom, leaveRoom, addToast } = useSocket();
 
   const [activeImage, setActiveImage] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -54,6 +76,25 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isFavourited, setIsFavourited] = useState(initialData?.isFavourited || false);
   const [isFavouriting, setIsFavouriting] = useState(false);
+  const [showOfflineWarning, setShowOfflineWarning] = useState(false);
+  const hasFetchedRef = useRef<string | null>(null);
+  const hasSwitchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || isConnected) {
+      setShowOfflineWarning(false);
+      return;
+    }
+
+    // Grace period: only show warning if socket remains disconnected for > 3.5s
+    const timer = setTimeout(() => {
+      if (isAuthenticated && !isConnected) {
+        setShowOfflineWarning(true);
+      }
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, isConnected]);
 
   useEffect(() => {
     if (propertyInfo) {
@@ -97,10 +138,8 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
     }
   };
 
-  const { socket, isConnected, joinRoom, leaveRoom, addToast } = useSocket();
-
   useEffect(() => {
-    if (!id || !socket) return;
+    if (!id || !socket || !isConnected) return;
 
     joinRoom(`auction_${id}`);
 
@@ -135,30 +174,68 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
       socket.off("update_bid", handleUpdateBid);
       socket.off("auction_ended", handleAuctionEnded);
     };
-  }, [id, socket]);
+  }, [id, socket, isConnected]);
 
   const fetchDetails = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
       
-      let res;
+      let res: any;
       if (isAuthenticated) {
+        // If logged-in user is a Buyer and not in REGULAR mode, auto-switch to REGULAR mode first (once per lifecycle)
+        const currentType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
+        if (isBuyer && currentType !== 'REGULAR' && !hasSwitchedRef.current) {
+          hasSwitchedRef.current = true;
+          try {
+            await api.put('/switch/toggleRole', { type: 'REGULAR' });
+            if (fetchProfile) await fetchProfile();
+          } catch (switchErr) {
+            console.error("Auto switch to REGULAR mode failed", switchErr);
+          }
+        }
+
         try {
           res = await api.get(`/buyer/auction-details/${id}`);
-        } catch (apiErr) {
-          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+          if (res.data?.roleWasSwitched && !hasSwitchedRef.current) {
+            hasSwitchedRef.current = true;
+            if (fetchProfile) await fetchProfile();
+          }
+        } catch (apiErr: any) {
+          const errMsg = apiErr?.response?.data?.message || "";
+          if (!hasSwitchedRef.current && (apiErr?.response?.status === 403 || errMsg.includes("Regular Buyer mode"))) {
+            hasSwitchedRef.current = true;
+            try {
+              await api.put('/switch/toggleRole', { type: 'REGULAR' });
+              if (fetchProfile) await fetchProfile();
+              res = await api.get(`/buyer/auction-details/${id}`);
+            } catch (retryErr) {
+              if (!propertyInfo && !initialData) {
+                res = await axios.get(`${API_URL}/public/property-details/${id}`);
+              }
+            }
+          } else if (!propertyInfo && !initialData) {
+            res = await axios.get(`${API_URL}/public/property-details/${id}`);
+          }
         }
       } else {
-        res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        if (!propertyInfo && !initialData) {
+          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+        }
       }
       
-      const data = res.data.data || res.data;
-      setPropertyInfo(data);
-      if (typeof data?.isFavourited === 'boolean') {
-        setIsFavourited(data.isFavourited);
+      if (res?.data) {
+        const data = res.data.data || res.data;
+        setPropertyInfo(data);
+        if (typeof data?.isFavourited === 'boolean') {
+          setIsFavourited(data.isFavourited);
+        }
       }
-    } catch (err) {
-      console.error("Error fetching property details client-side", err);
+    } catch (err: any) {
+      if (err?.response?.status === 429) {
+        console.warn("Property details rate limit reached. Using cached/server data.");
+      } else {
+        console.error("Error fetching property details client-side", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -166,8 +243,19 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
 
   useEffect(() => {
     if (authLoading) return;
+
+    // If guest user and we already have server data, skip refetching to avoid rate limits
+    if (!isAuthenticated && (initialData || propertyInfo)) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchKey = `${id}_${isAuthenticated ? (user?._id || 'auth') : 'guest'}`;
+    if (hasFetchedRef.current === fetchKey) return;
+    hasFetchedRef.current = fetchKey;
+
     fetchDetails();
-  }, [id, authLoading, isAuthenticated, user]);
+  }, [id, authLoading, isAuthenticated, user?._id]);
 
   if (isLoading && !propertyInfo) {
     return (
@@ -200,10 +288,10 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             <Building2 className="w-10 h-10 text-[#5CD284]" />
           </div>
           <div className="relative z-10">
-            <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Seller Mode Active</p>
+            <p className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase mb-3">Agent Mode Active</p>
             <h2 className="text-white text-[28px] font-bold mb-3 leading-tight">Access Restricted</h2>
             <p className="text-white/65 text-[15px] leading-relaxed">
-              Property detail pages are exclusively for buyers. As a seller, you can only manage and track your own listed properties.
+              Property detail pages are exclusively for buyers. As an agent, you can only manage and track your own listed properties.
             </p>
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row gap-3 w-full justify-center">
@@ -232,34 +320,134 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
     return (
       <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-32 sm:pt-36 pb-16 items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{detailDict.propertyNotFound || "Property not found"}</h1>
-        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#c9a14b] underline">{detailDict.backToProperties || "Back to listings"}</Link>
+        <Link href={`/${locale}/listings`} className="mt-4 text-[#1A3626] dark:text-[#5CD284] underline">{detailDict.backToProperties || "Back to listings"}</Link>
       </main>
     );
   }
 
-  const details = propertyInfo.propertyDetails || {};
-  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url) : ["/property-placeholder.svg"];
-  const title = details.propertyTitle || "Untitled Property";
-  const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-  const priceAmount = details.propertyPrice?.amount || details.propertyPrice || 0;
+  const details = propertyInfo.propertyDetails || propertyInfo || {};
+  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url || i) : ["/property-placeholder.svg"];
+  const title = details.propertyTitle || propertyInfo.title || "Untitled Property";
+  const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || propertyInfo.location || "Dubai, UAE");
+  const priceAmount = details.propertyPrice?.amount || details.propertyPrice || propertyInfo.startPrice || propertyInfo.price || 0;
   const highestBid = propertyInfo.currentHighestBid || (typeof propertyInfo.currentHighestOffer === 'object' ? propertyInfo.currentHighestOffer?.amount : propertyInfo.currentHighestOffer);
   const priceValue = highestBid ? highestBid.toLocaleString() : priceAmount.toLocaleString();
-  const type = details.propertyType || "N/A";
-  const beds = details.propertyBedrooms || 0;
-  const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
+  const downPaymentAmount = details.propertyPrice?.downPayment ?? propertyInfo.propertyPrice?.downPayment;
+  const downPaymentValue = (downPaymentAmount !== undefined && downPaymentAmount !== null && Number(downPaymentAmount) > 0)
+    ? Number(downPaymentAmount).toLocaleString()
+    : null;
+  const type = details.propertyType || propertyInfo.propertyType || "N/A";
+  const purpose = details.listingPurpose || propertyInfo.listingPurpose || "";
+  const category = details.propertyCategory || propertyInfo.propertyCategory || "";
+  const plan = details.propertyPlan || propertyInfo.propertyPlan || "";
+  const beds = details.propertyBedrooms || propertyInfo.bedrooms || 0;
+  const baths = details.propertyWashrooms || details.propertyBathrooms || propertyInfo.bathrooms || 0;
+  const parkingSpaces = details.parkingSpaces !== undefined ? details.parkingSpaces : propertyInfo.parkingSpaces;
+  const permitNumber = details.permitNumber || propertyInfo.permitNumber || details.trakheesiNumber || propertyInfo.trakheesiNumber || "";
+  const referenceNumber = details.referenceNumber || propertyInfo.referenceNumber || details.propertyId || propertyInfo.propertyId || details.PID || propertyInfo.PID || details.listingId || propertyInfo.listingId || "";
+  const listingId = details.listingId || propertyInfo.listingId || "";
+  const availability = details.availability || propertyInfo.availability || "";
+  const furnishingStatus = details.furnishingStatus || propertyInfo.furnishingStatus || "";
+  const rentalPeriod = details.rentalPeriod || propertyInfo.rentalPeriod || "";
+  const isForRent = purpose === "RENT" || details.listingPurpose === "RENT" || propertyInfo.listingPurpose === "RENT";
   
   const getAreaValue = (area: any) => {
     if (!area) return 0;
-    if (typeof area === 'object' && area.value !== undefined) return area.value;
-    return area;
+    if (typeof area === 'object' && area.value !== undefined) return Number(area.value);
+    return Number(area) || 0;
   };
-  const sqft = getAreaValue(details.propertyArea || details.propertyBuiltUpArea);
-  const description = details.propertyDescription || "No description provided.";
-  const features = details.propertyFeatures || ["Central A/C", "Balcony", "Shared Pool", "Security"];
+  const totalArea = getAreaValue(details.propertyArea || propertyInfo.propertyArea || propertyInfo.area);
+  const builtUpArea = getAreaValue(details.propertyBuiltUpArea || propertyInfo.propertyBuiltUpArea);
+  const sqft = builtUpArea || totalArea;
+  const description = details.propertyDescription || propertyInfo.description || "No description provided.";
+  
+  const getAmenitiesList = (): string[] => {
+    const raw = details.propertyAmenities || propertyInfo.propertyAmenities || details.propertyFeatures || propertyInfo.features;
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (typeof raw === 'string' && raw.trim()) return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
+    return ["Central A/C", "Balcony", "Shared Pool", "Security"];
+  };
+  const features = getAmenitiesList();
+
+  const rawDocs = details.propertyDocuments || propertyInfo.propertyDocuments || propertyInfo.documents;
+
+  const DOC_LABELS: Record<string, string> = {
+    propertyTrakheesi: "Trakheesi Permit",
+    trakheesi: "Trakheesi Permit",
+    propertyTitleDeed: "Title Deed",
+    titleDeed: "Title Deed",
+    passportDocument: "Passport / Emirates ID",
+    visaPassport: "Passport / Visa",
+    exclusiveContract: "Exclusive Listing Contract",
+    contractA: "Form A Contract",
+    propertyCheque: "Security Cheque",
+    oqoodDocument: "Oqood Certificate",
+    spaDocument: "Sales & Purchase Agreement (SPA)",
+    statementOfAccount: "Statement of Account",
+    propertyFloorPlan: "Floor Plan",
+    propertyUndertakingLetter: "Undertaking Letter",
+    brokerCard: "Broker Card",
+  };
+
+  const parseDocuments = (docsObj: any) => {
+    if (!docsObj || typeof docsObj !== 'object') return [];
+    const list: Array<{ key: string; label: string; url: string; fileName?: string; uploadedAt?: string }> = [];
+
+    Object.entries(docsObj).forEach(([key, val]: [string, any]) => {
+      if (!val) return;
+
+      if (Array.isArray(val)) {
+        val.forEach((item, i) => {
+          if (!item) return;
+          const url = typeof item === 'string' ? item : item.url;
+          if (url && typeof url === 'string') {
+            list.push({
+              key: `${key}_${i}`,
+              label: item.title || item.name || `Additional Document ${i + 1}`,
+              url,
+              fileName: item.fileName || item.name || undefined,
+              uploadedAt: item.uploadedAt || undefined
+            });
+          }
+        });
+        return;
+      }
+
+      const url = typeof val === 'string' ? val : val.url;
+      if (url && typeof url === 'string') {
+        const formattedKey = DOC_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+        list.push({
+          key,
+          label: formattedKey,
+          url,
+          fileName: val.fileName || undefined,
+          uploadedAt: val.uploadedAt || undefined
+        });
+      }
+    });
+
+    return list;
+  };
+
+  const documentList = parseDocuments(rawDocs);
+
+  const formatUploadDate = (isoStr?: string) => {
+    if (!isoStr) return "";
+    try {
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return isoStr.split("T")[0] || isoStr;
+      const day = String(d.getUTCDate()).padStart(2, "0");
+      const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const year = d.getUTCFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return isoStr.split("T")[0] || isoStr;
+    }
+  };
 
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-16 transition-colors">
-      {isAuthenticated && !isConnected && (
+      {showOfflineWarning && (
         <div className="w-full bg-amber-500/10 border-b border-amber-500/20 py-2.5 px-6 text-center text-[13px] font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 animate-pulse mb-6">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           Live connection offline. Bids may not update in real-time. Retrying...
@@ -269,22 +457,23 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
       {/* Top Breadcrumb & Status */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
-            <Link href={`/${locale}`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">{dict.navbar?.links?.[0]?.title || "Home"}</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <Link href={`/${locale}/auctions`} className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors">Auctions</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-gray-900 dark:text-white font-bold font-mono">{propertyInfo.PID || propertyInfo._id}</span>
+          <div className="flex-1 min-w-0">
+            <PropertyBreadcrumb
+              locale={locale}
+              basePath={`/${locale}/auctions`}
+              propertyType={type}
+              propertyCategory={category}
+              listingPurpose={purpose}
+              location={location}
+              title={title}
+              accentColor="emerald"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#c9a14b]/10 dark:text-[#c9a14b] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
-              {type}
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#5CD284]/30">
+              {formatPropertyType(type)}
             </span>
-            <div className="flex items-center gap-1.5 bg-[#5CD284]/15 text-[#1A3626] dark:text-[#5CD284] px-3.5 py-1 rounded-full border border-[#5CD284]/30 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{propertyInfo.status || 'Live Auction'}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -311,35 +500,35 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                  <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                  <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                   <span>1 Photo</span>
                 </div>
               </div>
             ) : images.length === 2 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 sm:gap-2 h-[280px] sm:h-[360px] md:h-[420px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 h-[280px] sm:h-[360px] md:h-[420px]">
                 <div 
                   onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                  className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                 >
                   <Image src={images[0]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <div 
                   onClick={() => { setActiveImage(1); setIsLightboxOpen(true); }}
-                  className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                 >
                   <Image src={images[1]} alt={title} fill priority sizes="50vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                  <div className="absolute bottom-2.5 right-2.5 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15">
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
+                  <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15">
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span>2 Photos</span>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 sm:gap-2 h-[280px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 h-[280px] sm:h-[360px] md:h-[440px] lg:h-[480px]">
                 {/* Left Large Main Image */}
                 <div 
                   onClick={() => { setActiveImage(0); setIsLightboxOpen(true); }}
-                  className="md:col-span-2 relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                  className="md:col-span-2 relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                 >
                   <Image
                     src={images[0]}
@@ -353,19 +542,19 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                   {/* Bottom Right Photo Count Badge */}
                   <div 
                     onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-                    className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
+                    className="absolute bottom-3 right-3 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 border border-white/15 z-10 transition-all hover:scale-105 cursor-pointer"
                   >
-                    <Camera className="w-3.5 h-3.5 text-[#c9a14b]" />
-                    <span>{images.length}</span>
+                    <Camera className="w-3.5 h-3.5 text-[#5CD284]" />
+                    <span>{images.length} Photos</span>
                   </div>
                 </div>
 
                 {/* Right Stacked Column (Top & Bottom Images) */}
-                <div className="hidden md:grid grid-rows-2 gap-1.5 sm:gap-2 h-full">
+                <div className="hidden md:grid grid-rows-2 gap-2 h-full">
                   {/* Top Right Image */}
                   <div 
                     onClick={() => { setActiveImage(1); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[1]}
@@ -379,7 +568,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                   {/* Bottom Right Image with Blurred Overlay */}
                   <div 
                     onClick={() => { setActiveImage(2); setIsLightboxOpen(true); }}
-                    className="relative w-full h-full rounded-xl overflow-hidden bg-gray-900 group cursor-pointer"
+                    className="relative w-full h-full rounded-2xl overflow-hidden [isolation:isolate] bg-gray-900 group cursor-pointer"
                   >
                     <Image
                       src={images[2]}
@@ -389,8 +578,8 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                       className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     {images.length > 3 && (
-                      <div className="absolute inset-0 bg-black/40 backdrop-blur-md group-hover:bg-black/25 transition-all flex items-center justify-center z-10">
-                        <span className="bg-black/60 backdrop-blur-xl text-white text-xs sm:text-sm font-extrabold px-3.5 py-2 rounded-xl border border-white/20 shadow-lg group-hover:scale-105 transition-transform">
+                      <div className="absolute inset-0 rounded-2xl overflow-hidden bg-black/40 backdrop-blur-md group-hover:bg-black/25 transition-all flex items-center justify-center z-10">
+                        <span className="bg-black/70 backdrop-blur-xl text-white text-xs sm:text-sm font-extrabold px-4 py-2 rounded-xl border border-white/20 shadow-xl group-hover:scale-105 transition-transform select-none">
                           +{images.length - 3} More
                         </span>
                       </div>
@@ -402,27 +591,48 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
           </div>
 
           {/* Title, Actions & Pricing Header */}
-          <div className="bg-white dark:bg-[#102418] rounded-2xl p-5 sm:p-7 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-6">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              <div className="space-y-2 max-w-2xl">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <div className="bg-white dark:bg-[#102418] rounded-2xl p-5 sm:p-7 shadow-xl border border-gray-200/80 dark:border-[#1A3626] space-y-6 relative overflow-hidden">
+            {/* Top Accent Line */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#1A3626] via-[#5CD284] to-[#1A3626]" />
+
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
+              <div className="space-y-2.5 max-w-2xl">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
                   {title}
                 </h1>
                 
-                <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm font-medium">
-                  <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium">
+                  <div className="p-1 rounded-md bg-[#5CD284]/15 text-[#5CD284]">
+                    <MapPin className="w-4 h-4" />
+                  </div>
                   <span>{location}</span>
                 </div>
               </div>
 
-              {/* Price Banner */}
-              <div className="shrink-0 bg-gradient-to-br from-[#1A3626]/5 to-[#1A3626]/10 dark:from-[#163321] dark:to-[#102418] px-6 py-4 rounded-2xl border border-[#1A3626]/10 dark:border-[#1A3626]">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1">
-                  {propertyInfo.currentHighestBid ? 'Highest Live Bid' : 'Starting Price'}
+              {/* High-End Price Banner */}
+              <div className="shrink-0 bg-gradient-to-br from-[#1A3626] via-[#163321] to-[#0A1C12] text-white px-7 py-4 rounded-2xl border border-white/15 dark:border-[#5CD284]/30 shadow-xl relative overflow-hidden group/price">
+                <div className="absolute -top-10 -right-10 w-24 h-24 bg-[#5CD284]/20 rounded-full blur-xl pointer-events-none" />
+                <p className="text-[11px] text-white/70 font-extrabold uppercase tracking-widest mb-1">
+                  {propertyInfo.currentHighestBid || propertyInfo.currentHighestOffer ? 'Highest Live Offer' : isForRent ? 'Rental Price' : 'Starting Price'}
                 </p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#c9a14b] tabular-nums flex items-center gap-1.5">
-                  <Dirham className="text-xl sm:text-2xl" /> {priceValue}
+                <p className="text-2xl sm:text-3xl font-extrabold text-[#5CD284] tabular-nums flex items-baseline gap-2">
+                  <span className="flex items-center gap-1">
+                    <Dirham className="text-xl sm:text-2xl" /> {priceValue}
+                  </span>
+                  {isForRent && rentalPeriod && (
+                    <span className="text-xs sm:text-sm font-bold text-white/80 tracking-normal lowercase">
+                      / {formatRentalPeriodShort(rentalPeriod)}
+                    </span>
+                  )}
                 </p>
+                {downPaymentValue && (
+                  <div className="mt-2.5 pt-2 border-t border-white/15 flex items-center justify-between gap-3 text-xs">
+                    <span className="text-white/70 font-semibold uppercase tracking-wider text-[10px]">Down Payment</span>
+                    <span className="text-white font-extrabold tabular-nums flex items-center gap-1">
+                      <Dirham className="text-xs text-[#5CD284]" /> {downPaymentValue}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -441,9 +651,9 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                     addToast("Link Copied", "Shareable property link copied to clipboard successfully!", "success");
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#163321] hover:bg-gray-200 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200/50 dark:border-[#1A3626]"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
               >
-                <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
+                <Share2 className="w-4 h-4 text-[#1A3626] dark:text-[#5CD284]" />
                 <span>Share Property</span>
               </button>
 
@@ -451,7 +661,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                 <button 
                   onClick={handleToggleFavourite}
                   disabled={isFavouriting}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#163321] hover:bg-gray-200 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200/50 dark:border-[#1A3626]"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#163321] hover:bg-gray-100 dark:hover:bg-[#1A3626] text-gray-800 dark:text-gray-200 text-xs font-bold transition-all cursor-pointer border border-gray-200 dark:border-[#1A3626] hover:scale-105"
                 >
                   {isFavouriting ? (
                     <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
@@ -463,49 +673,57 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
               )}
             </div>
 
-            {/* Featured Key Specs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-4">
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Building2 className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+            {/* Featured Key Specs Grid (Top 4 Boxes) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Building2 className="w-4 h-4 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white uppercase truncate" title={type}>{type}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bed className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bed className="w-4 h-4 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bedrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
-                    {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds} Beds`}
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white capitalize truncate" title={beds?.toString()}>
+                    {beds?.toString().toUpperCase() === "STUDIO" ? "Studio" : `${beds || 0} Beds`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Bath className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  <Bath className="w-4 h-4 text-[#5CD284]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Washrooms</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${baths}`}>
-                    {Number(baths) === 1 ? "1 Bath" : `${baths} Baths`}
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Bathrooms</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={`${baths}`}>
+                    {Number(baths) === 1 ? "1 Bath" : `${baths || 0} Baths`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-2 sm:gap-2.5 hover:-translate-y-0.5 hover:border-[#5CD284]/40 dark:hover:border-[#c9a14b]/40 hover:shadow-md transition-all duration-300 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#c9a14b]/20 dark:to-[#163321] border border-white/10 dark:border-[#c9a14b]/30 flex items-center justify-center shrink-0 shadow-sm">
-                  <Square className="w-3.5 h-3.5 text-[#5CD284] dark:text-[#c9a14b]" />
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex items-center gap-3 hover:-translate-y-0.5 hover:border-[#5CD284]/40 hover:shadow-md transition-all duration-300 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1A3626] to-[#102418] dark:from-[#5CD284]/20 dark:to-[#163321] border border-white/10 dark:border-[#5CD284]/30 flex items-center justify-center shrink-0 shadow-sm">
+                  {parkingSpaces ? (
+                    <Car className="w-4 h-4 text-[#5CD284]" />
+                  ) : (
+                    <Sparkles className="w-4 h-4 text-[#5CD284]" />
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Built Up Area</p>
-                  <p className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white truncate" title={`${sqft} sqft`}>{sqft} sqft</p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">
+                    {parkingSpaces ? "Parking" : "Property Plan"}
+                  </p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    {parkingSpaces ? `${parkingSpaces} Spaces` : formatPropertyPlan(plan)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -513,37 +731,81 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
             {/* Additional Info Cards */}
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Details</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {details.listingPurpose && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {referenceNumber && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Reference No.</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate" title={referenceNumber}>{referenceNumber}</span>
+                  </div>
+                )}
+                {permitNumber && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Permit No.</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate" title={permitNumber}>{permitNumber}</span>
+                  </div>
+                )}
+                {builtUpArea > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Built Up Area</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
+                  </div>
+                )}
+                {totalArea > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Area</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
+                  </div>
+                )}
+                {purpose && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.listingPurpose.toLowerCase()}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose)}</span>
                   </div>
                 )}
-                {details.propertyCategory && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyCategory.toLowerCase()}</span>
-                  </div>
-                )}
-                {details.furnishingStatus && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">
-                      {details.furnishingStatus === "NOT_FURNISHED" ? "Not Furnished" : details.furnishingStatus === "SEMI" ? "Semi Furnished" : details.furnishingStatus.replace('_', ' ')}
+                {isForRent && rentalPeriod && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Rental Period</span>
+                    <span className="text-xs sm:text-sm font-semibold text-[#1A3626] dark:text-[#5CD284] truncate">
+                      {formatRentalPeriod(rentalPeriod)}
                     </span>
                   </div>
                 )}
-                {details.propertyPlan && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white capitalize truncate">{details.propertyPlan.toLowerCase().replace('_', ' ')}</span>
+                {category && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category)}</span>
                   </div>
                 )}
-                {details.trakheesiNumber && (
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0">
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Trakheesi Permit</span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 dark:text-white font-mono truncate">{details.trakheesiNumber}</span>
+                {plan && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan)}</span>
+                  </div>
+                )}
+                {availability && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Availability</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatAvailability(availability)}</span>
+                  </div>
+                )}
+                {furnishingStatus && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      {formatFurnishingStatus(furnishingStatus)}
+                    </span>
+                  </div>
+                )}
+                {parkingSpaces !== undefined && parkingSpaces !== null && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Parking Spaces</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{parkingSpaces} {parkingSpaces === 1 ? 'Space' : 'Spaces'}</span>
+                  </div>
+                )}
+                {(details.unitNumber || propertyInfo.unitNumber) && (
+                  <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Unit Number</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono truncate">{details.unitNumber || propertyInfo.unitNumber}</span>
                   </div>
                 )}
               </div>
@@ -551,27 +813,32 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
 
             {/* Description */}
             <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Description</h3>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Property Overview</h3>
               <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                 {description}
               </p>
             </div>
 
-            {/* Features */}
-            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Features & Amenities</h3>
-              <div className="flex flex-wrap gap-2.5">
-                {features.map((feature: string, idx: number) => (
-                  <span 
-                    key={idx} 
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-100 dark:border-emerald-500/20"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
-                    <span>{feature}</span>
-                  </span>
-                ))}
+            {/* Features & Amenities */}
+            {features.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white uppercase tracking-wider">Features & Amenities</h3>
+                <div className="flex flex-wrap gap-2.5">
+                  {features.map((feature: string, idx: number) => (
+                    <span 
+                      key={idx} 
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
+                      <span>{formatAmenity(feature)}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Regulatory Information Component */}
+            <PropertyRegulatoryInfo propertyInfo={propertyInfo} details={details} />
 
           </div>
         </div>
@@ -599,7 +866,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
               />
             ) : (
               <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] text-center space-y-4">
-                <div className="w-14 h-14 bg-[#1A3626]/10 dark:bg-[#c9a14b]/10 rounded-2xl flex items-center justify-center mx-auto text-[#1A3626] dark:text-[#c9a14b]">
+                <div className="w-14 h-14 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center mx-auto text-[#5CD284]">
                   <Lock className="w-7 h-7" />
                 </div>
                 <div>
@@ -612,7 +879,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
                 </div>
                 <button 
                   onClick={() => setShowLoginModal(true)}
-                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
+                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
                 >
                   {detailDict.makeOffer || "Make Offer / Place Bid"}
                 </button>
@@ -629,6 +896,17 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
         </div>
 
       </div>
+
+      {/* Recommended Properties Section (Full Width Grid Style) */}
+      <RecommendedProperties
+        currentPropertyId={id || propertyInfo._id || propertyInfo.id}
+        category={details.propertyCategory || propertyInfo.propertyCategory || propertyInfo.propertyDetails?.propertyCategory}
+        propertyType={details.propertyType || propertyInfo.propertyType || propertyInfo.propertyDetails?.propertyType}
+        location={propertyInfo.propertyLocation || propertyInfo.location || details.propertyLocation}
+        price={highestBid || priceAmount}
+        isAuction={true}
+        locale={locale}
+      />
 
       {/* Login Modal */}
       {showLoginModal && (
@@ -647,7 +925,7 @@ export default function AuctionDetailClient({ id, initialData, locale }: Auction
               </button>
               <Link 
                 href={`/${locale}/login`}
-                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center"
+                className="flex-1 py-3 px-4 rounded-xl bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-[15px] hover:opacity-90 transition-opacity text-center flex items-center justify-center shadow-md"
               >
                 {detailDict.goToLogin || "Go to Login"}
               </Link>

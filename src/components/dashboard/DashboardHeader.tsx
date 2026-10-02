@@ -2,7 +2,7 @@
 
 import { useDictionary } from "@/components/DictionaryProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Bell, Globe, ChevronDown, RefreshCw, Menu, Check, Trash2, Sparkles, LayoutDashboard } from "lucide-react";
+import { Bell, Globe, ChevronDown, Menu, Check, Trash2, LayoutDashboard, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
@@ -34,8 +34,50 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
     router.refresh();
   };
 
-  const currentRole = user ? (typeof user.role === 'string' ? user.role.toUpperCase() : (user.role as any)?.main?.toUpperCase()) : 'BUYER';
-  const currentType = user ? (typeof user.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR') : 'REGULAR';
+  const currentRole = typeof user?.role === 'string' ? user.role.toUpperCase() : (user?.role as any)?.main?.toUpperCase() || "BUYER";
+  const currentType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const isSeller = currentRole === "SELLER";
+
+  const handleToggleRole = async (targetRole: "BUYER" | "SELLER") => {
+    if (currentRole === targetRole || isSwitching) return;
+    try {
+      setIsSwitching(true);
+      await api.put('/switch/toggleRole', { 
+        main: targetRole 
+      });
+
+      if (fetchProfile) {
+        await fetchProfile();
+      }
+
+      addToast(
+        "Role Switched", 
+        `You are now in ${targetRole === 'BUYER' ? 'Buyer' : 'Seller'} mode.`, 
+        "success"
+      );
+
+      if (targetRole === 'BUYER') {
+        router.push(`/${locale}/dashboard`);
+      } else {
+        if (currentType === 'SIMPLE') {
+          router.push(`/${locale}/dashboard/seller/simple-listings`);
+        } else {
+          router.push(`/${locale}/dashboard/seller/properties`);
+        }
+      }
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+
+    } catch (err: any) {
+      console.error("Failed to switch role:", err);
+      const errorMsg = err?.response?.data?.message || "Failed to switch role. Please try again.";
+      addToast("Error", errorMsg, "warning");
+    } finally {
+      setIsSwitching(false);
+    }
+  };
 
   const userName = user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User";
   const firstName = userName.split(' ')[0] || "User";
@@ -116,39 +158,40 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
           </div>
         </div>
 
-        {/* 2. CENTER ZONE: Buyer vs Seller Toggle Pill */}
-        <div className="flex items-center justify-center shrink-0">
-          <div className="flex items-center bg-[#102418] dark:bg-[#142e1d] p-1 rounded-full border border-[#1A3626] shadow-inner">
+        {/* 2. CENTER ZONE: Buyer / Agent Toggle + Type Badge */}
+        <div className="flex items-center justify-center gap-2 sm:gap-3 mx-1 sm:mx-6">
+          <div className="bg-gray-100 dark:bg-[#163321] p-0.5 sm:p-1 rounded-full border border-gray-200/80 dark:border-[#1A3626] flex items-center shadow-inner">
             <button
               type="button"
               disabled={isSwitching}
-              onClick={() => handleSwitchRole("BUYER")}
-              className={`px-3 sm:px-4 py-1 rounded-full text-[11.5px] sm:text-[12px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                currentRole === 'BUYER'
-                  ? "bg-[#5CD284] text-[#0A1C12] shadow-xs font-extrabold"
-                  : "text-gray-300 hover:text-white"
+              onClick={() => handleToggleRole("BUYER")}
+              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                !isSeller
+                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
-              {isSwitching && currentRole !== 'BUYER' && (
-                <RefreshCw className="w-3 h-3 animate-spin" />
-              )}
+              {isSwitching && !isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
               <span>Buyer</span>
             </button>
             <button
               type="button"
               disabled={isSwitching}
-              onClick={() => handleSwitchRole("SELLER")}
-              className={`px-3 sm:px-4 py-1 rounded-full text-[11.5px] sm:text-[12px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                currentRole === 'SELLER'
-                  ? "bg-[#5CD284] text-[#0A1C12] shadow-xs font-extrabold"
-                  : "text-gray-300 hover:text-white"
+              onClick={() => handleToggleRole("SELLER")}
+              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                isSeller
+                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
-              {isSwitching && currentRole !== 'SELLER' && (
-                <RefreshCw className="w-3 h-3 animate-spin" />
-              )}
+              {isSwitching && isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
               <span>Seller</span>
             </button>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5CD284] animate-pulse" />
+            <span>{currentType === 'SIMPLE' ? 'Listings' : 'Realtime'}</span>
           </div>
         </div>
 
@@ -168,8 +211,8 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
               <ChevronDown className="w-3 h-3 opacity-60" />
             </div>
             <div className="absolute top-[120%] ltr:right-0 rtl:left-0 mt-1 w-32 bg-white dark:bg-[#102418] rounded-xl shadow-lg border border-gray-100 dark:border-[#1A3626] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform ltr:origin-top-right rtl:origin-top-left group-hover:scale-100 scale-95 overflow-hidden p-1 z-50">
-              <button onClick={() => switchLanguage('en')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'en' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>English</button>
-              <button onClick={() => switchLanguage('ar')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#c9a14b] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>العربية</button>
+              <button onClick={() => switchLanguage('en')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'en' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>English</button>
+              <button onClick={() => switchLanguage('ar')} className={`w-full text-start px-3 py-2 rounded-lg text-xs font-semibold ${locale === 'ar' ? 'text-[#1A3626] dark:text-[#5CD284] bg-green-50 dark:bg-[#163321]' : 'text-gray-600 dark:text-gray-400'}`}>العربية</button>
             </div>
           </div>
 
@@ -239,7 +282,7 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
                           <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                             notif.type === 'success' ? 'bg-green-500' :
                             notif.type === 'warning' ? 'bg-amber-500' :
-                            'bg-[#1A3626] dark:bg-[#c9a14b]'
+                            'bg-[#1A3626] dark:bg-[#5CD284]'
                           }`} />
                           <div className="flex-1 flex flex-col gap-0.5 pr-8">
                             <span className={`text-[12.5px] font-bold text-gray-900 dark:text-white leading-tight ${notif.read ? 'opacity-60' : ''}`}>

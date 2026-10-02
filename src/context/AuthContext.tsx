@@ -46,7 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshSession = async (): Promise<boolean> => {
     try {
-      await api.post('/auth/refresh');
+      const res = await api.post('/auth/refresh');
+      const newToken = res.data?.token || res.data?.accessToken;
+      if (newToken) {
+        Cookies.set('token', newToken, { expires: 7 });
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', newToken);
+        }
+      }
       return true;
     } catch (err) {
       console.error("Manual session refresh failed", err);
@@ -61,6 +68,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Failed to fetch profile", error);
       Cookies.remove('token');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+      }
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -68,10 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const token = Cookies.get('token');
+    const token = Cookies.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
     if (token) {
       fetchProfile();
     } else {
+      setUser(null);
       setIsLoading(false);
     }
   }, []);
@@ -83,7 +94,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const refreshInterval = setInterval(async () => {
       try {
-        await api.post('/auth/refresh');
+        const res = await api.post('/auth/refresh');
+        const newToken = res.data?.token || res.data?.accessToken;
+        if (newToken) {
+          Cookies.set('token', newToken, { expires: 7 });
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('token', newToken);
+          }
+        }
       } catch (err) {
         console.error("Background token refresh failed", err);
       }

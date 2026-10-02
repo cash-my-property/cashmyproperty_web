@@ -8,7 +8,6 @@ import {
   Users,
   ShieldCheck,
   Bell,
-  ArrowRight,
   Smartphone,
   UserCheck,
   Download,
@@ -46,7 +45,7 @@ export default function AboutPage() {
 
   // Feature Section Icon Mapper
   const getFeatureIcon = (index: number) => {
-    const iconClass = "w-6 h-6 text-[#1A3626] dark:text-[#c9a14b] group-hover:text-white dark:group-hover:text-[#060F0B] transition-colors duration-300";
+    const iconClass = "w-6 h-6 text-[#1A3626] dark:text-[#5CD284] group-hover:text-[#060F0B] dark:group-hover:text-[#060F0B] transition-colors duration-300";
     switch (index) {
       case 0: return <Award className={iconClass} />;
       case 1: return <Zap className={iconClass} />;
@@ -61,10 +60,10 @@ export default function AboutPage() {
   // How It Works Icon Mapper
   const getStepIcon = (index: number) => {
     switch (index) {
-      case 0: return <Download className="w-6 h-6 text-white" />;
-      case 1: return <UserCheck className="w-6 h-6 text-white" />;
-      case 2: return <Smartphone className="w-6 h-6 text-white" />;
-      default: return <Download className="w-6 h-6 text-white" />;
+      case 0: return <Download className="w-6 h-6 text-[#0A1C12]" />;
+      case 1: return <UserCheck className="w-6 h-6 text-[#0A1C12]" />;
+      case 2: return <Smartphone className="w-6 h-6 text-[#0A1C12]" />;
+      default: return <Download className="w-6 h-6 text-[#0A1C12]" />;
     }
   };
 
@@ -79,14 +78,14 @@ export default function AboutPage() {
             backgroundImage: 'url("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80")'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1A3626]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
 
         {/* Glow Effects */}
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-[#5CD284]/15 rounded-full blur-[110px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto flex flex-col items-center">
-          <span className="text-[#5CD284] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[11px] sm:text-[12px] mb-6 uppercase bg-white/10 dark:bg-white/5 px-5 py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm">
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto flex flex-col items-center">
+          <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] sm:text-[12px] mb-6 uppercase bg-white/10 dark:bg-white/5 px-5 py-2 rounded-full backdrop-blur-md border border-white/15 dark:border-white/5 shadow-sm">
             {hero.tagline}
           </span>
           <h1 className="text-white text-[38px] sm:text-[56px] lg:text-[62px] font-bold mb-6 leading-[1.15] tracking-tight max-w-3xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -99,7 +98,7 @@ export default function AboutPage() {
       </section>
 
       {/* 2. EXPERIENCE SECTION */}
-      <section className="py-20 sm:py-28 px-6 lg:px-12 w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
+      <section className="py-20 sm:py-28 px-4 sm:px-6 lg:px-12 w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-16 items-center">
         {/* Left: Premium Image Layout */}
         <div className="w-full lg:w-[48%] relative">
           <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[4/5] bg-gray-100 dark:bg-[#102418]">
@@ -111,8 +110,8 @@ export default function AboutPage() {
           </div>
           {/* Floating badge */}
           <div className="absolute -bottom-6 -right-4 sm:-right-8 bg-white dark:bg-[#102418] p-6 rounded-2xl shadow-2xl border border-gray-100 dark:border-[#1A3626] flex items-center gap-5 w-64 transform hover:scale-105 transition-transform duration-300">
-            <div className="w-14 h-14 bg-green-50 dark:bg-green-950/20 rounded-full flex items-center justify-center shrink-0">
-              <Award className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
+            <div className="w-14 h-14 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center shrink-0 border border-[#5CD284]/30">
+              <Award className="w-7 h-7 text-[#5CD284]" />
             </div>
             <div>
               <h4 className="text-[20px] font-bold text-gray-900 dark:text-white leading-none mb-1">RERA Certified</h4>
@@ -123,8 +122,8 @@ export default function AboutPage() {
 
         {/* Right: Info and stats */}
         <div className="w-full lg:w-[52%] flex flex-col justify-center">
-          <span className="text-[#1A3626] dark:text-[#c9a14b] font-semibold tracking-widest text-[11px] sm:text-[12px] mb-4 uppercase flex items-center gap-2">
-            <span className="w-8 h-px bg-[#1A3626] dark:bg-[#c9a14b]" /> {experience.badge}
+          <span className="text-[#1A3626] dark:text-[#5CD284] font-semibold tracking-widest text-[11px] sm:text-[12px] mb-4 uppercase flex items-center gap-2">
+            <span className="w-8 h-px bg-[#5CD284]" /> {experience.badge}
           </span>
           <h2 className="text-[34px] sm:text-[44px] font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-[1.2]" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {experience.title}
@@ -133,17 +132,17 @@ export default function AboutPage() {
             {experience.description}
           </p>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {experience.cards.map((card: any, idx: number) => (
               <div
                 key={idx}
-                className="flex gap-5 p-6 bg-gray-50 dark:bg-[#102418]/45 rounded-2xl border border-gray-100 dark:border-[#1A3626]/40 hover:border-green-200 dark:hover:border-green-900/40 transition-all duration-300 group"
+                className="flex gap-5 p-6 bg-gray-50 dark:bg-[#102418] rounded-3xl border border-gray-150 dark:border-[#1A3626] hover:border-[#5CD284]/40 transition-all duration-300 group"
               >
-                <div className="text-[28px] font-black text-gray-300 dark:text-gray-700 leading-none shrink-0 group-hover:text-[#5CD284] dark:group-hover:text-[#c9a14b] transition-colors">
+                <div className="text-[28px] font-black text-gray-300 dark:text-gray-700 leading-none shrink-0 group-hover:text-[#5CD284] transition-colors">
                   {card.num}
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-[17px] group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-[17px] group-hover:text-[#5CD284] transition-colors">
                     {card.title}
                   </h3>
                   <p className="text-[14px] text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -157,8 +156,8 @@ export default function AboutPage() {
       </section>
 
       {/* 3. ADVANCED FEATURES SECTION */}
-      <section className="py-24 px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15] border-y border-gray-100 dark:border-gray-900/30 relative">
-        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#c9a14b]/5 rounded-full blur-[100px] pointer-events-none" />
+      <section className="py-24 px-4 sm:px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15] border-y border-gray-100 dark:border-gray-900/30 relative">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-[32px] sm:text-[42px] font-bold text-gray-900 dark:text-white mb-5 tracking-tight leading-[1.2]" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -169,16 +168,16 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {featuresSection.items.map((item: any, idx: number) => (
               <div
                 key={idx}
-                className="flex flex-col bg-white dark:bg-[#102418] p-8 rounded-3xl border border-gray-100 dark:border-[#1A3626] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 group"
+                className="flex flex-col bg-white dark:bg-[#102418] p-8 rounded-3xl border border-gray-150 dark:border-[#1A3626] hover:-translate-y-2 hover:shadow-xl hover:border-[#5CD284]/40 transition-all duration-300 group"
               >
-                <div className="w-14 h-14 bg-green-50 dark:bg-[#c9a14b]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#1A3626] dark:group-hover:bg-[#c9a14b] transition-all duration-300">
+                <div className="w-14 h-14 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#5CD284] transition-all duration-300 border border-[#5CD284]/30">
                   {getFeatureIcon(idx)}
                 </div>
-                <h3 className="text-[19px] font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors">
+                <h3 className="text-[19px] font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#5CD284] transition-colors">
                   {item.title}
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-[14px] leading-relaxed">
@@ -191,7 +190,7 @@ export default function AboutPage() {
       </section>
 
       {/* 4. HOW IT WORKS SECTION */}
-      <section className="py-24 px-6 lg:px-12 w-full max-w-7xl mx-auto text-center">
+      <section className="py-24 px-4 sm:px-6 lg:px-12 w-full max-w-7xl mx-auto text-center">
         <h2 className="text-[32px] sm:text-[42px] font-bold text-gray-900 dark:text-white mb-6 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
           {howItWorks.title}
         </h2>
@@ -201,11 +200,11 @@ export default function AboutPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
           {/* Connecting line */}
-          <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-green-100 via-green-300 to-green-150 dark:from-green-950/40 dark:via-green-900/50 dark:to-green-950/40 z-0" />
+          <div className="hidden md:block absolute top-10 left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-emerald-100 via-[#5CD284]/40 to-emerald-100 dark:from-[#1A3626] dark:via-[#5CD284]/40 dark:to-[#1A3626] z-0" />
 
           {howItWorks.steps.map((step: any, idx: number) => (
             <div key={idx} className="flex flex-col items-center relative z-10 group">
-              <div className="w-20 h-20 bg-[#1A3626] dark:bg-[#c9a14b] rounded-full flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <div className="w-20 h-20 bg-[#5CD284] rounded-full flex items-center justify-center mb-6 shadow-lg shadow-[#5CD284]/20 group-hover:scale-110 transition-transform duration-300">
                 {getStepIcon(idx)}
               </div>
               <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-3">
@@ -220,7 +219,7 @@ export default function AboutPage() {
       </section>
 
       {/* 5. MEET THE FOUNDER SECTION */}
-      <section className="py-24 px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15]/45 border-t border-gray-100 dark:border-gray-900/20">
+      <section className="py-24 px-4 sm:px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15]/45 border-t border-gray-100 dark:border-gray-900/20">
         <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-stretch">
 
           {/* Column 1: Founder Portrait */}
@@ -232,56 +231,56 @@ export default function AboutPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white text-left">
-              <span className="text-[#5CD284] dark:text-[#c9a14b] text-[11px] font-bold uppercase tracking-[0.1em] block mb-1">
+              <span className="text-[#5CD284] text-[11px] font-bold uppercase tracking-[0.1em] block mb-1">
                 {founder.title}
               </span>
               <h4 className="text-[19px] font-bold text-white leading-tight">
                 {founder.name}
               </h4>
-              <p className="text-[13px] text-gray-305 font-medium mt-1">
+              <p className="text-[13px] text-gray-300 font-medium mt-1">
                 Founder, Cash My Property
               </p>
             </div>
           </div>
 
           {/* Column 2: Quote Panel */}
-          <div className="w-full lg:w-[36%] bg-[#1A3626] dark:bg-[#102418] text-white p-8 sm:p-10 rounded-3xl shadow-xl relative overflow-hidden flex flex-col justify-between">
+          <div className="w-full lg:w-[36%] bg-[#1A3626] dark:bg-[#102418] text-white p-8 sm:p-10 rounded-3xl shadow-xl relative overflow-hidden flex flex-col justify-between border border-white/10 dark:border-[#1A3626]">
             <div className="absolute top-0 right-0 transform translate-x-4 -translate-y-4 text-white/5 pointer-events-none">
               <Quote className="w-48 h-48" />
             </div>
 
             <div>
-              <Quote className="w-10 h-10 text-[#5CD284] dark:text-[#c9a14b] mb-6 opacity-80" />
+              <Quote className="w-10 h-10 text-[#5CD284] mb-6 opacity-90" />
               <p className="text-[16px] sm:text-[18px] leading-relaxed italic font-light text-gray-100">
                 "{founder.quote}"
               </p>
             </div>
 
             <div className="mt-6 border-t border-white/10 pt-6">
-              <h4 className="text-[15px] font-semibold text-[#5CD284] dark:text-[#c9a14b]">CMP Executive Leadership</h4>
-              <p className="text-[12px] text-gray-405">Dubai Real Estate Tech Platform</p>
+              <h4 className="text-[15px] font-semibold text-[#5CD284]">CMP Executive Leadership</h4>
+              <p className="text-[12px] text-gray-400">Dubai Real Estate Tech Platform</p>
             </div>
           </div>
 
           {/* Column 3: Mission & Vision Panel */}
           <div className="w-full lg:w-[32%] flex flex-col gap-6 justify-between">
-            <div className="bg-white dark:bg-[#102418] p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]/80 flex gap-4 flex-1">
-              <div className="w-12 h-12 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center shrink-0">
-                <Target className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
+            <div className="bg-white dark:bg-[#102418] p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626] flex gap-4 flex-1">
+              <div className="w-12 h-12 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center shrink-0 border border-[#5CD284]/30">
+                <Target className="w-6 h-6 text-[#5CD284]" />
               </div>
               <div>
                 <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-2">{founder.missionTitle}</h3>
-                <p className="text-[14px] text-gray-550 dark:text-gray-400 leading-relaxed">{founder.missionText}</p>
+                <p className="text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed">{founder.missionText}</p>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-[#102418] p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626]/80 flex gap-4 flex-1">
-              <div className="w-12 h-12 bg-green-50 dark:bg-green-950/20 rounded-2xl flex items-center justify-center shrink-0">
-                <Eye className="w-6 h-6 text-[#1A3626] dark:text-[#c9a14b]" />
+            <div className="bg-white dark:bg-[#102418] p-7 rounded-3xl shadow-sm border border-gray-100 dark:border-[#1A3626] flex gap-4 flex-1">
+              <div className="w-12 h-12 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center shrink-0 border border-[#5CD284]/30">
+                <Eye className="w-6 h-6 text-[#5CD284]" />
               </div>
               <div>
                 <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-2">{founder.visionTitle}</h3>
-                <p className="text-[14px] text-gray-550 dark:text-gray-400 leading-relaxed">{founder.visionText}</p>
+                <p className="text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed">{founder.visionText}</p>
               </div>
             </div>
           </div>
@@ -290,24 +289,24 @@ export default function AboutPage() {
       </section>
 
       {/* 6. CALL TO ACTION & APP DOWNLOAD */}
-      <section className="py-24 px-6 lg:px-12 w-full bg-[#1B3A2D] dark:bg-[#102418] text-white text-center relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5CD284]/10 rounded-full blur-[120px] pointer-events-none" />
+      <section className="py-24 px-4 sm:px-6 lg:px-12 w-full bg-gradient-to-b from-[#1A3626] to-[#102418] dark:from-[#102418] dark:to-[#091711] text-white text-center relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#5CD284]/15 rounded-full blur-[130px] pointer-events-none" />
 
         <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
           <h2 className="text-[28px] sm:text-[38px] font-bold mb-3 tracking-tight">
             {cta.line1}
           </h2>
-          <h3 className="text-[26px] sm:text-[34px] font-medium text-[#5CD284] dark:text-[#c9a14b] mb-12 tracking-tight">
+          <h3 className="text-[26px] sm:text-[34px] font-medium text-[#5CD284] mb-12 tracking-tight">
             {cta.line2}
           </h3>
 
-          <div className="w-full max-w-2xl bg-white/5 backdrop-blur-md p-8 sm:p-10 rounded-3xl border border-white/10 shadow-xl flex flex-col items-center">
+          <div className="w-full max-w-2xl bg-white/10 backdrop-blur-xl p-8 sm:p-10 rounded-3xl border border-white/15 shadow-2xl flex flex-col items-center">
             <h4 className="text-[20px] sm:text-[23px] font-bold mb-3">{download.title}</h4>
-            <p className="text-white/70 text-[14px] sm:text-[15px] mb-8 leading-relaxed max-w-md">
+            <p className="text-white/80 text-[14px] sm:text-[15px] mb-8 leading-relaxed max-w-md">
               {download.description}
             </p>
 
-            <div className="flex flex-wrap justify-center gap-5">
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-5">
               <a
                 href="https://play.google.com/store/apps/details?id=com.cashmyproperty"
                 target="_blank"
@@ -332,7 +331,7 @@ export default function AboutPage() {
       </section>
 
       {/* 7. DELETE YOUR ACCOUNT SECTION */}
-      <section className="py-24 px-6 lg:px-12 w-full max-w-5xl mx-auto">
+      <section className="py-24 px-4 sm:px-6 lg:px-12 w-full max-w-5xl mx-auto">
         <div className="bg-red-50/20 dark:bg-red-950/5 border border-red-100 dark:border-red-950/25 rounded-3xl p-8 sm:p-12 shadow-sm flex flex-col md:flex-row gap-12">
           {/* Description & Steps */}
           <div className="w-full md:w-[60%]">
@@ -352,7 +351,7 @@ export default function AboutPage() {
             <ul className="space-y-3.5">
               {deleteAccount.steps.map((step: string, idx: number) => (
                 <li key={idx} className="flex gap-3 text-[14px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                  <span className="w-5 h-5 bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-450 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold">
+                  <span className="w-5 h-5 bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold">
                     {idx + 1}
                   </span>
                   <span>{step}</span>
@@ -385,7 +384,7 @@ export default function AboutPage() {
               </p>
               <a
                 href="mailto:info@cmpdubai.com"
-                className="w-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#102418] text-center py-3 rounded-xl font-bold text-[14px] hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-all duration-300 flex items-center justify-center gap-2 shadow-xs"
+                className="w-full bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] text-center py-3 rounded-xl font-bold text-[14px] hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-2 shadow-xs"
               >
                 <Mail className="w-4 h-4" />
                 <span>{deleteAccount.contactButton}</span>
@@ -396,7 +395,7 @@ export default function AboutPage() {
       </section>
 
       {/* 8. INTERACTIVE FAQ SECTION */}
-      <section className="py-24 px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15]/20 border-t border-gray-100 dark:border-gray-900/10">
+      <section className="py-24 px-4 sm:px-6 lg:px-12 w-full bg-gray-50 dark:bg-[#0c1e15]/20 border-t border-gray-100 dark:border-gray-900/10">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -413,14 +412,14 @@ export default function AboutPage() {
               return (
                 <div
                   key={idx}
-                  className="bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] overflow-hidden shadow-xs hover:border-green-200 dark:hover:border-green-900/30 transition-colors duration-300"
+                  className="bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] overflow-hidden shadow-xs hover:border-[#5CD284]/40 transition-colors duration-300"
                 >
                   <button
                     onClick={() => toggleFaq(idx)}
-                    className="w-full flex items-center justify-between p-6 sm:p-8 text-left font-bold text-[16px] sm:text-[17px] text-gray-900 dark:text-white gap-4 transition-colors"
+                    className="w-full flex items-center justify-between p-6 sm:p-8 text-left font-bold text-[16px] sm:text-[17px] text-gray-900 dark:text-white gap-4 transition-colors cursor-pointer"
                   >
                     <span>{item.q}</span>
-                    <ChevronDown className={`w-5 h-5 shrink-0 transition-transform duration-300 text-gray-400 dark:text-gray-500 ${isOpen ? "transform rotate-180 text-[#5CD284] dark:text-[#c9a14b]" : ""}`} />
+                    <ChevronDown className={`w-5 h-5 shrink-0 transition-transform duration-300 text-gray-400 dark:text-gray-500 ${isOpen ? "transform rotate-180 text-[#5CD284]" : ""}`} />
                   </button>
                   <div
                     className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-[300px] border-t border-gray-50 dark:border-[#1A3626]/30" : "max-h-0"}`}

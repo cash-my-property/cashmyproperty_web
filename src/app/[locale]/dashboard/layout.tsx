@@ -48,8 +48,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <DashboardHeader onMenuClick={() => setIsMobileMenuOpen(true)} />
         
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-10 w-full overflow-x-hidden">
-          <div className="max-w-6xl mx-auto w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full overflow-x-hidden">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
             {children}
           </div>
         </main>

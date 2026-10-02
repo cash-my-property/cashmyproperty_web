@@ -47,7 +47,7 @@ const EMPTY_SUGGESTIONS: SuggestionState = { locations: [], properties: [], agen
 const TAB_FILTERS: Record<string, string[]> = {
   RENT: ["category", "propertyType", "beds", "baths", "price", "amenities", "furnishing", "rentalPeriod"],
   BUY: ["category", "propertyType", "beds", "baths", "price", "amenities", "area", "furnishing"],
-  NEW_PROJECTS: ["category", "propertyType", "beds", "price", "amenities"],
+  NEW_PROJECTS: ["propertyType", "beds", "price", "amenities", "deliveryDate"],
   AGENTS: ["segment", "propertyType", "language", "nationality"],
 };
 
@@ -77,10 +77,280 @@ const FALLBACK_SEGMENTS: FilterOption[] = [
   { value: "COMMERCIAL_SALE", label: "Commercial For Sale" },
   { value: "COMMERCIAL_RENT", label: "Commercial For Rent" },
 ];
-const FALLBACK_LANGUAGES = toOptions(["English", "Arabic", "Hindi", "Urdu", "Russian", "French", "German", "Spanish"]);
-const FALLBACK_NATIONALITIES = toOptions(["Emirati", "Indian", "British", "Pakistani", "Egyptian", "Russian", "Canadian", "Lebanese"]);
+const FALLBACK_LANGUAGES = toOptions([
+  "Afrikaans",
+  "Albanian",
+  "Arabic",
+  "Armenian",
+  "Azerbaijani",
+  "Bengali",
+  "Bosnian",
+  "Bulgarian",
+  "Chinese (Cantonese)",
+  "Chinese (Mandarin)",
+  "Croatian",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "English",
+  "Farsi (Persian)",
+  "Filipino (Tagalog)",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Greek",
+  "Hebrew",
+  "Hindi",
+  "Hungarian",
+  "Indonesian",
+  "Italian",
+  "Japanese",
+  "Kazakh",
+  "Korean",
+  "Kurdish",
+  "Kyrgyz",
+  "Latvian",
+  "Lithuanian",
+  "Malay",
+  "Malayalam",
+  "Marathi",
+  "Norwegian",
+  "Pashto",
+  "Polish",
+  "Portuguese",
+  "Punjabi",
+  "Romanian",
+  "Russian",
+  "Serbian",
+  "Sinhala",
+  "Slovak",
+  "Spanish",
+  "Swahili",
+  "Swedish",
+  "Tamil",
+  "Telugu",
+  "Thai",
+  "Turkish",
+  "Turkmen",
+  "Ukrainian",
+  "Urdu",
+  "Uzbek",
+  "Vietnamese"
+]);
+const FALLBACK_NATIONALITIES = toOptions([
+  "Afghan",
+  "Albanian",
+  "Algerian",
+  "American",
+  "Andorran",
+  "Angolan",
+  "Argentine",
+  "Armenian",
+  "Australian",
+  "Austrian",
+  "Azerbaijani",
+  "Bahraini",
+  "Bangladeshi",
+  "Belarusian",
+  "Belgian",
+  "Bolivian",
+  "Bosnian",
+  "Brazilian",
+  "British",
+  "Bulgarian",
+  "Canadian",
+  "Chilean",
+  "Chinese",
+  "Colombian",
+  "Croatian",
+  "Cypriot",
+  "Czech",
+  "Danish",
+  "Dutch",
+  "Egyptian",
+  "Emirati",
+  "Estonian",
+  "Ethiopian",
+  "Filipino",
+  "Finnish",
+  "French",
+  "Georgian",
+  "German",
+  "Ghanaian",
+  "Greek",
+  "Hungarian",
+  "Icelandic",
+  "Indian",
+  "Indonesian",
+  "Iranian",
+  "Iraqi",
+  "Irish",
+  "Italian",
+  "Japanese",
+  "Jordanian",
+  "Kazakh",
+  "Kenyan",
+  "Kuwaiti",
+  "Kyrgyz",
+  "Latvian",
+  "Lebanese",
+  "Libyan",
+  "Lithuanian",
+  "Luxembourgish",
+  "Macedonian",
+  "Malaysian",
+  "Maltese",
+  "Mauritian",
+  "Mexican",
+  "Moldovan",
+  "Montenegrin",
+  "Moroccan",
+  "Nepalese",
+  "New Zealander",
+  "Nigerian",
+  "Norwegian",
+  "Omani",
+  "Pakistani",
+  "Palestinian",
+  "Peruvian",
+  "Polish",
+  "Portuguese",
+  "Qatari",
+  "Romanian",
+  "Russian",
+  "Saudi",
+  "Scottish",
+  "Serbian",
+  "Singaporean",
+  "Slovak",
+  "Slovenian",
+  "South African",
+  "South Korean",
+  "Spanish",
+  "Sri Lankan",
+  "Sudanese",
+  "Swedish",
+  "Swiss",
+  "Syrian",
+  "Taiwanese",
+  "Tajik",
+  "Tanzanian",
+  "Thai",
+  "Tunisian",
+  "Turkish",
+  "Turkmen",
+  "Ugandan",
+  "Ukrainian",
+  "Uruguayan",
+  "Uzbek",
+  "Venezuelan",
+  "Vietnamese",
+  "Welsh",
+  "Yemeni",
+  "Zimbabwean"
+]);
+const FALLBACK_DELIVERY_DATES: FilterOption[] = [
+  { value: "READY", label: "Ready" },
+  { value: "2025", label: "2025" },
+  { value: "2026", label: "2026" },
+  { value: "2027", label: "2027" },
+  { value: "2028", label: "2028" },
+  { value: "2029+", label: "2029+" },
+];
 
-const labelOf = (options: FilterOption[], value: string) => options.find((o) => o.value === value)?.label || value;
+import { formatPropertyType } from "@/utils/formatters";
+
+const labelOf = (options: FilterOption[], value: string) => options.find((o) => o.value === value)?.label || formatPropertyType(value);
+
+export const NEW_PROJECTS_PROPERTY_TYPES: FilterOption[] = [
+  { value: "APARTMENT", label: "Apartment" },
+  { value: "PENTHOUSE", label: "Penthouse" },
+  { value: "TOWNHOUSE", label: "Townhouse" },
+  { value: "DUPLEX", label: "Duplex" },
+  { value: "VILLA", label: "Villa" },
+];
+
+export const RESIDENTIAL_PROPERTY_TYPES: FilterOption[] = [
+  { value: "APARTMENT", label: "Apartment" },
+  { value: "VILLA", label: "Villa" },
+  { value: "TOWNHOUSE", label: "Townhouse" },
+  { value: "PENTHOUSE", label: "Penthouse" },
+  { value: "COMPOUND", label: "Compound" },
+  { value: "DUPLEX", label: "Duplex" },
+  { value: "FULL_FLOOR", label: "Full Floor" },
+  { value: "HALF_FLOOR", label: "Half Floor" },
+  { value: "BUILDING", label: "Whole Building" },
+  { value: "LAND", label: "Land" },
+  { value: "BULK_SALE_UNIT", label: "Bulk Sale Unit" },
+  { value: "BUNGALOW", label: "Bungalow" },
+  { value: "HOTEL_APARTMENT", label: "Hotel & Hotel Apartment" },
+];
+
+export const COMMERCIAL_PROPERTY_TYPES: FilterOption[] = [
+  { value: "OFFICES", label: "Office Space" },
+  { value: "RETAIL", label: "Retail" },
+  { value: "SHOP", label: "Shop" },
+  { value: "SHOWROOM", label: "Showroom" },
+  { value: "WAREHOUSE", label: "Warehouse" },
+  { value: "COMMERCIAL_VILLA", label: "Commercial Villa" },
+  { value: "BUILDING", label: "Building" },
+  { value: "WHOLE_BUILDING", label: "Whole Building" },
+  { value: "FULL_FLOOR", label: "Full Floor" },
+  { value: "HALF_FLOOR", label: "Half Floor" },
+  { value: "COMMERCIAL_LAND", label: "Commercial Land" },
+  { value: "LAND", label: "Land" },
+  { value: "BULK_RENT_UNIT", label: "Bulk Rent Unit" },
+  { value: "BULK_SALE_UNIT", label: "Bulk Sale Unit" },
+  { value: "BULK_UNIT", label: "Bulk Unit" },
+  { value: "FACTORY", label: "Factory" },
+  { value: "LABOR_CAMP", label: "Labor Camp" },
+  { value: "STAFF_ACCOMMODATION", label: "Staff Accommodation" },
+  { value: "BUSINESS_CENTRE", label: "Business Centre" },
+  { value: "CO_WORKING_SPACE", label: "Co-working Space" },
+  { value: "COWORKING_SPACE", label: "Co-working Space" },
+  { value: "FARM", label: "Farm" },
+  { value: "HOTEL_APARTMENT", label: "Hotel Apartment" },
+];
+
+export const ALL_PROPERTY_TYPES: FilterOption[] = [
+  ...RESIDENTIAL_PROPERTY_TYPES,
+  ...COMMERCIAL_PROPERTY_TYPES.filter(
+    (c) => !RESIDENTIAL_PROPERTY_TYPES.some((r) => r.value === c.value)
+  ),
+];
+
+export const ALL_AMENITIES: FilterOption[] = [
+  "Balcony",
+  "Barbecue Area",
+  "Built in Wardrobes",
+  "Central A/C",
+  "Covered Parking",
+  "Private Gym",
+  "Private Jacuzzi",
+  "Kitchen Appliances",
+  "Maids Room",
+  "Pets Allowed",
+  "Private Garden",
+  "Private Pool",
+  "Shared Pool",
+  "Study",
+  "View of Water",
+  "Security",
+  "Concierge",
+  "Shared Spa",
+  "Shared Gym",
+  "Maid Service",
+  "Walk-in Closet",
+  "View of Landmark",
+  "Children's Play Area",
+  "Lobby in Building",
+  "Children's Pool",
+  "Vastu-compliant",
+  "Networked",
+  "Dining in building",
+  "Conference room",
+].map((a) => ({ value: a, label: a }));
 
 const summarize = (options: FilterOption[], values: string[], empty: string) => {
   if (values.length === 0) return empty;
@@ -179,6 +449,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const [selectedRentalPeriod, setSelectedRentalPeriod] = useState<string>("");
   const [selectedFurnishing, setSelectedFurnishing] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string[]>([]);
   const [showAllTypes, setShowAllTypes] = useState<boolean>(false);
 
   // Agents specific filter states
@@ -186,6 +457,8 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const [selectedAgentSegment, setSelectedAgentSegment] = useState<string>("RESIDENTIAL_SALE");
   const [selectedAgentLanguage, setSelectedAgentLanguage] = useState<string>("");
   const [selectedAgentNationality, setSelectedAgentNationality] = useState<string>("");
+  const [languageSearchQuery, setLanguageSearchQuery] = useState<string>("");
+  const [nationalitySearchQuery, setNationalitySearchQuery] = useState<string>("");
 
   // Buy specific sub-tabs (All, Off-plan, Ready)
   const [buySubTab, setBuySubTab] = useState<"ALL" | "OFF_PLAN" | "READY">("ALL");
@@ -226,16 +499,41 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const findFilter = (key: string) => activeConfig?.filters.find((f) => f.key === key);
   const optionsOf = (key: string, fallback: FilterOption[] = []) => findFilter(key)?.options || fallback;
 
-  const propertyTypes = optionsOf("propertyType");
-  const amenityOptions = optionsOf("amenities");
+  const fallbackTypes =
+    activeTab === "NEW_PROJECTS"
+      ? NEW_PROJECTS_PROPERTY_TYPES
+      : isAgentTab
+      ? selectedAgentSegment.startsWith("COMMERCIAL")
+        ? COMMERCIAL_PROPERTY_TYPES
+        : RESIDENTIAL_PROPERTY_TYPES
+      : selectedCategory === "COMMERCIAL"
+      ? COMMERCIAL_PROPERTY_TYPES
+      : selectedCategory === "RESIDENTIAL"
+      ? activeTab === "RENT"
+        ? RESIDENTIAL_PROPERTY_TYPES.map((t) => (t.value === "BULK_SALE_UNIT" ? { value: "BULK_RENT_UNIT", label: "Bulk Rent Unit" } : t))
+        : RESIDENTIAL_PROPERTY_TYPES
+      : ALL_PROPERTY_TYPES;
+
+  const propertyTypes =
+    activeTab === "NEW_PROJECTS"
+      ? NEW_PROJECTS_PROPERTY_TYPES
+      : activeTab === "BUY" || activeTab === "RENT"
+      ? fallbackTypes
+      : optionsOf("propertyType", fallbackTypes);
+  const amenityOptions = ALL_AMENITIES;
   const categoryOptions = optionsOf("category", FALLBACK_CATEGORIES);
   const bedOptions = optionsOf("beds", FALLBACK_BEDS);
   const bathOptions = optionsOf("baths", FALLBACK_BATHS);
   const furnishingOptions = optionsOf("furnishing", FALLBACK_FURNISHING);
   const rentalPeriodOptions = optionsOf("rentalPeriod", FALLBACK_RENTAL_PERIODS);
+  const deliveryDateOptions = optionsOf("deliveryDate", FALLBACK_DELIVERY_DATES);
   const segmentOptions = optionsOf("segment", FALLBACK_SEGMENTS);
-  const languageOptions = optionsOf("language", FALLBACK_LANGUAGES);
-  const nationalityOptions = optionsOf("nationality", FALLBACK_NATIONALITIES);
+  const languageOptions = Array.from(
+    new Map([...FALLBACK_LANGUAGES, ...optionsOf("language", [])].map((o) => [o.value, o])).values()
+  ).sort((a, b) => a.label.localeCompare(b.label));
+  const nationalityOptions = Array.from(
+    new Map([...FALLBACK_NATIONALITIES, ...optionsOf("nationality", [])].map((o) => [o.value, o])).values()
+  ).sort((a, b) => a.label.localeCompare(b.label));
   const priceRange = findFilter("price")?.range;
   const areaRange = findFilter("area")?.range;
 
@@ -253,12 +551,13 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
         // Drop selections the new tab / category / plan no longer offers
         const prune = (key: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-          const allowed = filters.find((f) => f.key === key)?.options?.map((o) => o.value);
+          const allowed = (key === "propertyType" ? fallbackTypes : key === "amenities" ? amenityOptions : filters.find((f) => f.key === key)?.options)?.map((o) => o.value);
           if (!allowed) return;
           setter((prev) => (prev.every((v) => allowed.includes(v)) ? prev : prev.filter((v) => allowed.includes(v))));
         };
         prune("propertyType", setSelectedPropertyTypes);
         prune("amenities", setSelectedAmenities);
+        prune("deliveryDate", setSelectedDeliveryDate);
       })
       .catch((err) => console.error("Search filters error:", err));
     return () => {
@@ -266,22 +565,11 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     };
   }, [configKey]);
 
-  // Rebuild the widget from the URL so a refresh / back navigation shows the filters behind the results
+  // Rebuild the widget filters from the URL (without overriding the search bar's active tab)
   const urlKey = searchParams?.toString() || "";
   useEffect(() => {
     if (!showTabs || !searchParams) return;
     const get = (key: string) => searchParams.get(key) || "";
-    const purpose = (get("listingPurpose") || get("purpose")).toUpperCase();
-    const urlTab = get("tab").toUpperCase();
-    const urlPlan = get("propertyPlan").toUpperCase();
-
-    let tab: string | null = null;
-    if (TAB_FILTERS[urlTab]) tab = urlTab;
-    else if (purpose === "RENT") tab = "RENT";
-    else if (purpose === "SALE" || purpose === "BUY") tab = "BUY";
-    else if (urlPlan === "OFF_PLAN") tab = "NEW_PROJECTS";
-    if (tab) setActiveTab(tab);
-    setBuySubTab(tab === "BUY" && (urlPlan === "OFF_PLAN" || urlPlan === "READY") ? urlPlan : "ALL");
 
     setSelectedCategory((get("propertyCategory") || get("category") || "RESIDENTIAL").toUpperCase());
     setSelectedPropertyTypes(csvList(get("propertyType")).map((v) => v.toUpperCase()));
@@ -294,6 +582,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     setSelectedAmenities(csvList(get("amenities")));
     setSelectedFurnishing(csvList(get("furnishing")).map((v) => v.toUpperCase()));
     setSelectedRentalPeriod(get("rentalPeriod").toUpperCase());
+    setSelectedDeliveryDate(csvList(get("deliveryDate") || get("completionYear")));
 
     const location = get("location") || get("propertyLocation");
     if (location) {
@@ -336,6 +625,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     if (hasFilter("amenities")) setCsv("amenities", selectedAmenities);
     if (hasFilter("furnishing")) setCsv("furnishing", selectedFurnishing);
     if (hasFilter("rentalPeriod") && selectedRentalPeriod) params.rentalPeriod = selectedRentalPeriod;
+    if (hasFilter("deliveryDate") && selectedDeliveryDate.length) setCsv("deliveryDate", selectedDeliveryDate);
     return params;
   };
 
@@ -345,19 +635,22 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   // 300ms debounced type-ahead. An empty box that has focus shows popular locations (per the v2 docs);
   // the currently selected filters are sent along so suggestions only cover listings that exist for them.
   useEffect(() => {
-    if (!inputFocused || selectedLocation) return;
+    if (!inputFocused) return;
+    const q = searchQuery.trim();
 
     let cancelled = false;
-    const timer = setTimeout(async () => {
-      try {
-        setIsFetchingSuggestions(true);
-        const res = await api.get("/public/v2/search-suggestions", {
-          params: { tab: apiTab, q: searchQuery.trim(), limit: 5, ...filterParams },
-        });
-        if (cancelled) return;
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      params.append("tab", apiTab);
+      if (q && !selectedLocation) params.append("q", q);
+      Object.entries(filterParams).forEach(([k, v]) => params.append(k, v));
 
-        if (res.data?.success && res.data?.suggestions) {
-          const s = res.data.suggestions;
+      setIsFetchingSuggestions(true);
+      api
+        .get(`/public/v2/search-suggestions?${params.toString()}`)
+        .then((res) => {
+          if (cancelled || !res.data?.success) return;
+          const s = res.data.suggestions || {};
           setSuggestions({
             locations: s.locations || [],
             properties: s.properties || [],
@@ -365,12 +658,11 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             companies: s.companies || [],
           });
           setShowDropdown(true);
-        }
-      } catch (err) {
-        console.error("Autocomplete search error:", err);
-      } finally {
-        setIsFetchingSuggestions(false);
-      }
+        })
+        .catch((err) => console.error("Suggestions error:", err))
+        .finally(() => {
+          if (!cancelled) setIsFetchingSuggestions(false);
+        });
     }, 300);
 
     return () => {
@@ -412,6 +704,12 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     setActiveTab(tabKey);
     setSuggestions(EMPTY_SUGGESTIONS);
     setShowDropdown(false);
+    if (tabKey === "NEW_PROJECTS") {
+      setSelectedCategory("RESIDENTIAL");
+      setSelectedPropertyTypes((prev) =>
+        prev.filter((t) => NEW_PROJECTS_PROPERTY_TYPES.some((np) => np.value === t))
+      );
+    }
   };
 
   const getSearchPlaceholder = () => {
@@ -451,6 +749,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       rentalPeriod: selectedRentalPeriod,
       furnishing: selectedFurnishing,
       amenities: selectedAmenities,
+      deliveryDate: selectedDeliveryDate,
     };
 
     const params = new URLSearchParams();
@@ -508,21 +807,21 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const pillClass = (active: boolean) =>
     `px-4 py-2 rounded-full border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
       active
-        ? "border-[#3D3799] bg-[#EEEDFE] text-[#3D3799] dark:bg-[#163321] dark:text-[#c9a14b]"
+        ? "border-[#5CD284] bg-[#5CD284]/15 text-[#10291B] dark:text-[#5CD284] dark:bg-[#163321]"
         : "border-gray-300 dark:border-[#1A3626] bg-white dark:bg-[#091711] text-gray-700 dark:text-gray-200 hover:border-gray-400"
     }`;
 
   const chipClass = (selected: boolean) =>
     `px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
       selected
-        ? "bg-[#EEEDFE] text-[#3D3799] border border-[#3D3799] dark:bg-[#163321] dark:text-[#c9a14b]"
+        ? "bg-[#5CD284]/15 text-[#10291B] border border-[#5CD284] dark:bg-[#163321] dark:text-[#5CD284] font-bold"
         : "bg-white dark:bg-[#091711] border border-gray-200/90 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 hover:bg-gray-50"
     }`;
 
   const menuItemClass = (selected: boolean) =>
     `w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
       selected
-        ? "bg-[#EEEDFE] text-[#3D3799] dark:bg-[#163321] dark:text-[#c9a14b]"
+        ? "bg-[#5CD284]/15 text-[#10291B] dark:bg-[#163321] dark:text-[#5CD284]"
         : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#163321]"
     }`;
 
@@ -548,7 +847,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       <div
         data-dropdown-popup="true"
         style={{ top: `${dropdownCoords.top}px`, left: `${dropdownCoords.left}px` }}
-        className={`absolute z-[99999] ${widthClass} bg-white dark:bg-[#102418] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-gray-200 dark:border-[#1A3626] ${padding} flex flex-col animate-in fade-in zoom-in-95 duration-150`}
+        className={`absolute z-[99999] ${widthClass} bg-white dark:bg-[#102418] rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-gray-200 dark:border-[#1A3626] ${padding} flex flex-col animate-in fade-in zoom-in-95 duration-150 overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -556,15 +855,36 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       document.body
     );
 
-  const renderApplyButton = (label = "Apply") => (
-    <button
-      type="button"
-      onClick={closeDropdown}
-      className="w-full py-2.5 bg-[#EF3C3C] hover:bg-[#E52E2E] text-white rounded-2xl font-bold text-sm cursor-pointer mt-1"
-    >
-      {label}
-    </button>
-  );
+  const renderApplyButton = (label = "Apply", onClear?: () => void, hasSelected = false) => {
+    if (onClear && hasSelected) {
+      return (
+        <div className="flex items-center gap-2 mt-1">
+          <button
+            type="button"
+            onClick={onClear}
+            className="px-4 py-2.5 rounded-2xl border border-gray-200 dark:border-[#1A3626] text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] transition-all cursor-pointer"
+          >
+            Clear
+          </button>
+          <button
+            type="button"
+            onClick={closeDropdown}
+            className="flex-1 py-2.5 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] rounded-2xl font-bold text-sm transition-all cursor-pointer shadow-sm"
+          >
+            {label}
+          </button>
+        </div>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={closeDropdown}
+        className="w-full py-2.5 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] rounded-2xl font-bold text-sm transition-all cursor-pointer shadow-sm mt-1"
+      >
+        {label}
+      </button>
+    );
 
   const renderLoadingOrEmpty = () => (
     <span className="text-sm text-gray-500 dark:text-gray-400">{activeConfig ? "No options available" : "Loading options..."}</span>
@@ -615,7 +935,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               onClick={() => handleTabClick(tab.key)}
               className={`px-5 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === tab.key
-                  ? "bg-[#EEEDFE] text-[#3D3799] dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm scale-105"
+                  ? "bg-[#5CD284] text-[#0A1C12] shadow-sm scale-105"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
               }`}
             >
@@ -642,7 +962,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                 onClick={() => setBuySubTab(sub.value as any)}
                 className={`pb-2 font-bold text-xs sm:text-sm transition-all cursor-pointer relative ${
                   buySubTab === sub.value
-                    ? "text-[#3D3799] dark:text-[#c9a14b] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#3D3799] dark:after:bg-[#c9a14b]"
+                    ? "text-[#1A3626] dark:text-[#5CD284] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#1A3626] dark:after:bg-[#5CD284]"
                     : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
                 }`}
               >
@@ -660,7 +980,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               onClick={() => setAgentSubTab("AGENTS")}
               className={`pb-2 font-bold text-xs sm:text-sm transition-all cursor-pointer relative ${
                 agentSubTab === "AGENTS"
-                  ? "text-[#3D3799] dark:text-[#c9a14b] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#3D3799] dark:after:bg-[#c9a14b]"
+                  ? "text-[#1A3626] dark:text-[#5CD284] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#1A3626] dark:after:bg-[#5CD284]"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
               }`}
             >
@@ -671,7 +991,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               onClick={() => setAgentSubTab("COMPANIES")}
               className={`pb-2 font-bold text-xs sm:text-sm transition-all cursor-pointer relative ${
                 agentSubTab === "COMPANIES"
-                  ? "text-[#3D3799] dark:text-[#c9a14b] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#3D3799] dark:after:bg-[#c9a14b]"
+                  ? "text-[#1A3626] dark:text-[#5CD284] after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#1A3626] dark:after:bg-[#5CD284]"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium"
               }`}
             >
@@ -680,12 +1000,12 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
           </div>
         )}
 
-        {/* Search Input, Filters Trigger Button & Red Search Button */}
+        {/* Search Input, Filters Trigger Button & Search Button */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
 
           {/* Main Input Field with Autocomplete Suggestions Dropdown */}
           <div className="flex-1 relative w-full">
-            <div className="flex items-center bg-gray-50/90 dark:bg-[#091711] rounded-full px-5 py-3.5 w-full border border-gray-200/80 dark:border-[#1A3626] focus-within:border-[#3D3799] dark:focus-within:border-[#c9a14b] transition-all">
+            <div className="flex items-center bg-gray-50/90 dark:bg-[#091711] rounded-full px-5 py-3.5 w-full border border-gray-200/80 dark:border-[#1A3626] focus-within:border-[#5CD284] dark:focus-within:border-[#5CD284] transition-all">
               <Search className="w-5 h-5 text-gray-400 mr-3 shrink-0" />
               <input
                 type="text"
@@ -733,7 +1053,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               <div
                 data-dropdown-popup="true"
                 onMouseDown={(e) => e.preventDefault()}
-                className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3"
+                className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3 overflow-hidden"
               >
                 {/* Locations Section */}
                 {suggestions.locations.length > 0 && (
@@ -819,10 +1139,10 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            {/* Red Search CTA Button (Property Finder Style) */}
+            {/* Search CTA Button (CPM Brand Green) */}
             <button
               onClick={handleExecuteSearch}
-              className="w-full sm:w-auto px-8 sm:px-9 py-3.5 bg-[#EF3C3C] hover:bg-[#E52E2E] text-white font-bold text-sm sm:text-base rounded-full transition-all duration-300 shadow-md hover:shadow-lg shrink-0 cursor-pointer flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 sm:px-9 py-3.5 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] font-bold text-sm sm:text-base rounded-full transition-all duration-300 shadow-md hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] shrink-0 cursor-pointer flex items-center justify-center gap-2"
             >
               <span>Search</span>
             </button>
@@ -832,7 +1152,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         {/* Quick Filter Pills Row for RENT / BUY / NEW PROJECTS (order follows the v2 filter definitions) */}
         {!isAgentTab && (
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 py-1 pt-2 border-t border-gray-100 dark:border-[#1A3626] relative z-30">
-            {renderPill("category", labelOf(categoryOptions, selectedCategory), true)}
+            {hasFilter("category") && renderPill("category", labelOf(categoryOptions, selectedCategory), true)}
             {renderPill("propertyType", summarize(propertyTypes, selectedPropertyTypes, "Property type"), selectedPropertyTypes.length > 0)}
             {renderPill("bedsBaths", bedsBathsLabel(), selectedBeds.length > 0 || selectedBaths.length > 0)}
             {renderPill(
@@ -853,6 +1173,12 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               )}
             {hasFilter("furnishing") &&
               renderPill("furnishing", summarize(furnishingOptions, selectedFurnishing, "Furnishing"), selectedFurnishing.length > 0)}
+            {hasFilter("deliveryDate") &&
+              renderPill(
+                "deliveryDate",
+                selectedDeliveryDate.length > 0 ? `Delivery (${selectedDeliveryDate.length})` : "Delivery date",
+                selectedDeliveryDate.length > 0
+              )}
           </div>
         )}
 
@@ -871,14 +1197,32 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       {/* INLINE FILTER DROPDOWN POPUPS (Rendered via React Portal onto document.body) */}
       {renderPopup(
         "propertyType",
-        "w-[340px] sm:w-[400px]",
+        activeTab === "NEW_PROJECTS" ? "w-[300px] sm:w-[350px]" : "w-[340px] sm:w-[400px]",
         <>
-          <h4 className="text-base font-bold text-gray-900 dark:text-white">Property type</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-bold text-gray-900 dark:text-white">Property type</h4>
+            {selectedPropertyTypes.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelectedPropertyTypes([])}
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
-          <div className="flex flex-wrap gap-2.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5">
+          <div className="flex flex-wrap gap-2.5 max-h-[340px] overflow-y-auto custom-scrollbar p-0.5 pr-2">
+            <button
+              type="button"
+              onClick={() => setSelectedPropertyTypes([])}
+              className={chipClass(selectedPropertyTypes.length === 0)}
+            >
+              Property type
+            </button>
             {propertyTypes.length === 0
               ? renderLoadingOrEmpty()
-              : (showAllTypes ? propertyTypes : propertyTypes.slice(0, 7)).map((item) => (
+              : (showAllTypes || activeTab === "NEW_PROJECTS" ? propertyTypes : propertyTypes.slice(0, 6)).map((item) => (
                   <button
                     type="button"
                     key={item.value}
@@ -890,17 +1234,17 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                 ))}
           </div>
 
-          {propertyTypes.length > 7 && (
+          {activeTab !== "NEW_PROJECTS" && propertyTypes.length > 6 && (
             <button
               type="button"
               onClick={() => setShowAllTypes(!showAllTypes)}
-              className="self-start text-sm font-bold text-[#3D3799] dark:text-[#c9a14b] border border-[#3D3799]/40 dark:border-[#c9a14b]/40 rounded-2xl px-5 py-2 hover:bg-[#EEEDFE]/40 transition-colors cursor-pointer mt-1"
+              className="self-start text-sm font-bold text-[#1A3626] dark:text-[#5CD284] border border-[#1A3626]/30 dark:border-[#5CD284]/40 rounded-2xl px-5 py-2 hover:bg-gray-100 dark:hover:bg-[#163321]/40 transition-colors cursor-pointer mt-1"
             >
               {showAllTypes ? "View less" : "View more"}
             </button>
           )}
 
-          {renderApplyButton()}
+          {renderApplyButton("Apply", () => setSelectedPropertyTypes([]), selectedPropertyTypes.length > 0)}
         </>
       )}
 
@@ -908,8 +1252,23 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         "bedsBaths",
         "w-80 sm:w-96",
         <>
+          <div className="flex items-center justify-between mb-1">
+            <h4 className="text-base font-bold text-gray-900 dark:text-white">Beds & Baths</h4>
+            {(selectedBeds.length > 0 || selectedBaths.length > 0) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedBeds([]);
+                  setSelectedBaths([]);
+                }}
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <div>
-            <h4 className="text-base font-bold text-gray-900 dark:text-white mb-3">Bedrooms</h4>
+            <h5 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Bedrooms</h5>
             <div className="flex flex-wrap gap-2">
               {bedOptions.map((b) => (
                 <button
@@ -926,7 +1285,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
           {hasFilter("baths") && (
             <div>
-              <label className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider block mb-2.5">Bathrooms</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider block mb-2">Bathrooms</label>
               <div className="flex flex-wrap gap-2">
                 {bathOptions.map((b) => (
                   <button
@@ -942,7 +1301,14 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             </div>
           )}
 
-          {renderApplyButton()}
+          {renderApplyButton(
+            "Apply",
+            () => {
+              setSelectedBeds([]);
+              setSelectedBaths([]);
+            },
+            selectedBeds.length > 0 || selectedBaths.length > 0
+          )}
         </>
       )}
 
@@ -950,26 +1316,41 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         "price",
         "w-[340px] sm:w-[380px]",
         <>
-          <h4 className="text-base font-bold text-gray-900 dark:text-white">Price</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-bold text-gray-900 dark:text-white">Price</h4>
+            {(minPrice || maxPrice || selectedRentalPeriod) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMinPrice("");
+                  setMaxPrice("");
+                  setSelectedRentalPeriod("");
+                }}
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
           {/* Inputs Row with dash separator matching screenshot */}
           <div className="flex items-center gap-3">
             <input
               type="number"
               min={0}
-              placeholder={priceRange ? `Min. ${priceRange.min.toLocaleString()} AED` : "Min. Price (AED)"}
+              placeholder="Min"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#3D3799] placeholder:text-gray-400 font-normal"
+              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
             />
             <span className="text-gray-500 font-bold text-lg">—</span>
             <input
               type="number"
               min={0}
-              placeholder={priceRange ? `Max. ${priceRange.max.toLocaleString()} AED` : "Max. Price (AED)"}
+              placeholder="Max"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#3D3799] placeholder:text-gray-400 font-normal"
+              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
             />
           </div>
 
@@ -992,7 +1373,15 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             </div>
           )}
 
-          {renderApplyButton()}
+          {renderApplyButton(
+            "Apply",
+            () => {
+              setMinPrice("");
+              setMaxPrice("");
+              setSelectedRentalPeriod("");
+            },
+            !!(minPrice || maxPrice || selectedRentalPeriod)
+          )}
         </>
       )}
 
@@ -1001,29 +1390,50 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         "area",
         "w-[320px] sm:w-[360px]",
         <>
-          <h4 className="text-base font-bold text-gray-900 dark:text-white">Area</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-bold text-gray-900 dark:text-white">Area</h4>
+            {(minArea || maxArea) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMinArea("");
+                  setMaxArea("");
+                }}
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             <input
               type="number"
               min={0}
-              placeholder={areaRange ? `Min. ${areaRange.min.toLocaleString()}` : "Min. Area"}
+              placeholder="Min"
               value={minArea}
               onChange={(e) => setMinArea(e.target.value)}
-              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#3D3799] placeholder:text-gray-400 font-normal"
+              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
             />
             <span className="text-gray-500 font-bold text-lg">—</span>
             <input
               type="number"
               min={0}
-              placeholder={areaRange ? `Max. ${areaRange.max.toLocaleString()}` : "Max. Area"}
+              placeholder="Max"
               value={maxArea}
               onChange={(e) => setMaxArea(e.target.value)}
-              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#3D3799] placeholder:text-gray-400 font-normal"
+              className="w-full bg-white dark:bg-[#091711] border border-gray-300 dark:border-[#1A3626] rounded-2xl px-4 py-3 text-sm text-gray-800 dark:text-white outline-none focus:border-[#5CD284] placeholder:text-gray-400 font-normal"
             />
           </div>
 
-          {renderApplyButton()}
+          {renderApplyButton(
+            "Apply",
+            () => {
+              setMinArea("");
+              setMaxArea("");
+            },
+            !!(minArea || maxArea)
+          )}
         </>
       )}
 
@@ -1037,13 +1447,13 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               <button
                 type="button"
                 onClick={() => setSelectedAmenities([])}
-                className="text-[11px] font-bold text-rose-500 hover:underline"
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
               >
                 Clear all
               </button>
             )}
           </div>
-          <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto custom-scrollbar p-1">
+          <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto custom-scrollbar p-1 pr-2">
             {amenityOptions.length === 0
               ? renderLoadingOrEmpty()
               : amenityOptions.map((amenity) => {
@@ -1055,17 +1465,21 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                       onClick={() => toggleIn(setSelectedAmenities, amenity.value)}
                       className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all cursor-pointer flex items-center gap-1 ${
                         isSelected
-                          ? "bg-[#EEEDFE] text-[#3D3799] border-[#3D3799] dark:bg-[#163321] dark:text-[#c9a14b] font-bold"
+                          ? "bg-[#5CD284]/15 text-[#10291B] border-[#5CD284] dark:bg-[#163321] dark:text-[#5CD284] font-bold"
                           : "bg-gray-50 dark:bg-[#091711] border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 hover:bg-gray-100"
                       }`}
                     >
                       <span>{amenity.label}</span>
-                      {isSelected && <Check className="w-3 h-3 text-[#3D3799] dark:text-[#c9a14b]" />}
+                      {isSelected && <Check className="w-3 h-3 text-[#1A3626] dark:text-[#5CD284]" />}
                     </button>
                   );
                 })}
           </div>
-          {renderApplyButton(`Apply (${selectedAmenities.length} selected)`)}
+          {renderApplyButton(
+            `Apply (${selectedAmenities.length} selected)`,
+            () => setSelectedAmenities([]),
+            selectedAmenities.length > 0
+          )}
         </>
       )}
 
@@ -1073,7 +1487,18 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         "furnishing",
         "w-80",
         <>
-          <h4 className="text-base font-bold text-gray-900 dark:text-white">Furnishing</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-bold text-gray-900 dark:text-white">Furnishing</h4>
+            {selectedFurnishing.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelectedFurnishing([])}
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             {furnishingOptions.map((item) => (
               <button
@@ -1086,7 +1511,45 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               </button>
             ))}
           </div>
-          {renderApplyButton()}
+          {renderApplyButton("Apply", () => setSelectedFurnishing([]), selectedFurnishing.length > 0)}
+        </>
+      )}
+
+      {renderPopup(
+        "deliveryDate",
+        "w-[340px] sm:w-[380px]",
+        <>
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-bold text-gray-900 dark:text-white">Delivery date</h4>
+            {selectedDeliveryDate.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSelectedDeliveryDate([])}
+                className="text-xs font-bold text-gray-500 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2.5 p-0.5">
+            {deliveryDateOptions.map((item) => (
+              <button
+                type="button"
+                key={item.value}
+                onClick={() => toggleIn(setSelectedDeliveryDate, item.value)}
+                className={chipClass(selectedDeliveryDate.includes(item.value))}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          {renderApplyButton(
+            selectedDeliveryDate.length > 0 ? `Apply (${selectedDeliveryDate.length} selected)` : "Apply",
+            () => setSelectedDeliveryDate([]),
+            selectedDeliveryDate.length > 0
+          )}
         </>
       )}
 
@@ -1134,44 +1597,162 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
       {renderPopup(
         "agentLanguage",
-        "w-56",
+        "w-64",
         <>
-          {[{ value: "", label: "All Languages" }, ...languageOptions].map((lang) => (
-            <button
-              key={lang.value || "all"}
-              type="button"
-              onClick={() => {
-                setSelectedAgentLanguage(lang.value);
-                closeDropdown();
-              }}
-              className={menuItemClass(selectedAgentLanguage === lang.value)}
-            >
-              {lang.label}
-            </button>
-          ))}
+          <div className="p-2 border-b border-gray-100 dark:border-[#1A3626]">
+            <input
+              type="text"
+              value={languageSearchQuery}
+              onChange={(e) => setLanguageSearchQuery(e.target.value)}
+              placeholder="Search language..."
+              className="w-full px-3 py-1.5 rounded-xl text-xs bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="p-1.5 pr-2 max-h-72 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+            {!languageSearchQuery && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentLanguage("");
+                    setLanguageSearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentLanguage === "")}
+                >
+                  All Languages
+                </button>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Popular
+                </div>
+                <div className="flex flex-wrap gap-1 px-1.5 pb-2">
+                  {["English", "Arabic", "Russian", "French", "Hindi", "Urdu", "German", "Spanish"].map((popLang) => (
+                    <button
+                      key={popLang}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAgentLanguage(popLang);
+                        setLanguageSearchQuery("");
+                        closeDropdown();
+                      }}
+                      className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                        selectedAgentLanguage === popLang
+                          ? "bg-[#5CD284] text-[#0A1C12] font-semibold"
+                          : "bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1A3626]"
+                      }`}
+                    >
+                      {popLang}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100 dark:border-[#1A3626]">
+                  All Languages (A-Z)
+                </div>
+              </>
+            )}
+            {languageOptions
+              .filter((lang) => lang.label.toLowerCase().includes(languageSearchQuery.toLowerCase()))
+              .map((lang) => (
+                <button
+                  key={lang.value || "all"}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentLanguage(lang.value);
+                    setLanguageSearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentLanguage === lang.value)}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            {languageOptions.filter((lang) => lang.label.toLowerCase().includes(languageSearchQuery.toLowerCase())).length === 0 && (
+              <div className="p-3 text-center text-xs text-gray-400">No language found</div>
+            )}
+          </div>
         </>,
-        "p-2 gap-1 max-h-72 overflow-y-auto custom-scrollbar"
+        "p-0 gap-0"
       )}
 
       {renderPopup(
         "agentNationality",
-        "w-56",
+        "w-64",
         <>
-          {[{ value: "", label: "All Nationalities" }, ...nationalityOptions].map((nat) => (
-            <button
-              key={nat.value || "all"}
-              type="button"
-              onClick={() => {
-                setSelectedAgentNationality(nat.value);
-                closeDropdown();
-              }}
-              className={menuItemClass(selectedAgentNationality === nat.value)}
-            >
-              {nat.label}
-            </button>
-          ))}
+          <div className="p-2 border-b border-gray-100 dark:border-[#1A3626]">
+            <input
+              type="text"
+              value={nationalitySearchQuery}
+              onChange={(e) => setNationalitySearchQuery(e.target.value)}
+              placeholder="Search nationality..."
+              className="w-full px-3 py-1.5 rounded-xl text-xs bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white outline-none focus:border-[#5CD284]"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="p-1.5 pr-2 max-h-72 overflow-y-auto custom-scrollbar flex flex-col gap-0.5">
+            {!nationalitySearchQuery && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentNationality("");
+                    setNationalitySearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentNationality === "")}
+                >
+                  All Nationalities
+                </button>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  Popular
+                </div>
+                <div className="flex flex-wrap gap-1 px-1.5 pb-2">
+                  {["Emirati", "British", "Pakistani", "Indian", "Egyptian", "Russian", "Lebanese", "French", "Canadian"].map((popNat) => (
+                    <button
+                      key={popNat}
+                      type="button"
+                      onClick={() => {
+                        setSelectedAgentNationality(popNat);
+                        setNationalitySearchQuery("");
+                        closeDropdown();
+                      }}
+                      className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                        selectedAgentNationality === popNat
+                          ? "bg-[#5CD284] text-[#0A1C12] font-semibold"
+                          : "bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1A3626]"
+                      }`}
+                    >
+                      {popNat}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100 dark:border-[#1A3626]">
+                  All Nationalities (A-Z)
+                </div>
+              </>
+            )}
+            {nationalityOptions
+              .filter((nat) => nat.label.toLowerCase().includes(nationalitySearchQuery.toLowerCase()))
+              .map((nat) => (
+                <button
+                  key={nat.value || "all"}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAgentNationality(nat.value);
+                    setNationalitySearchQuery("");
+                    closeDropdown();
+                  }}
+                  className={menuItemClass(selectedAgentNationality === nat.value)}
+                >
+                  {nat.label}
+                </button>
+              ))}
+            {nationalityOptions.filter((nat) => nat.label.toLowerCase().includes(nationalitySearchQuery.toLowerCase())).length === 0 && (
+              <div className="p-3 text-center text-xs text-gray-400">No nationality found</div>
+            )}
+          </div>
         </>,
-        "p-2 gap-1 max-h-72 overflow-y-auto custom-scrollbar"
+        "p-0 gap-0"
       )}
 
     </div>

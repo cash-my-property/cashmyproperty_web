@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
@@ -9,60 +9,215 @@ import {
   Clock, 
   Eye, 
   Share2, 
-  CheckCircle2, 
-  Sparkles,
-  TrendingUp,
-  Link2,
-  ArrowRight
+  Sparkles, 
+  ArrowLeft, 
+  ArrowRight, 
+  Tag, 
+  Check, 
+  Copy, 
+  BookOpen, 
+  MessageCircle, 
+  Loader2 
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
-import { content as staticContent } from "@/config/content";
+import api from "@/lib/api";
+import axios from "axios";
+import { formatBlogDate } from "@/utils/formatters";
+
+const TwitterIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" /></svg>
+);
+
+const LinkedinIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
+);
+
+const FacebookIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+);
+
+interface BlogDetail {
+  _id: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  coverImage?: {
+    url?: string | null;
+    public_id?: string | null;
+  } | null;
+  category?: string | null;
+  tags?: string[];
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  publishedAt?: string;
+  readTimeMinutes?: number;
+  viewsCount?: number;
+  authorName?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export default function BlogDetailPage({ params }: { params: Promise<{ id: string; locale: string }> }) {
   const resolvedParams = use(params);
-  const { locale } = useDictionary();
+  const { dict, locale } = useDictionary();
+  const slug = resolvedParams.id;
 
-  const paramVal = resolvedParams.id;
+  const blogDict = dict.blog || {};
+  const mainDict = blogDict.main || {};
 
-  // Find post by keyword slug OR numeric id with safe fallback
-  const blogPosts = staticContent.blog.main.posts;
-  const currentPost = blogPosts.find(p => (p as any).slug === paramVal || String(p.id) === paramVal) || blogPosts[0];
+  const [blog, setBlog] = useState<BlogDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isNotFound, setIsNotFound] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // Extended mock data for rich article rendering
-  const articleData = {
-    ...currentPost,
-    author: {
-      name: "Tariq Al-Mansoor",
-      role: "Senior Real Estate Market Analyst",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-      bio: "Tariq specializes in Dubai prop-tech innovations, RERA compliance regulations, and UAE institutional real estate investment strategies."
-    },
-    readTime: "5 min read",
-    views: "2,420 views",
-    heroImage: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2075&q=80",
-    quote: "The integration of real-time verified buyer offers and instant digital valuation is not just optimizing property transactions in Dubai — it is setting a worldwide benchmark for speed and trust.",
-    keyTakeaways: [
-      "Real-time offer mechanisms reduce standard closing negotiation times by up to 60%.",
-      "RERA-certified broker verification creates a secure, fraud-free ecosystem for buyers and sellers.",
-      "Digital undertaking documentation streamlines legal compliance and escrow deposits.",
-      "Transparent pricing feeds provide immediate valuation signals across high-demand Dubai districts."
-    ]
+  const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+
+  // Guard to ensure single fetch per slug
+  const fetchedSlugRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (fetchedSlugRef.current === slug) return;
+    fetchedSlugRef.current = slug;
+
+    let isMounted = true;
+
+    async function loadBlog() {
+      setIsLoading(true);
+      setIsNotFound(false);
+
+      try {
+        const res = await axios.get(`${API_URL}/public/blogs/${encodeURIComponent(slug)}`);
+        const data: BlogDetail = res.data?.data;
+        if (!data || !data._id) {
+          if (isMounted) setIsNotFound(true);
+          return;
+        }
+
+        if (isMounted) {
+          setBlog(data);
+
+          // Update dynamic document title if in browser
+          if (typeof document !== 'undefined') {
+            document.title = data.metaTitle || `${data.title} | Cash My Property`;
+          }
+        }
+      } catch (err: any) {
+        console.error("Failed to load blog detail:", err);
+        if (isMounted) setIsNotFound(true);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    loadBlog();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug, API_URL]);
+
+  // Handle Share Copy
+  const handleCopyLink = () => {
+    if (typeof window === "undefined") return;
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
-  const relatedPosts = blogPosts.filter(p => p.id !== currentPost.id);
+  // Social Share Handlers
+  const handleSocialShare = (platform: "twitter" | "linkedin" | "facebook" | "whatsapp") => {
+    if (typeof window === "undefined" || !blog) return;
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(blog.title);
+
+    let shareUrl = "";
+    switch (platform) {
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+        break;
+      case "linkedin":
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        break;
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        break;
+      case "whatsapp":
+        shareUrl = `https://api.whatsapp.com/send?text=${title}%20${url}`;
+        break;
+    }
+    window.open(shareUrl, "_blank", "noopener,noreferrer");
+  };
+
+  // Loading Skeleton State
+  if (isLoading) {
+    return (
+      <main className="flex-1 flex flex-col bg-[#F4F5F7] dark:bg-[#091711] transition-colors min-h-screen pt-32 pb-24">
+        <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 animate-pulse space-y-8">
+          <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-full w-32" />
+          <div className="h-12 bg-gray-200 dark:bg-[#163321] rounded-2xl w-4/5" />
+          <div className="h-5 bg-gray-200 dark:bg-[#163321] rounded w-2/3" />
+          <div className="h-10 bg-gray-200 dark:bg-[#163321] rounded-xl w-1/2" />
+          <div className="w-full h-[380px] bg-gray-200 dark:bg-[#163321] rounded-3xl" />
+          <div className="space-y-4">
+            <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded w-full" />
+            <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded w-5/6" />
+            <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded w-3/4" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Not Found State (404)
+  if (isNotFound || !blog) {
+    return (
+      <main className="flex-1 flex flex-col items-center justify-center bg-[#F4F5F7] dark:bg-[#091711] transition-colors min-h-[70vh] px-4 py-32">
+        <div className="text-center bg-white dark:bg-[#102418] p-8 sm:p-12 rounded-3xl border border-gray-200 dark:border-[#1A3626] shadow-xl max-w-md w-full">
+          <div className="w-16 h-16 bg-[#5CD284]/15 text-[#5CD284] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <BookOpen className="w-8 h-8" />
+          </div>
+          <h1 
+            className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
+            {mainDict.notFoundTitle || "Article Not Found"}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+            {mainDict.notFoundDesc || "The blog post you're looking for does not exist, has been unpublished, or is temporarily unavailable."}
+          </p>
+          <Link
+            href={`/${locale}/blog`}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity w-full shadow-md"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{mainDict.backToBlogs || "Back to All Articles"}</span>
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const formattedDate = formatBlogDate(blog.publishedAt, locale);
+  const readTimeStr = blog.readTimeMinutes 
+    ? `${blog.readTimeMinutes} ${mainDict.minRead || "min read"}` 
+    : `4 ${mainDict.minRead || "min read"}`;
+  const isSuperAdmin = !blog.authorName || ["super admin", "admin"].includes(blog.authorName.trim().toLowerCase());
+  const authorName: string = isSuperAdmin ? "CMP Editorial Team" : (blog.authorName || "CMP Editorial Team");
+  const coverUrl = blog.coverImage?.url;
 
   // Schema.org BlogPosting JSON-LD for Google Crawler Search Engine Optimization
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": currentPost.title,
-    "description": currentPost.excerpt,
-    "image": [articleData.heroImage],
-    "datePublished": currentPost.date,
+    "headline": blog.title,
+    "description": blog.excerpt || blog.metaDescription,
+    "image": coverUrl ? [coverUrl] : [],
+    "datePublished": blog.publishedAt,
+    "dateModified": blog.updatedAt || blog.publishedAt,
     "author": {
       "@type": "Person",
-      "name": articleData.author.name,
-      "jobTitle": articleData.author.role
+      "name": authorName
     },
     "publisher": {
       "@type": "Organization",
@@ -74,337 +229,191 @@ export default function BlogDetailPage({ params }: { params: Promise<{ id: strin
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://cashmyproperty.com/${locale}/blog/${(currentPost as any).slug || currentPost.id}`
+      "@id": `https://cashmyproperty.com/${locale}/blog/${blog.slug}`
     }
   };
 
   return (
-    <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen pt-20 sm:pt-24">
+    <main className="flex-1 flex flex-col bg-[#F4F5F7] dark:bg-[#091711] transition-colors min-h-screen pt-28 sm:pt-32 pb-24">
       
-      {/* GOOGLE CRAWLER SCHEMA.ORG JSON-LD FOR SEARCH ENGINE OPTIMIZATION */}
+      {/* Schema.org SEO */}
       <Script
         id="json-ld-blog"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 1. HERO ARTICLE HEADER */}
-      <section className="pt-10 pb-8 px-6 lg:px-12 max-w-5xl mx-auto w-full">
-        <div className="flex flex-col gap-6">
-          
-          {/* Category Badge */}
-          <div className="flex items-center gap-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#1A3626]/10 dark:bg-[#c9a14b]/15 text-[#1A3626] dark:text-[#c9a14b] border border-[#1A3626]/20 dark:border-[#c9a14b]/30">
-              {currentPost.category}
-            </span>
-            <span className="text-xs font-medium text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" /> {articleData.readTime}
-            </span>
+      {/* ARTICLE WRAPPER */}
+      <article className="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+        
+        {/* Top Breadcrumb Link */}
+        <div className="mb-8">
+          <Link 
+            href={`/${locale}/blog`}
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#1A3626] dark:text-[#5CD284] hover:underline group"
+          >
+            {locale === "ar" ? (
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            ) : (
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            )}
+            <span>{mainDict.backToBlogs || "Back to All Articles"}</span>
+          </Link>
+        </div>
+
+        {/* 1. ARTICLE HEADER */}
+        <header className="mb-8 space-y-5">
+          {/* Category & Read Time Pills */}
+          <div className="flex flex-wrap items-center gap-3">
+            {blog.category && (
+              <span className="px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] border border-[#1A3626]/20 dark:border-[#5CD284]/30">
+                {blog.category}
+              </span>
+            )}
+
+            <div className="flex items-center gap-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#5CD284]" />
+                {readTimeStr}
+              </span>
+              {typeof blog.viewsCount === "number" && blog.viewsCount > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-gray-400" />
+                  {blog.viewsCount} {mainDict.views || "views"}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Article H1 Title (Primary SEO Heading) */}
+          {/* H1 Title */}
           <h1 
-            className="text-[32px] sm:text-[46px] lg:text-[54px] font-bold text-gray-900 dark:text-white leading-[1.15] tracking-tight"
+            className="text-[30px] sm:text-[44px] lg:text-[50px] font-extrabold text-gray-900 dark:text-white leading-[1.15] tracking-tight"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
-            {currentPost.title}
+            {blog.title}
           </h1>
 
           {/* Subtitle / Excerpt */}
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 font-light leading-relaxed">
-            {currentPost.excerpt}
-          </p>
+          {blog.excerpt && (
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-normal leading-relaxed">
+              {blog.excerpt}
+            </p>
+          )}
 
-          {/* Author & Metadata Row */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-gray-200/80 dark:border-[#1A3626]">
-            
+          {/* Author & Published Date Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-6 pb-2 border-t border-gray-200/80 dark:border-[#1A3626]">
             <div className="flex items-center gap-3">
-              <img 
-                src={articleData.author.avatar} 
-                alt={articleData.author.name}
-                className="w-12 h-12 rounded-full object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
-              />
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1A3626] to-[#5CD284] flex items-center justify-center text-white font-bold text-sm shadow-md">
+                {authorName.charAt(0)}
+              </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-gray-900 dark:text-white">{articleData.author.name}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{articleData.author.role}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">{authorName}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">CMP Market Research & Editorial</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-5 text-xs text-gray-500 dark:text-gray-400 font-semibold">
-              <span className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
-                {currentPost.date}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Eye className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" />
-                {articleData.views}
-              </span>
+            <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400">
+              <Calendar className="w-4 h-4 text-[#5CD284]" />
+              <span>{formattedDate}</span>
             </div>
-
           </div>
+        </header>
 
-        </div>
-      </section>
+        {/* 2. COVER / HERO IMAGE */}
+        {coverUrl && (
+          <div className="relative w-full aspect-[16/9] max-h-[460px] rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-[#1A3626] mb-10 bg-gray-900">
+            <Image
+              src={coverUrl}
+              alt={blog.title}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 896px"
+              className="object-cover"
+            />
+          </div>
+        )}
 
-      {/* 2. FEATURED COVER GRAPHIC BANNER */}
-      <section className="px-6 lg:px-12 max-w-6xl mx-auto w-full mb-12">
-        <div className="relative h-[300px] sm:h-[450px] lg:h-[520px] w-full rounded-3xl overflow-hidden shadow-2xl border border-gray-100 dark:border-[#1A3626] group">
-          <Image 
-            src={articleData.heroImage} 
-            alt={currentPost.title}
-            fill
-            priority
-            sizes="(max-width: 1200px) 100vw, 1200px"
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
+        {/* 3. RICH TEXT HTML CONTENT */}
+        <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-10 lg:p-12 shadow-sm border border-gray-100 dark:border-[#1A3626] mb-10">
+          <div 
+            className="blog-content"
+            dangerouslySetInnerHTML={{ __html: blog.content || "<p>No content available for this article.</p>" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-6 left-6 right-6 text-white text-xs font-medium flex items-center justify-between">
-            <span className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-              Dubai Real Estate & Prop-Tech Insights
-            </span>
-          </div>
-        </div>
-      </section>
 
-      {/* 3. MAIN ARTICLE CONTENT & SIDEBAR (Structured HTML5 <article> & <aside>) */}
-      <section className="px-6 lg:px-12 max-w-6xl mx-auto w-full pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
-          {/* Main Article Body (8 Cols) */}
-          <article className="lg:col-span-8 flex flex-col gap-8">
-            
-            {/* Intro Paragraph */}
-            <div className="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg">
-              <p>
-                The Dubai real estate ecosystem has undergone a remarkable evolution over the past decade. What was once a market reliant heavily on manual listings, protracted negotiations, and fragmented broker communications is now rapidly transitioning towards structured, transparent, and technology-driven transaction platforms.
-              </p>
-              
-              <p className="mt-4">
-                At the forefront of this digital shift is Cash My Property (CMP) — a dedicated platform engineered specifically for RERA-certified brokers, buyers, and sellers looking for speed, security, and verified market valuation.
-              </p>
-            </div>
-
-            {/* Featured Quote Callout Box */}
-            <blockquote className="bg-gradient-to-r from-green-50/80 to-amber-50/50 dark:from-[#163321]/60 dark:to-[#091711] p-6 sm:p-8 rounded-3xl border-l-4 border-[#1A3626] dark:border-[#c9a14b] shadow-md my-2">
-              <div className="flex items-start gap-4">
-                <Sparkles className="w-8 h-8 text-[#1A3626] dark:text-[#c9a14b] shrink-0 mt-1" />
-                <div>
-                  <p className="text-base sm:text-xl font-bold text-gray-900 dark:text-white italic leading-relaxed" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                    "{articleData.quote}"
-                  </p>
-                  <cite className="block mt-3 text-xs font-bold uppercase tracking-wider text-[#1A3626] dark:text-[#5CD284] not-italic">
-                    — {articleData.author.name}, {articleData.author.role}
-                  </cite>
-                </div>
-              </div>
-            </blockquote>
-
-            {/* Section 2: Key Takeaways Card */}
-            <div className="bg-white dark:bg-[#102418] p-6 sm:p-8 rounded-3xl border border-gray-200 dark:border-[#1A3626] shadow-sm">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2.5">
-                <CheckCircle2 className="w-6 h-6 text-[#1A3626] dark:text-[#5CD284]" />
-                <span>Key Takeaways & Industry Impact</span>
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {articleData.keyTakeaways.map((point, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3.5 bg-gray-50 dark:bg-[#091711] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
-                    <span className="w-6 h-6 rounded-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                      {idx + 1}
-                    </span>
-                    <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 leading-snug">
-                      {point}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Section 3: Deep Dive Content */}
-            <div className="flex flex-col gap-6 text-gray-700 dark:text-gray-300 leading-relaxed">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                Why Verification & RERA Compliance Matter More Than Ever
-              </h2>
-
-              <p>
-                In high-velocity real estate hubs like Dubai, transaction integrity is non-negotiable. Traditional offline offer processes often suffer from unverified bids, phantom buyers, or delayed paperwork. By mandating Broker Registration Number (BRN) verification and structured undertaking documentation, property sellers gain absolute clarity on every inquiry.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
-                {[
-                  { label: "Average Deal Time", val: "< 48 Hours", desc: "For live buyer offers" },
-                  { label: "Verified Brokers", val: "100% RERA", desc: "Strict onboarding policy" },
-                  { label: "Transaction Safety", val: "Bank-grade", desc: "Escrow & legal documentation" },
-                ].map((stat, i) => (
-                  <div key={i} className="p-5 rounded-2xl bg-white dark:bg-[#102418] border border-gray-100 dark:border-[#1A3626] text-center shadow-xs">
-                    <span className="text-2xl font-extrabold text-[#1A3626] dark:text-[#c9a14b] block mb-1">{stat.val}</span>
-                    <span className="text-xs font-bold text-gray-900 dark:text-white block">{stat.label}</span>
-                    <span className="text-[11px] text-gray-400 dark:text-gray-500 block mt-0.5">{stat.desc}</span>
-                  </div>
-                ))}
-              </div>
-
-              <p>
-                As we move into the second half of 2026, the demand for digital offers and real-time fixed price listings will continue to surge. Agents who leverage integrated digital tools will remain steps ahead of traditional brokerages.
-              </p>
-            </div>
-
-            {/* Social Share Bar */}
-            <div className="pt-6 border-t border-gray-200 dark:border-[#1A3626] flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-2">
-                <Share2 className="w-4 h-4 text-gray-400" />
-                <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Share Article</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => {
-                    if (typeof window !== 'undefined' && navigator.clipboard) {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}
-                  className="px-4 py-2.5 rounded-full bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-200 hover:bg-[#1A3626] hover:text-white dark:hover:bg-[#c9a14b] dark:hover:text-[#1A3626] transition-all cursor-pointer shadow-xs text-xs font-bold flex items-center gap-2"
+          {/* Tags List */}
+          {Array.isArray(blog.tags) && blog.tags.length > 0 && (
+            <div className="mt-10 pt-6 border-t border-gray-100 dark:border-[#1A3626] flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mr-2">
+                <Tag className="w-3.5 h-3.5" /> Tags:
+              </span>
+              {blog.tags.map((tag, idx) => (
+                <Link
+                  key={idx}
+                  href={`/${locale}/blog?search=${encodeURIComponent(tag)}`}
+                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-[#1A3626] hover:text-white dark:hover:bg-[#5CD284] dark:hover:text-[#0A1C12] transition-colors"
                 >
-                  <Link2 className="w-4 h-4" />
-                  <span>Copy Article Link</span>
-                </button>
-              </div>
+                  #{tag}
+                </Link>
+              ))}
             </div>
+          )}
 
-          </article>
+          {/* Social Share Bar */}
+          <div className="mt-8 pt-6 border-t border-gray-100 dark:border-[#1A3626] flex flex-wrap items-center justify-between gap-4">
+            <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
+              {mainDict.shareArticle || "Share this article"}
+            </span>
 
-          {/* Sidebar Widgets (4 Cols) */}
-          <aside className="lg:col-span-4 flex flex-col gap-8">
-            
-            {/* Author Profile Card */}
-            <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <img 
-                  src={articleData.author.avatar} 
-                  alt={articleData.author.name}
-                  className="w-14 h-14 rounded-full object-cover border-2 border-[#1A3626] dark:border-[#c9a14b]"
-                />
-                <div>
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white">{articleData.author.name}</h3>
-                  <span className="text-xs text-[#1A3626] dark:text-[#5CD284] font-semibold">{articleData.author.role}</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                {articleData.author.bio}
-              </p>
-            </div>
-
-            {/* Newsletter CTA Widget */}
-            <div className="bg-gradient-to-br from-[#1A3626] to-[#091711] dark:from-[#102418] dark:to-[#091711] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] text-white shadow-xl flex flex-col gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-white/10 dark:bg-[#c9a14b]/20 flex items-center justify-center text-[#5CD284] dark:text-[#c9a14b]">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold mb-1" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                  Stay Ahead in Dubai Real Estate
-                </h3>
-                <p className="text-xs text-white/70 leading-relaxed">
-                  Subscribe to receive weekly market intelligence and verified listing updates directly to your inbox.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 mt-2">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/50 text-xs outline-none focus:border-[#5CD284]"
-                />
-                <button className="w-full py-2.5 bg-[#5CD284] dark:bg-[#c9a14b] text-[#1A3626] font-bold text-xs rounded-xl hover:opacity-90 transition-opacity cursor-pointer shadow-md">
-                  Subscribe Now
-                </button>
-              </div>
-            </div>
-
-            {/* Related Articles Widget */}
-            <div className="bg-white dark:bg-[#102418] p-6 rounded-3xl border border-gray-100 dark:border-[#1A3626] shadow-sm flex flex-col gap-4">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-[#1A3626]">
-                Related Articles
-              </h3>
-
-              <div className="flex flex-col gap-4">
-                {relatedPosts.map((post) => (
-                  <Link 
-                    key={post.id}
-                    href={`/${locale}/blog/${(post as any).slug || post.id}`}
-                    className="flex flex-col gap-1 group"
-                  >
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#1A3626] dark:text-[#c9a14b]">
-                      {post.category}
-                    </span>
-                    <h4 className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors leading-snug line-clamp-2">
-                      {post.title}
-                    </h4>
-                    <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
-                      {post.date}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-          </aside>
-
-        </div>
-      </section>
-
-      {/* 4. BOTTOM MORE ARTICLES CAROUSEL/GRID */}
-      <section className="py-16 px-6 lg:px-12 bg-white dark:bg-[#102418] border-t border-gray-100 dark:border-[#1A3626]">
-        <div className="max-w-6xl mx-auto flex flex-col gap-8">
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#1A3626] dark:text-[#c9a14b]">Keep Reading</span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                More Insights from CMP Blog
-              </h2>
-            </div>
-
-            <Link 
-              href={`/${locale}/blog`}
-              className="text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] flex items-center gap-1.5 hover:gap-2.5 transition-all"
-            >
-              <span>View All Posts</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts.map((post) => (
-              <Link 
-                key={post.id} 
-                href={`/${locale}/blog/${(post as any).slug || post.id}`} 
-                className="group flex flex-col bg-gray-50 dark:bg-[#091711] rounded-2xl overflow-hidden border border-gray-200/80 dark:border-[#1A3626] hover:-translate-y-1 transition-all duration-300"
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleSocialShare("whatsapp")}
+                aria-label="Share on WhatsApp"
+                className="w-9 h-9 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-sm"
               >
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center gap-2 mb-3 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                    <Calendar className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#c9a14b]" />
-                    <span>{post.date}</span>
-                  </div>
-                  
-                  <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2 group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors leading-snug line-clamp-2" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                    {post.title}
-                  </h3>
-                  
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mb-4 line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#1A3626] dark:text-[#c9a14b] group-hover:gap-2.5 transition-all mt-auto">
-                    <span>Read Article</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                <MessageCircle className="w-4 h-4" />
+              </button>
+              
+              <button
+                onClick={() => handleSocialShare("twitter")}
+                aria-label="Share on X (Twitter)"
+                className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-black hover:text-white transition-all flex items-center justify-center cursor-pointer shadow-sm"
+              >
+                <TwitterIcon className="w-4 h-4" />
+              </button>
 
+              <button
+                onClick={() => handleSocialShare("linkedin")}
+                aria-label="Share on LinkedIn"
+                className="w-9 h-9 rounded-xl bg-[#0A66C2]/10 hover:bg-[#0A66C2] text-[#0A66C2] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-sm"
+              >
+                <LinkedinIcon className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => handleSocialShare("facebook")}
+                aria-label="Share on Facebook"
+                className="w-9 h-9 rounded-xl bg-[#1877F2]/10 hover:bg-[#1877F2] text-[#1877F2] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-sm"
+              >
+                <FacebookIcon className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleCopyLink}
+                aria-label="Copy link"
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  copied
+                    ? "bg-[#5CD284] text-[#0A1C12]"
+                    : "bg-gray-100 dark:bg-[#163321] text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[#1A3626]"
+                }`}
+              >
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? "Copied!" : "Copy Link"}</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </section>
+
+      </article>
 
     </main>
   );

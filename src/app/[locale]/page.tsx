@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, ArrowDownUp, ChevronDown, Loader2, Share2 } from "lucide-react";
+import { Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, Loader2, Share2 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
@@ -10,17 +10,15 @@ import api from "@/lib/api";
 import Image from "next/image";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
+import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
+import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import PropertyGridCard from "@/components/listings/PropertyGridCard";
+import { formatPropertyCategory, formatPropertyType, formatPropertyPlan } from "@/utils/formatters";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function HomePage() {
   const { dict, locale } = useDictionary();
   const { home } = dict;
-  
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedPrice, setSelectedPrice] = useState<string | null>(null);
-  const [selectedSort, setSelectedSort] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [appliedSearch, setAppliedSearch] = useState("");
 
   const [liveProperties, setLiveProperties] = useState<any[]>([]);
   const [upcomingProperties, setUpcomingProperties] = useState<any[]>([]);
@@ -129,45 +127,48 @@ export default function HomePage() {
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">
       
       {/* 1. HERO SECTION */}
-      <section className="relative w-full min-h-[650px] lg:min-h-[700px] flex items-center justify-center pt-24 pb-16">
-        {/* Background Image / Overlay */}
-        <div className="absolute inset-0 overflow-hidden">
-          <Image
-            src="/hero-bg.svg"
-            alt="Hero Background"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-[center_40%] pointer-events-none"
-          />
-          {/* Dark Green Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
-          <div className="absolute inset-0 bg-black/30" />
+      <section className="relative w-full min-h-[780px] lg:min-h-[860px] flex items-center justify-center pt-24 pb-16">
+        {/* Full-width Background Image Layer */}
+        <div className="absolute inset-0 overflow-hidden bg-[#091711]">
+          {/* Main Full-Width Dubai Skyline with complete, uncropped Burj Khalifa */}
+          <div className="absolute inset-0">
+            <Image
+              src="/hero-dubai-skyline.jpeg"
+              alt="Dubai Skyline with Burj Khalifa"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[center_top] pointer-events-none opacity-90 dark:opacity-85"
+            />
+          </div>
+
+          {/* Subtle Dark Gradient Overlay: keeps Burj Khalifa clear and vibrant, ensures text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#091711]/70 via-black/25 to-[#091711] pointer-events-none" />
 
           {/* Glow Effects */}
           <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
         </div>
         
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-6">
-          <h1 className="text-white text-4xl sm:text-5xl lg:text-[64px] font-bold mb-6 leading-[1.1] tracking-tight max-w-4xl" style={{ fontFamily: "var(--font-playfair), serif" }}>
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-4">
+          <h1 className="text-white text-4xl sm:text-5xl lg:text-[60px] font-bold mb-6 leading-[1.15] tracking-tight max-w-4xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {home.hero.headline}
           </h1>
-          <p className="text-gray-300 text-lg sm:text-xl max-w-2xl leading-relaxed mb-12 font-light">
+          <p className="text-gray-200 text-lg sm:text-xl max-w-2xl leading-relaxed mb-10 font-light drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
             {home.hero.subheadline}
           </p>
 
-          {/* Upgraded Hero Search Bar Widget (Temporarily disabled) */}
-          {/* <HeroSearchWidget /> */}
+          {/* Upgraded Hero Search Bar Widget */}
+          <HeroSearchWidget showTabs={true} />
         </div>
 
         {/* Bottom fade out to background */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#F4F5F7] dark:from-[#091711] to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#F4F5F7] dark:from-[#091711] to-transparent pointer-events-none" />
       </section>
 
       {/* SELLER CTA PANEL — Only shown when user is in Seller Mode */}
       {isAuthenticated && isSeller && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
           <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col lg:flex-row items-center gap-10 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626]">
             {/* Background glow */}
             <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
@@ -181,13 +182,13 @@ export default function HomePage() {
             {/* Center: Text */}
             <div className="relative z-10 flex-1 text-center lg:text-left">
               <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase block mb-3">
-                Seller Mode Active
+                Agent Mode Active
               </span>
               <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                You&apos;re here to sell,<br className="hidden sm:block" /> not to browse.
+                You&apos;re here to manage listings,<br className="hidden sm:block" /> not to browse.
               </h2>
               <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
-                As a seller, property listings and live offers are not accessible to you. Head to your dashboard to manage your listings, track offers, and monitor your activity.
+                As an agent, property listings and realtime offers are not accessible to you. Head to your dashboard to manage your listings, track offers, and monitor your activity.
               </p>
             </div>
 
@@ -214,7 +215,7 @@ export default function HomePage() {
 
       {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) */}
       {!(isAuthenticated && isSeller) && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
@@ -260,134 +261,16 @@ export default function HomePage() {
               </div>
             ))
           ) : [...liveProperties, ...upcomingProperties].length > 0 ? (
-            [...liveProperties, ...upcomingProperties].slice(0, 6).map((item) => {
-              const details = item.propertyDetails || {};
-              const title = details.propertyTitle || "Untitled Property";
-              const location = details.propertyLocation?.city || "Dubai";
-              const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
-              const beds = details.propertyBedrooms || 0;
-              const baths = details.propertyWashrooms || 0;
-              const getArea = (area: any) => {
-                if (!area) return "N/A";
-                if (typeof area === 'object' && area.value !== undefined) return `${area.value} ${area.unit || 'sqft'}`;
-                return `${area} sqft`;
-              };
-              const area = getArea(details.propertyArea || details.propertyBuiltUpArea);
-              const highestBid = item.currentHighestBid || (typeof item.currentHighestOffer === 'object' ? item.currentHighestOffer?.amount : item.currentHighestOffer);
-              const fallbackPrice = details.propertyPrice?.amount || details.propertyPrice || 0;
-              const price = highestBid ? `AED ${highestBid.toLocaleString()}` : `AED ${fallbackPrice.toLocaleString()}`;
-              
-              const endDate = new Date(item.endTime);
-              const startDate = new Date(item.startTime);
-              const now = new Date().getTime();
-              
-              let timeDisplay = "";
-              if (item.status === 'UPCOMING') {
-                timeDisplay = `Starts: ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-              } else {
-                const timeDiff = endDate.getTime() - now;
-                if (timeDiff > 0) {
-                  const d = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                  const h = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                  const m = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                  timeDisplay = `${d}d ${h}h ${m}m`;
-                } else {
-                  timeDisplay = 'Ended';
-                }
-              }
-
-              const priceValue = highestBid ? highestBid.toLocaleString() : fallbackPrice.toLocaleString();
-              const type = details.propertyType || "Property";
-
-              const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-              const formattedLocation = (() => {
-                const words = rawLocation.trim().split(/\s+/);
-                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
-              })();
-
-              return (
-              <Link href={`/${locale}/auctions/${item._id}`} key={item._id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer">
-                <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                     <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-orange-500' : 'bg-[#5CD284]'}`}></span> {item.status || 'ACTIVE'}
-                  </div>
-                  
-                  <div className="absolute top-4 right-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] flex items-center gap-1.5 shadow-md whitespace-nowrap">
-                     <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
-                  </div>
-
-                  <div className="absolute bottom-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase shadow-md">
-                     PID-{item.PID || item._id.substring(0,8).toUpperCase()}
-                  </div>
-
-                  <div 
-                    className="absolute bottom-4 right-4 w-10 h-10 bg-[#0A3622] dark:bg-[#c9a14b] rounded-full flex items-center justify-center text-white dark:text-[#0A3622] shadow-md hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors"
-                    onClick={(e) => { 
-                      e.preventDefault(); 
-                      e.stopPropagation(); 
-                      const shareUrl = `${window.location.origin}/${locale}/auctions/${item._id}`;
-                      if (navigator.share) {
-                        navigator.share({ title: title, url: shareUrl }).catch(console.error);
-                      } else {
-                        navigator.clipboard.writeText(shareUrl);
-                        addToast("Link Copied", "Property link copied to clipboard successfully!", "success");
-                      }
-                    }}
-                  >
-                     <Share2 className="w-4 h-4" />
-                  </div>
-                </div>
-                
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {priceValue}</span>
-                  </div>
-                  
-                  <p title={rawLocation} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedLocation}</span>
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mb-5">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-[#c9a14b]"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
-                    <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                      Make Offer
-                    </div>
-                  </div>
-
-                  {/* Footer Grid */}
-                  <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Plan</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyPlan || "Ready"}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )})
+            [...liveProperties, ...upcomingProperties].slice(0, 6).map((item, idx) => (
+              <PropertyGridCard
+                key={item._id || idx}
+                item={item}
+                locale={locale}
+                priority={idx === 0}
+                isAuction={true}
+                href={`/${locale}/auctions/${item._id}`}
+              />
+            ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
               No live properties available at the moment.
@@ -399,15 +282,11 @@ export default function HomePage() {
 
       {/* 3. SIMPLE LISTINGS */}
       {!(isAuthenticated && isSeller) && (
-        <section className="py-20 px-6 lg:px-12 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
-            <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] inline-block"></span>
-              Direct Sale & Rent
-            </p>
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Simple Listings
+              Listings
             </h2>
             <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
               Explore direct properties for rent or purchase with verified details and direct agent contact.
@@ -433,79 +312,19 @@ export default function HomePage() {
               </div>
             ))
           ) : simpleLiveProperties.length > 0 ? (
-            simpleLiveProperties.slice(0, 6).map((item) => {
-              const details = item.propertyDetails || item || {};
-              const title = item.title || details.propertyTitle || "Untitled Property";
-              const rawSimpleLoc = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-              const formattedSimpleLoc = (() => {
-                const words = rawSimpleLoc.trim().split(/\s+/);
-                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawSimpleLoc;
-              })();
-              const image = item.image || details.propertyImages?.[0]?.url || "/property-placeholder.svg";
-              const beds = item.specs?.beds || details.propertyBedrooms || 0;
-              const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
-              const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
-              const price = item.price?.amount || details.propertyPrice?.amount || details.propertyPrice || 0;
-              const type = details.propertyType || "Property";
-
-              return (
-              <Link href={`/${locale}/simple-listings/${item._id || item.id}`} key={item._id || item.id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer">
-                <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 left-4 bg-white dark:bg-[#102418] text-[#1A3626] dark:text-[#c9a14b] px-3 py-1.5 rounded-full font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5 shadow-md">
-                     <span className="w-2 h-2 rounded-full bg-[#5CD284]"></span> ACTIVE
-                  </div>
-                </div>
-                
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap"><Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}</span>
-                  </div>
-                  
-                  <p title={rawSimpleLoc} className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
-                    <MapPin className="w-4 h-4 shrink-0" /> <span className="truncate">{formattedSimpleLoc}</span>
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mb-5">
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}</div>
-                     <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}</div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="px-5 py-2.5 w-full bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                      View Details
-                    </div>
-                  </div>
-
-                  {/* Footer Grid */}
-                  <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )})
+            simpleLiveProperties.slice(0, 6).map((item, idx) => (
+              <PropertyGridCard
+                key={item._id || item.id || idx}
+                item={item}
+                locale={locale}
+                priority={idx === 0}
+                isAuction={false}
+                href={`/${locale}/simple-listings/${item._id || item.id}`}
+              />
+            ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
-              No simple listings available at the moment.
+              No listings available at the moment.
             </div>
           )}
         </div>
@@ -514,7 +333,7 @@ export default function HomePage() {
 
       {/* 4. HOW IT WORKS */}
       <section className="py-24 bg-white dark:bg-[#102418] border-y border-gray-200 dark:border-[#1A3626]/50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
             {home.howItWorks.label}
           </p>
@@ -544,7 +363,7 @@ export default function HomePage() {
       </section>
 
       {/* 5. APP DOWNLOAD BANNER */}
-      <section className="py-12 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative w-full bg-[#1A3626] dark:bg-[#091711] rounded-[32px] overflow-hidden shadow-2xl border border-[#5CD284]/10 dark:border-[#1A3626] flex flex-col md:flex-row items-center justify-between">
           
           {/* Decorative Background */}
@@ -569,7 +388,7 @@ export default function HomePage() {
                 href="https://apps.apple.com/pk/app/cmp-cashmyproperty/id6762503025" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg"
+                className="flex items-center gap-3 bg-black text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg"
               >
                 <Smartphone className="w-8 h-8" />
                 <div className="flex flex-col items-start">
@@ -581,7 +400,7 @@ export default function HomePage() {
                 href="https://play.google.com/store/apps/details?id=com.cashmyproperty&pcampaignid=web_share" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="flex items-center gap-3 bg-black hover:bg-gray-900 text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg"
+                className="flex items-center gap-3 bg-black text-white px-6 py-3.5 rounded-xl transition-all duration-300 w-full sm:w-auto border border-white/10 hover:border-white/30 shadow-lg"
               >
                 <Download className="w-8 h-8" />
                 <div className="flex flex-col items-start">
@@ -608,7 +427,7 @@ export default function HomePage() {
       </section>
 
       {/* 6. WHY CHOOSE US */}
-      <section className="py-24 max-w-7xl mx-auto px-6 lg:px-12">
+      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
             {home.whyChooseUs.label}
@@ -636,7 +455,7 @@ export default function HomePage() {
       </section>
 
       {/* 7. BOTTOM CTA */}
-      <section className="pb-24 px-6 lg:px-12 w-full max-w-7xl mx-auto">
+      <section className="pb-24 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative w-full bg-gradient-to-br from-[#1B3A2D] to-[#0A1C12] dark:from-[#102418] dark:to-[#091711] rounded-[40px] p-10 sm:p-16 lg:p-20 overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
           
           {/* Decorative elements */}
@@ -669,7 +488,7 @@ export default function HomePage() {
               : "Ready to discover your next home?";
             
             const descText = isSeller
-              ? "Access your seller command center to add verified properties, inspect real-time bidding logs, and accept offers."
+              ? "Access your agent command center to add verified properties, inspect real-time bidding logs, and accept offers."
               : "Go to your buyer dashboard to track your live bids, view favorite properties, and explore direct simple deals.";
             
             const btnLink = isSeller

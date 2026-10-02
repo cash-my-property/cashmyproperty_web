@@ -129,7 +129,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
     return (
       <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-[#1A3626]">
         <div className="flex flex-col items-center justify-center text-center py-6">
-          <Clock className="w-12 h-12 text-blue-500 mb-4" />
+          <Clock className="w-12 h-12 text-[#5CD284] mb-4" />
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Contract Under Review</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Your purchase contract is currently pending admin approval. You will be able to place offers once approved.</p>
         </div>
@@ -148,7 +148,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
           </div>
         )}
         {successMessage && (
-          <div className="mb-4 p-3 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-sm rounded-xl">
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-500/10 text-[#5CD284] text-sm rounded-xl">
             {successMessage}
           </div>
         )}
@@ -162,7 +162,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
               min={currentValue}
               max={Math.floor(maxAllowed)}
               step="1"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1A3626] bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-[#1A3626] dark:focus:ring-[#c9a14b] outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-[#1A3626] bg-transparent text-gray-900 dark:text-white focus:ring-2 focus:ring-[#5CD284] outline-none"
               placeholder="Enter amount..."
               required
             />
@@ -174,7 +174,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
           <button 
             type="submit" 
             disabled={isBidding}
-            className="w-full py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full py-3 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold rounded-xl hover:opacity-90 flex justify-center items-center gap-2 transition-all disabled:opacity-50 cursor-pointer shadow-md"
           >
             {isBidding ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Make Offer'}
           </button>
@@ -205,7 +205,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
         </div>
       )}
       {successMessage && (
-        <div className="mb-4 p-3 bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-sm rounded-xl">
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-500/10 text-[#5CD284] text-sm rounded-xl">
           {successMessage}
         </div>
       )}
@@ -231,7 +231,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
                   target="_blank"
                   rel="noopener noreferrer"
                   download="undertaking-letter.pdf"
-                  className="text-xs text-[#1A3626] dark:text-[#c9a14b] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-[#1A3626] dark:text-[#5CD284] font-bold hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" /> Download Template
                 </a>
@@ -258,7 +258,7 @@ export default function BuyerActionSidebar({ auctionId, contractStatus, canBid, 
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full mt-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white font-bold rounded-xl hover:bg-[#1A3626]/90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+          className="w-full mt-6 py-3 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold rounded-xl hover:opacity-90 flex justify-center items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-md"
         >
           {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit for Approval'}
         </button>

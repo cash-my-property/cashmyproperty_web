@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -26,7 +27,9 @@ export default function RouteLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-      <Navbar />
+      <Suspense fallback={null}>
+        <Navbar />
+      </Suspense>
       {children}
       <Footer />
       <FloatingGuideWidget />

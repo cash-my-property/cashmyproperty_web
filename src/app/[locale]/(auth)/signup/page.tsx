@@ -33,6 +33,12 @@ export default function SignupPage() {
   const [brokerCardExpiry, setBrokerCardExpiry] = useState("");
   const [brokerCardIssue, setBrokerCardIssue] = useState("");
 
+  // Agency Registration Details
+  const [agencyRegistered, setAgencyRegistered] = useState(true);
+  const [requireAdminContact, setRequireAdminContact] = useState(false);
+  const [agencyAdminPhone, setAgencyAdminPhone] = useState("");
+  const [agencyAdminEmail, setAgencyAdminEmail] = useState("");
+
   // Files
   const [emiratesIdFile, setEmiratesIdFile] = useState<File | null>(null);
 
@@ -59,7 +65,7 @@ export default function SignupPage() {
 
           // Case 1: Already registered user with this BRN
           if (resData.exists === true) {
-            const msg = resData.message || "Broker number is already registered.";
+            const msg = resData.message || "Agent number is already registered.";
             setBrnError(msg);
             setError(msg);
             setBrnLocked(false);
@@ -68,7 +74,7 @@ export default function SignupPage() {
 
           // Case 2: BRN is not whitelisted / authorized
           if (resData.whitelisted === false) {
-            const msg = resData.message || "Broker number is not authorized for signup.";
+            const msg = resData.message || "Agent number is not authorized for signup.";
             setBrnError(msg);
             setError(msg);
             setBrnLocked(false);
@@ -85,6 +91,17 @@ export default function SignupPage() {
             setEmail(email || "");
             setPhone(phone || "");
             
+            const isAgencyReg = typeof broker.isAgencyRegistered === 'boolean'
+              ? broker.isAgencyRegistered
+              : (typeof resData.isAgencyRegistered === 'boolean' ? resData.isAgencyRegistered : true);
+
+            const reqAdminContact = typeof broker.requireAdminContact === 'boolean'
+              ? broker.requireAdminContact
+              : (typeof resData.requireAdminContact === 'boolean' ? resData.requireAdminContact : false);
+
+            setAgencyRegistered(isAgencyReg);
+            setRequireAdminContact(reqAdminContact);
+
             if (brokerCardIssueDate && typeof brokerCardIssueDate === 'string') {
               setBrokerCardIssue(brokerCardIssueDate.split('T')[0]); 
             }
@@ -96,7 +113,7 @@ export default function SignupPage() {
             setBrnLocked(true);
             setBrnError("");
             setError("");
-            setBrnSuccess("Broker details verified & auto-filled successfully.");
+            setBrnSuccess("Agent details verified & auto-filled successfully.");
           }
         }
       } catch (err: any) {
@@ -124,6 +141,12 @@ export default function SignupPage() {
       setError(brnError);
       return;
     }
+
+    if (!agencyRegistered && requireAdminContact && (!agencyAdminPhone || agencyAdminPhone.trim().length === 0)) {
+      setError("Admin Contact (company phone number) is mandatory when agency is not registered.");
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
@@ -135,10 +158,21 @@ export default function SignupPage() {
       formData.append("password", password);
       formData.append("phone", phone);
       formData.append('broker_number', brokerNumber);
-      formData.append('emirates_id_issue', emiratesIdIssue);
-      formData.append('emirates_id_expiry', emiratesIdExpiry);
-      formData.append('broker_card_issue', brokerCardIssue);
-      formData.append('broker_card_expiry', brokerCardExpiry);
+      
+      // Agency registered flag
+      formData.append("isAgencyRegistered", agencyRegistered ? "true" : "false");
+      formData.append("agency_registered", agencyRegistered ? "true" : "false");
+      
+      // Company Admin Details (Only sent if Agency Registered is FALSE and requireAdminContact is TRUE)
+      if (!agencyRegistered && requireAdminContact) {
+        formData.append("adminContact", agencyAdminPhone.trim());
+        formData.append("agency_admin_phone", agencyAdminPhone.trim());
+        if (agencyAdminEmail.trim()) {
+          formData.append("adminEmail", agencyAdminEmail.trim());
+          formData.append("agency_admin_email", agencyAdminEmail.trim());
+        }
+      }
+
       if (referralCode) formData.append('referal_code', referralCode);
 
       if (emiratesIdFile) formData.append("emiratesId", emiratesIdFile);
@@ -326,6 +360,40 @@ export default function SignupPage() {
               </div>
             </div>
 
+            {/* COMPANY ADMIN DETAILS SECTION (Automatically shown ONLY if isAgencyRegistered is FALSE and requireAdminContact is TRUE) */}
+            {!agencyRegistered && requireAdminContact && (
+              <div className="bg-amber-500/10 dark:bg-[#102418]/80 p-4 sm:p-5 rounded-2xl border border-amber-500/20 dark:border-[#1A3626] space-y-4 animate-in fade-in duration-200">
+                <p className="text-[12px] text-amber-700 dark:text-amber-300 font-medium">
+                  ⚠️ Your agency is not registered with us yet. Please provide your Company Admin contact details for agency onboarding.
+                </p>
+                <div>
+                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Admin Contact (Company Phone Number) *
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="+971559876543"
+                    value={agencyAdminPhone}
+                    onChange={(e) => setAgencyAdminPhone(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                    required={!agencyRegistered && requireAdminContact}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Agency Email <span className="text-gray-400 font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="admin@company.ae"
+                    value={agencyAdminEmail}
+                    onChange={(e) => setAgencyAdminEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="h-px bg-gray-100 dark:bg-[#102418] my-6" />
 
             {/* Other Details */}
@@ -369,7 +437,7 @@ export default function SignupPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Broker Card Issue *</label>
+                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Agent Card Issue *</label>
                   <input
                     type="date"
                     value={brokerCardIssue}
@@ -380,7 +448,7 @@ export default function SignupPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Broker Card Expiry *</label>
+                  <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Agent Card Expiry *</label>
                   <input
                     type="date"
                     value={brokerCardExpiry}

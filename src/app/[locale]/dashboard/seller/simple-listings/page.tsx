@@ -116,7 +116,7 @@ export default function MySimpleListingsPage() {
     <div className="p-4 sm:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Simple Listings</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">My Listings</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">Manage all the properties you have added</p>
         </div>
         <button 
@@ -152,15 +152,15 @@ export default function MySimpleListingsPage() {
                 router.push(`/${locale}/dashboard/seller/add-simple-property`);
               }
             }}
-            className="bg-[#1A3626] dark:bg-[#c9a14b] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#1A3626]/90 transition-colors cursor-pointer"
+            className="bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] px-6 py-2.5 rounded-xl font-bold transition-all shadow-md hover:-translate-y-0.5 cursor-pointer"
           >
-            Add New Property
+            + Add New Listing
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {properties.map((property) => (
-            <div key={property._id || property.id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#1A3626] shadow-sm hover:shadow-md transition-shadow flex flex-col">
+            <div key={property._id || property.id} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#1A3626] shadow-xs hover:shadow-md transition-all flex flex-col hover:-translate-y-1 group">
               <div className="relative h-48 w-full bg-gray-100 dark:bg-[#091711]">
                 {property.image ? (
                   <Image 
@@ -168,7 +168,7 @@ export default function MySimpleListingsPage() {
                     alt={property.title || "Property"} 
                     fill 
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover" 
+                    className="object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -178,14 +178,14 @@ export default function MySimpleListingsPage() {
                 <div className="absolute top-3 right-3 flex items-center gap-2">
                   <button
                     onClick={() => handleShareProperty(property)}
-                    className="w-8 h-8 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md rounded-full flex items-center justify-center text-gray-700 dark:text-[#c9a14b] shadow-md hover:scale-105 transition-all"
+                    className="w-8 h-8 bg-white/90 dark:bg-[#102418]/90 backdrop-blur-md rounded-full flex items-center justify-center text-gray-700 dark:text-[#5CD284] shadow-md hover:scale-105 transition-all"
                     title="Share Private Link"
                   >
                     <Share2 className="w-4 h-4" />
                   </button>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                    property.status === 'ACTIVE' ? 'bg-green-500 text-white' :
-                    property.status === 'PENDING' || property.status === 'AWAITING' ? 'bg-orange-500 text-white' :
+                  <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                    property.status === 'ACTIVE' ? 'bg-[#5CD284] text-[#0A1C12] shadow-xs' :
+                    property.status === 'PENDING' || property.status === 'AWAITING' ? 'bg-amber-500 text-white shadow-xs' :
                     'bg-gray-500 text-white'
                   }`}>
                     {property.status || "PENDING"}
@@ -195,42 +195,42 @@ export default function MySimpleListingsPage() {
 
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-1 mb-1">{property.title}</h3>
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white line-clamp-1 mb-1 group-hover:text-[#5CD284] transition-colors">{property.title}</h3>
                   <p className="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1 mb-3">
-                    <MapPin className="w-3.5 h-3.5" />
+                    <MapPin className="w-3.5 h-3.5 text-[#5CD284]" />
                     <span className="truncate">{property.location}</span>
                   </p>
 
                   <div className="flex items-center gap-4 text-xs font-semibold text-gray-600 dark:text-gray-300 mb-4">
                     {property.specs?.beds && (
-                      <span className="flex items-center gap-1"><Bed className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs.beds} Beds</span>
+                      <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5 text-[#5CD284]" /> {property.specs.beds} Beds</span>
                     )}
                     {property.specs?.washrooms && (
-                      <span className="flex items-center gap-1"><Bath className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.specs.washrooms} Baths</span>
+                      <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-[#5CD284]" /> {property.specs.washrooms} Baths</span>
                     )}
                     {property.area?.value && (
-                      <span className="flex items-center gap-1"><Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {property.area.value} sqft</span>
+                      <span className="flex items-center gap-1"><Maximize className="w-3.5 h-3.5 text-[#5CD284]" /> {property.area.value} sqft</span>
                     )}
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
-                  <div className="text-[#1A3626] dark:text-[#c9a14b] font-bold text-lg">
-                    <Dirham className="mr-1 text-sm" />
+                  <div className="text-[#1A3626] dark:text-[#5CD284] font-bold text-lg flex items-center gap-1">
+                    <Dirham className="text-sm" />
                     {property.price?.amount?.toLocaleString() || 0}
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => setViewModalProperty(property)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-lg text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button 
                       onClick={() => setEditModalProperty(property)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-lg text-gray-600 dark:text-gray-300 transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#163321] rounded-lg text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
                       title="Edit Property"
                     >
                       <Edit className="w-4 h-4" />

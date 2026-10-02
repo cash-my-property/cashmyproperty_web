@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import api from "@/lib/api";
-import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowRight, UploadCloud, X, File as FileIcon, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
@@ -12,29 +12,218 @@ import { saveDraftToIndexedDB, loadDraftFromIndexedDB, clearDraftFromIndexedDB }
 import GooglePlacesAutocomplete from "@/components/GooglePlacesAutocomplete";
 
 // Recreated Document Config from backend
-// Recreated Document Config from backend simpleListingRule.js
+const READY_RESIDENTIAL_HOME = {
+  required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"],
+  optional: ["propertyEid_Visa", "propertyFloorPlan", "companyLicense", "statementOfAccount", "otherDocuments"]
+};
+
+const READY_LAND = {
+  required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"],
+  optional: ["propertyEid_Visa", "propertySitePlan", "companyLicense", "statementOfAccount", "otherDocuments"]
+};
+
+const OFF_PLAN_HOME = {
+  required: ["contractA", "propertyTrakheesi", "passportDocument", "oqoodDocument"],
+  optional: ["propertyEid_Visa", "spaDocument", "statementOfAccount", "propertyFloorPlan", "otherDocuments"]
+};
+
+const COMMERCIAL_OFF_PLAN_RETAIL = {
+  required: ["contractA", "oqoodDocument", "propertyTrakheesi", "passportDocument"],
+  optional: ["propertyEid_Visa", "propertyFloorPlan", "companyLicense", "statementOfAccount", "otherDocuments"]
+};
+
+const COMMERCIAL_READY = {
+  required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"],
+  optional: ["propertyEid_Visa", "propertyFloorPlan", "companyLicense", "statementOfAccount", "otherDocuments"]
+};
+
+const R = "required";
+const F = "forbidden";
+
+const APARTMENT_FIELDS = { propertyBuiltUpArea: F, propertyBedrooms: R, propertyBathrooms: R, unitNumber: R, furnishingStatus: R };
+const VILLA_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: R, propertyBathrooms: R, unitNumber: R, furnishingStatus: R };
+const LAND_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: F, propertyBathrooms: F, unitNumber: R, furnishingStatus: R };
+const COMMERCIAL_UNIT_FIELDS = { propertyBuiltUpArea: F, propertyBedrooms: F, propertyBathrooms: F, unitNumber: R, furnishingStatus: R };
+const COMMERCIAL_BUILDING_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: F, propertyBathrooms: F, unitNumber: R, furnishingStatus: R };
+
+const FLOOR_FIELDS = { propertyBuiltUpArea: F, propertyBedrooms: F, propertyBathrooms: F, unitNumber: R, furnishingStatus: R };
+const RESIDENTIAL_BUILDING_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: F, propertyBathrooms: F, unitNumber: F, furnishingStatus: R };
+const RESIDENTIAL_BULK_FIELDS = { propertyBuiltUpArea: F, propertyBedrooms: R, propertyBathrooms: R, unitNumber: F, furnishingStatus: R };
+const COMMERCIAL_PLOT_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: F, propertyBathrooms: F, unitNumber: R, furnishingStatus: F };
+const COMMERCIAL_VILLA_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: R, propertyBathrooms: F, unitNumber: R, furnishingStatus: R };
+const COMMERCIAL_BULK_FIELDS = { propertyBuiltUpArea: F, propertyBedrooms: F, propertyBathrooms: F, unitNumber: F, furnishingStatus: F };
+const FARM_FIELDS = { propertyBuiltUpArea: R, propertyBedrooms: F, propertyBathrooms: F, unitNumber: F, furnishingStatus: F };
+
+const RES_APARTMENT = { images: { min: 8, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: APARTMENT_FIELDS };
+const RES_VILLA = { images: { min: 10, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: VILLA_FIELDS };
+const RES_LAND = { images: { min: 2, max: 10 }, ...READY_LAND, fields: LAND_FIELDS };
+const RES_OFF_PLAN_APARTMENT = { images: { min: 4, max: 10 }, ...OFF_PLAN_HOME, fields: APARTMENT_FIELDS };
+const RES_OFF_PLAN_VILLA = { images: { min: 4, max: 10 }, ...OFF_PLAN_HOME, fields: VILLA_FIELDS };
+const COM_OFF_PLAN_RETAIL = { images: { min: 4, max: 10 }, ...COMMERCIAL_OFF_PLAN_RETAIL, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_RETAIL = { images: { min: 5, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_OFFICES = { images: { min: 5, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_BUILDING = { images: { min: 10, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_BUILDING_FIELDS };
+
+const RES_TOWNHOUSE = { images: { min: 10, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: VILLA_FIELDS };
+const RES_PENTHOUSE = { images: { min: 10, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: APARTMENT_FIELDS };
+const RES_COMPOUND = { images: { min: 10, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: VILLA_FIELDS };
+const RES_DUPLEX = { images: { min: 8, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: APARTMENT_FIELDS };
+const RES_FLOOR = { images: { min: 5, max: 20 }, ...READY_RESIDENTIAL_HOME, fields: FLOOR_FIELDS };
+const RES_BUILDING = { images: { min: 10, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: RESIDENTIAL_BUILDING_FIELDS };
+const RES_BULK_UNIT = { images: { min: 8, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: RESIDENTIAL_BULK_FIELDS };
+const RES_BUNGALOW = { images: { min: 10, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: VILLA_FIELDS };
+const RES_HOTEL_APARTMENT = { images: { min: 8, max: 25 }, ...READY_RESIDENTIAL_HOME, fields: APARTMENT_FIELDS };
+const RES_OFF_PLAN_TOWNHOUSE = { images: { min: 4, max: 10 }, ...OFF_PLAN_HOME, fields: VILLA_FIELDS };
+
+const COM_WAREHOUSE = { images: { min: 5, max: 20 }, ...COMMERCIAL_READY, fields: COMMERCIAL_PLOT_FIELDS };
+const COM_SHOP = { images: { min: 5, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_VILLA = { images: { min: 10, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_VILLA_FIELDS };
+const COM_SHOWROOM = { images: { min: 5, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_FLOOR = { images: { min: 5, max: 20 }, ...COMMERCIAL_READY, fields: FLOOR_FIELDS };
+const COM_LAND = { images: { min: 2, max: 10 }, ...READY_LAND, fields: COMMERCIAL_PLOT_FIELDS };
+const COM_BULK_UNIT = { images: { min: 5, max: 20 }, ...COMMERCIAL_READY, fields: COMMERCIAL_BULK_FIELDS };
+const COM_FACTORY = { images: { min: 5, max: 20 }, ...COMMERCIAL_READY, fields: COMMERCIAL_PLOT_FIELDS };
+const COM_HOTEL_APARTMENT = { images: { min: 8, max: 25 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_LABOR_CAMP = { images: { min: 5, max: 20 }, ...COMMERCIAL_READY, fields: COMMERCIAL_PLOT_FIELDS };
+const COM_STAFF_ACCOMMODATION = { images: { min: 5, max: 20 }, ...COMMERCIAL_READY, fields: COMMERCIAL_PLOT_FIELDS };
+const COM_BUSINESS_CENTRE = { images: { min: 5, max: 15 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_CO_WORKING_SPACE = { images: { min: 5, max: 15 }, ...COMMERCIAL_READY, fields: COMMERCIAL_UNIT_FIELDS };
+const COM_FARM = { images: { min: 5, max: 15 }, ...READY_LAND, fields: FARM_FIELDS };
+
+// Recreated Document Config exactly matching backend simpleListingRule.js
 const PROPERTY_DOC_CONFIG: any = {
-  RESIDENTIAL: {
-    READY: {
-      APARTMENT: { images: { min: 8, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      VILLA: { images: { min: 10, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      LAND: { images: { min: 2, max: 10 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] }
+  RENT: {
+    RESIDENTIAL: {
+      READY: {
+        APARTMENT: RES_APARTMENT,
+        VILLA: RES_VILLA,
+        TOWNHOUSE: RES_TOWNHOUSE,
+        PENTHOUSE: RES_PENTHOUSE,
+        COMPOUND: RES_COMPOUND,
+        DUPLEX: RES_DUPLEX,
+        FULL_FLOOR: RES_FLOOR,
+        HALF_FLOOR: RES_FLOOR,
+        BUILDING: RES_BUILDING,
+        LAND: RES_LAND,
+        BULK_RENT_UNIT: RES_BULK_UNIT,
+        BUNGALOW: RES_BUNGALOW,
+        HOTEL_APARTMENT: RES_HOTEL_APARTMENT
+      },
+      OFF_PLAN: {
+        APARTMENT: RES_OFF_PLAN_APARTMENT,
+        VILLA: RES_OFF_PLAN_VILLA
+      }
     },
-    OFF_PLAN: {
-      APARTMENT: { images: { min: 4, max: 10 }, required: ["contractA", "propertyTrakheesi", "passportDocument", "oqoodDocument"] },
-      VILLA: { images: { min: 4, max: 10 }, required: ["contractA", "propertyTrakheesi", "passportDocument", "oqoodDocument"] }
+    COMMERCIAL: {
+      READY: {
+        OFFICES: COM_OFFICES,
+        RETAIL: COM_RETAIL,
+        WAREHOUSE: COM_WAREHOUSE,
+        SHOP: COM_SHOP,
+        VILLA: COM_VILLA,
+        SHOWROOM: COM_SHOWROOM,
+        FULL_FLOOR: COM_FLOOR,
+        HALF_FLOOR: COM_FLOOR,
+        BUILDING: COM_BUILDING,
+        LAND: COM_LAND,
+        BULK_RENT_UNIT: COM_BULK_UNIT,
+        FACTORY: COM_FACTORY,
+        LABOR_CAMP: COM_LABOR_CAMP,
+        STAFF_ACCOMMODATION: COM_STAFF_ACCOMMODATION,
+        BUSINESS_CENTRE: COM_BUSINESS_CENTRE,
+        CO_WORKING_SPACE: COM_CO_WORKING_SPACE,
+        FARM: COM_FARM
+      },
+      OFF_PLAN: {
+        RETAIL: COM_OFF_PLAN_RETAIL
+      }
     }
   },
-  COMMERCIAL: {
-    READY: {
-      RETAIL: { images: { min: 5, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      OFFICES: { images: { min: 5, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] },
-      BUILDING: { images: { min: 10, max: 25 }, required: ["contractA", "propertyTitleDeed", "propertyTrakheesi", "passportDocument"] }
+  SALE: {
+    RESIDENTIAL: {
+      READY: {
+        APARTMENT: RES_APARTMENT,
+        VILLA: RES_VILLA,
+        TOWNHOUSE: RES_TOWNHOUSE,
+        PENTHOUSE: RES_PENTHOUSE,
+        COMPOUND: RES_COMPOUND,
+        DUPLEX: RES_DUPLEX,
+        FULL_FLOOR: RES_FLOOR,
+        HALF_FLOOR: RES_FLOOR,
+        BUILDING: RES_BUILDING,
+        LAND: RES_LAND,
+        BULK_SALE_UNIT: RES_BULK_UNIT,
+        BUNGALOW: RES_BUNGALOW,
+        HOTEL_APARTMENT: RES_HOTEL_APARTMENT
+      },
+      OFF_PLAN: {
+        APARTMENT: RES_OFF_PLAN_APARTMENT,
+        VILLA: RES_OFF_PLAN_VILLA,
+        TOWNHOUSE: RES_OFF_PLAN_TOWNHOUSE
+      }
     },
-    OFF_PLAN: {
-      RETAIL: { images: { min: 4, max: 10 }, required: ["contractA", "oqoodDocument", "propertyTrakheesi", "passportDocument"] }
+    COMMERCIAL: {
+      READY: {
+        OFFICES: COM_OFFICES,
+        RETAIL: COM_RETAIL,
+        WAREHOUSE: COM_WAREHOUSE,
+        SHOP: COM_SHOP,
+        VILLA: COM_VILLA,
+        SHOWROOM: COM_SHOWROOM,
+        FULL_FLOOR: COM_FLOOR,
+        HALF_FLOOR: COM_FLOOR,
+        BUILDING: COM_BUILDING,
+        LAND: COM_LAND,
+        BULK_SALE_UNIT: COM_BULK_UNIT,
+        FACTORY: COM_FACTORY,
+        HOTEL_APARTMENT: COM_HOTEL_APARTMENT,
+        LABOR_CAMP: COM_LABOR_CAMP,
+        STAFF_ACCOMMODATION: COM_STAFF_ACCOMMODATION,
+        BUSINESS_CENTRE: COM_BUSINESS_CENTRE,
+        CO_WORKING_SPACE: COM_CO_WORKING_SPACE,
+        FARM: COM_FARM
+      },
+      OFF_PLAN: {
+        RETAIL: COM_OFF_PLAN_RETAIL
+      }
     }
   }
+};
+
+const SIMPLE_LISTING_TYPE_LABELS: Record<string, string> = {
+  APARTMENT: "Apartment",
+  VILLA: "Villa",
+  TOWNHOUSE: "Townhouse",
+  PENTHOUSE: "Penthouse",
+  COMPOUND: "Compound",
+  DUPLEX: "Duplex",
+  FULL_FLOOR: "Full Floor",
+  HALF_FLOOR: "Half Floor",
+  BUILDING: "Whole Building",
+  LAND: "Land",
+  BULK_RENT_UNIT: "Bulk Rent Unit",
+  BULK_SALE_UNIT: "Bulk Sale Unit",
+  BUNGALOW: "Bungalow",
+  HOTEL_APARTMENT: "Hotel & Hotel Apartment",
+  OFFICES: "Office Space",
+  RETAIL: "Retail",
+  WAREHOUSE: "Warehouse",
+  SHOP: "Shop",
+  SHOWROOM: "Show Room",
+  FACTORY: "Factory",
+  LABOR_CAMP: "Labor Camp",
+  STAFF_ACCOMMODATION: "Staff Accommodation",
+  BUSINESS_CENTRE: "Business Centre",
+  CO_WORKING_SPACE: "Co-working space",
+  FARM: "Farm"
+};
+
+const getPropertyTypeOptions = (purpose: string, category: string, plan: string) => {
+  const byPlan = PROPERTY_DOC_CONFIG[purpose]?.[category]?.[plan] || {};
+  return Object.keys(byPlan).map(value => ({
+    value,
+    label: SIMPLE_LISTING_TYPE_LABELS[value] || value
+  }));
 };
 
 const AMENITIES_CONFIG: Record<string, string[]> = {
@@ -127,16 +316,35 @@ export default function AddSimplePropertyPage() {
     unitNumber: "",
     parkingSpaces: "0",
     furnishingStatus: "NOT_FURNISHED",
-    availability: "Vacant"
+    availability: "Immediately"
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [availabilityType, setAvailabilityType] = useState<"immediate" | "date">("immediate");
+  const [availabilityDate, setAvailabilityDate] = useState<string>("");
 
   const [amenities, setAmenities] = useState<string[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [documents, setDocuments] = useState<Record<string, File>>({});
 
   const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvailabilityTypeChange = (type: "immediate" | "date") => {
+    setAvailabilityType(type);
+    if (type === "immediate") {
+      setFormData((prev) => ({ ...prev, availability: "Immediately" }));
+    } else {
+      const dateToSet = availabilityDate || new Date().toISOString().split("T")[0];
+      setAvailabilityDate(dateToSet);
+      setFormData((prev) => ({ ...prev, availability: dateToSet }));
+    }
+  };
+
+  const handleAvailabilityDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setAvailabilityDate(val);
+    setFormData((prev) => ({ ...prev, availability: val }));
+  };
 
   // 1. Restore draft on mount if within 1 hour and matches formType
   // 1. Restore draft on mount (from IndexedDB or legacy localStorage fallback)
@@ -150,7 +358,17 @@ export default function AddSimplePropertyPage() {
 
         if (indexedDBDraft && (now - indexedDBDraft.updatedAt < DRAFT_EXPIRY_MS)) {
           if (!isMounted) return;
-          if (indexedDBDraft.formData) setFormData(indexedDBDraft.formData as any);
+          if (indexedDBDraft.formData) {
+            setFormData(indexedDBDraft.formData as any);
+            const avail = (indexedDBDraft.formData as any).availability;
+            if (avail && avail !== "Immediately" && avail !== "Immediate" && avail !== "Vacant") {
+              setAvailabilityType("date");
+              setAvailabilityDate(avail);
+            } else {
+              setAvailabilityType("immediate");
+              setAvailabilityDate("");
+            }
+          }
           if (indexedDBDraft.amenities) setAmenities(indexedDBDraft.amenities);
           if (indexedDBDraft.images?.length) setImages(indexedDBDraft.images);
           if (indexedDBDraft.documents && Object.keys(indexedDBDraft.documents).length) setDocuments(indexedDBDraft.documents);
@@ -164,7 +382,17 @@ export default function AddSimplePropertyPage() {
           const draft = JSON.parse(savedDraftStr);
           if (draft.savedAt && (now - draft.savedAt < DRAFT_EXPIRY_MS)) {
             if (!isMounted) return;
-            if (draft.formData) setFormData(draft.formData);
+            if (draft.formData) {
+              setFormData(draft.formData);
+              const avail = draft.formData.availability;
+              if (avail && avail !== "Immediately" && avail !== "Immediate" && avail !== "Vacant") {
+                setAvailabilityType("date");
+                setAvailabilityDate(avail);
+              } else {
+                setAvailabilityType("immediate");
+                setAvailabilityDate("");
+              }
+            }
             if (draft.amenities) setAmenities(draft.amenities);
             if (draft.step) setStep(draft.step);
             setDraftRestored(true);
@@ -223,6 +451,14 @@ export default function AddSimplePropertyPage() {
         setError("Property Title is required.");
         return false;
       }
+      if (formData.propertyTitle.trim().length < 5) {
+        setError("Property title must be at least 5 characters.");
+        return false;
+      }
+      if (formData.propertyTitle.trim().length > 150) {
+        setError("Property title cannot exceed 150 characters.");
+        return false;
+      }
       if (!formData.propertyCategory) {
         setError("Category is required.");
         return false;
@@ -250,9 +486,13 @@ export default function AddSimplePropertyPage() {
         return false;
       }
       
-      const isBuiltUpAreaRequired = ["VILLA", "LAND", "BUILDING"].includes(formData.propertyType);
-      if (isBuiltUpAreaRequired && (!formData.propertyBuiltUpArea || Number(formData.propertyBuiltUpArea) <= 0)) {
+      const fieldRules = currentConfig?.fields || {};
+      if (fieldRules.propertyBuiltUpArea === "required" && (!formData.propertyBuiltUpArea || Number(formData.propertyBuiltUpArea) <= 0)) {
         setError("Valid Built-up Area (sq.ft) is required.");
+        return false;
+      }
+      if (fieldRules.unitNumber === "required" && !formData.unitNumber.trim()) {
+        setError("Unit Number is required.");
         return false;
       }
 
@@ -260,14 +500,28 @@ export default function AddSimplePropertyPage() {
         setError("Description is required.");
         return false;
       }
+      if (formData.propertyDescription.trim().length < 20) {
+        setError("Description must be at least 20 characters.");
+        return false;
+      }
 
-      if (!formData.whatsappNumber.trim()) {
+      const localWa = formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '').trim();
+      if (!localWa) {
         setError("WhatsApp Number is required.");
+        return false;
+      }
+      if (localWa.length < 7 || localWa.length > 12) {
+        setError("Please enter a valid WhatsApp number (e.g. 50 123 4567).");
         return false;
       }
 
       if (!formData.permitNumber.trim()) {
         setError("Trakheesi Permit Number is required.");
+        return false;
+      }
+
+      if (availabilityType === "date" && !formData.availability.trim()) {
+        setError("Please select an availability date.");
         return false;
       }
 
@@ -290,20 +544,42 @@ export default function AddSimplePropertyPage() {
       return !!formData.propertyTitle.trim();
     }
     if (targetStep === 2) {
-      const isBuiltUpAreaRequired = ["VILLA", "LAND", "BUILDING"].includes(formData.propertyType);
-      const isBuiltUpAreaValid = !isBuiltUpAreaRequired || (!!formData.propertyBuiltUpArea && Number(formData.propertyBuiltUpArea) > 0);
+      const fieldRules = currentConfig?.fields || {};
+      const isBuiltUpAreaValid = fieldRules.propertyBuiltUpArea !== "required" || (!!formData.propertyBuiltUpArea && Number(formData.propertyBuiltUpArea) > 0);
+      const isUnitNumberValid = fieldRules.unitNumber !== "required" || !!formData.unitNumber.trim();
+      const isAvailabilityValid = availabilityType === "immediate" || (availabilityType === "date" && !!formData.availability.trim());
+      const localWa = formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '').trim();
       return !!formData.propertyTitle.trim() && 
              !!formData.propertyLocation.trim() && 
              (!!formData.propertyPrice && Number(formData.propertyPrice) > 0) &&
              (!!formData.propertyArea && Number(formData.propertyArea) > 0) &&
              isBuiltUpAreaValid &&
+             isUnitNumberValid &&
              !!formData.propertyDescription.trim() &&
-             !!formData.whatsappNumber.trim() &&
+             !!localWa &&
+             localWa.length >= 7 && localWa.length <= 12 &&
              !!formData.permitNumber.trim() &&
-             !!formData.availability.trim() &&
+             isAvailabilityValid &&
              amenities.length > 0;
     }
     return true;
+  };
+
+  const handleWhatsappChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let digits = e.target.value.replace(/\D/g, "");
+    if (digits.startsWith("971")) {
+      digits = digits.slice(3);
+    }
+    if (digits.startsWith("0")) {
+      digits = digits.replace(/^0+/, "");
+    }
+    if (digits.length > 12) {
+      digits = digits.slice(0, 12);
+    }
+    setFormData(prev => ({
+      ...prev,
+      whatsappNumber: digits ? `+971${digits}` : ""
+    }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -313,11 +589,26 @@ export default function AddSimplePropertyPage() {
         return;
       }
     }
-    setFormData({ ...formData, [name]: value });
-    // Reset documents if category/plan/type changes to avoid orphaned files
-    if (["propertyCategory", "propertyPlan", "propertyType"].includes(e.target.name)) {
+    
+    let updatedFormData = { ...formData, [name]: value };
+
+    // Auto-adjust propertyType if purpose/category/plan changes and current propertyType is invalid
+    if (name === "listingPurpose" || name === "propertyCategory" || name === "propertyPlan") {
+      const targetPurpose = name === "listingPurpose" ? value : formData.listingPurpose;
+      const targetCategory = name === "propertyCategory" ? value : formData.propertyCategory;
+      const targetPlan = name === "propertyPlan" ? value : formData.propertyPlan;
+      const validOptions = getPropertyTypeOptions(targetPurpose, targetCategory, targetPlan);
+      if (!validOptions.some(o => o.value === formData.propertyType)) {
+        updatedFormData.propertyType = validOptions[0]?.value || "APARTMENT";
+      }
+    }
+
+    setFormData(updatedFormData);
+
+    // Reset documents if purpose/category/plan/type changes to avoid orphaned files
+    if (["listingPurpose", "propertyCategory", "propertyPlan", "propertyType"].includes(name)) {
       setDocuments({});
-      if (e.target.name === "propertyCategory") {
+      if (name === "propertyCategory") {
         setAmenities([]);
       }
     }
@@ -328,7 +619,7 @@ export default function AddSimplePropertyPage() {
   };
 
   const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  const ALLOWED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/webp"];
+  const ALLOWED_DOC_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -362,10 +653,10 @@ export default function AddSimplePropertyPage() {
       const file = e.target.files[0];
       const type = file.type.toLowerCase();
       const name = file.name.toLowerCase();
-      const isValid = ALLOWED_DOC_TYPES.includes(type) || /\.(pdf|jpg|jpeg|png|webp)$/i.test(name);
+      const isValid = ALLOWED_DOC_TYPES.includes(type) || /\.(pdf|png|jpg|jpeg)$/i.test(name);
       
       if (!isValid) {
-        setError(`Invalid file type for document. Only PDF, JPG, JPEG, PNG, and WEBP formats are supported.`);
+        setError(`Invalid file type for document. Only PDF (.pdf) and PNG/JPG images (.png, .jpg, .jpeg) are allowed.`);
         return;
       }
       setError(null);
@@ -411,9 +702,10 @@ export default function AddSimplePropertyPage() {
     });
   };
 
-  const currentConfig = PROPERTY_DOC_CONFIG[formData.propertyCategory]?.[formData.propertyPlan]?.[formData.propertyType];
+  const currentConfig = PROPERTY_DOC_CONFIG[formData.listingPurpose]?.[formData.propertyCategory]?.[formData.propertyPlan]?.[formData.propertyType];
   const requiredDocs = currentConfig?.required || [];
   const minImages = currentConfig?.images?.min || 1;
+  const fieldRules = currentConfig?.fields || {};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -447,7 +739,7 @@ export default function AddSimplePropertyPage() {
         'propertyTitle', 'propertyCategory', 'propertyPlan', 'propertyType', 
         'propertyLocation', 'propertyDescription', 'trakheesiNumber',
         'listingPurpose', 'whatsappNumber', 'permitNumber', 'referenceNumber', 
-        'unitNumber', 'furnishingStatus', 'availability'
+        'availability'
       ];
       
       allowedFields.forEach(key => {
@@ -456,23 +748,32 @@ export default function AddSimplePropertyPage() {
         }
       });
 
+      if (fieldRules.unitNumber !== "forbidden" && formData.unitNumber) {
+        payload.set('unitNumber', formData.unitNumber);
+      }
+      if (fieldRules.furnishingStatus !== "forbidden" && formData.furnishingStatus) {
+        payload.set('furnishingStatus', formData.furnishingStatus);
+      }
+
       payload.set('propertyPrice', formData.propertyPrice);
       payload.set('propertyArea', formData.propertyArea);
-      payload.set('parkingSpaces', formData.parkingSpaces);
+      payload.set('parkingSpaces', formData.parkingSpaces || '0');
 
       // rentalPeriod is required only when listingPurpose is RENT
       if (formData.listingPurpose === 'RENT') {
         payload.set('rentalPeriod', formData.rentalPeriod);
       }
 
-      // propertyBedrooms and propertyBathrooms: only allowed for APARTMENT or VILLA
-      if (['APARTMENT', 'VILLA'].includes(formData.propertyType)) {
-        if (formData.propertyBedrooms) payload.set('propertyBedrooms', formData.propertyBedrooms);
-        if (formData.propertyBathrooms) payload.set('propertyBathrooms', formData.propertyBathrooms);
+      // propertyBedrooms and propertyBathrooms: only if NOT forbidden
+      if (fieldRules.propertyBedrooms !== "forbidden" && formData.propertyBedrooms) {
+        payload.set('propertyBedrooms', formData.propertyBedrooms);
+      }
+      if (fieldRules.propertyBathrooms !== "forbidden" && formData.propertyBathrooms) {
+        payload.set('propertyBathrooms', formData.propertyBathrooms);
       }
 
-      // propertyBuiltUpArea: only allowed for VILLA, LAND, BUILDING
-      if (['VILLA', 'LAND', 'BUILDING'].includes(formData.propertyType) && formData.propertyBuiltUpArea) {
+      // propertyBuiltUpArea: only if NOT forbidden
+      if (fieldRules.propertyBuiltUpArea !== "forbidden" && formData.propertyBuiltUpArea) {
         payload.set('propertyBuiltUpArea', formData.propertyBuiltUpArea);
       }
 
@@ -655,23 +956,11 @@ export default function AddSimplePropertyPage() {
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Property Type</label>
                 <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                  {formData.propertyCategory === 'RESIDENTIAL' ? (
-                    <>
-                      <option value="APARTMENT">Apartment</option>
-                      <option value="VILLA">Villa</option>
-                      {formData.propertyPlan === 'READY' && <option value="LAND">Land</option>}
-                    </>
-                  ) : (
-                    <>
-                      <option value="RETAIL">Retail</option>
-                      {formData.propertyPlan === 'READY' && (
-                        <>
-                          <option value="OFFICES">Offices</option>
-                          <option value="BUILDING">Building</option>
-                        </>
-                      )}
-                    </>
-                  )}
+                  {getPropertyTypeOptions(formData.listingPurpose, formData.propertyCategory, formData.propertyPlan).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -704,16 +993,16 @@ export default function AddSimplePropertyPage() {
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Total Area (sq.ft) *</label>
                 <input required type="number" name="propertyArea" min="1" value={formData.propertyArea} onChange={handleChange} placeholder="e.g. 2500" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
               </div>
-              {["VILLA", "LAND", "BUILDING"].includes(formData.propertyType) && (
+              {fieldRules.propertyBuiltUpArea !== "forbidden" && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Built-up Area (sq.ft) *</label>
-                  <input required type="number" name="propertyBuiltUpArea" min="1" value={formData.propertyBuiltUpArea} onChange={handleChange} placeholder="e.g. 2000" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Built-up Area (sq.ft) {fieldRules.propertyBuiltUpArea === "required" ? "*" : ""}</label>
+                  <input required={fieldRules.propertyBuiltUpArea === "required"} type="number" name="propertyBuiltUpArea" min="1" value={formData.propertyBuiltUpArea} onChange={handleChange} placeholder="e.g. 2000" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
                 </div>
               )}
-              {["APARTMENT", "VILLA"].includes(formData.propertyType) && (
+              {fieldRules.propertyBedrooms !== "forbidden" && (
                 <>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bedrooms</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bedrooms {fieldRules.propertyBedrooms === "required" ? "*" : ""}</label>
                     <select name="propertyBedrooms" value={formData.propertyBedrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] max-h-48 overflow-y-auto">
                       <option value="Studio">Studio</option>
                       {Array.from({ length: 30 }, (_, i) => i + 1).map(num => (
@@ -722,7 +1011,7 @@ export default function AddSimplePropertyPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bathrooms</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Bathrooms {fieldRules.propertyBathrooms === "required" ? "*" : ""}</label>
                     <select name="propertyBathrooms" value={formData.propertyBathrooms} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] max-h-48 overflow-y-auto">
                       {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
                         <option key={num} value={num.toString()}>{num} {num === 1 ? 'Bathroom' : 'Bathrooms'}</option>
@@ -736,7 +1025,21 @@ export default function AddSimplePropertyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">WhatsApp Number *</label>
-                <input required name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} placeholder="e.g. +971501234567" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                <div className="flex rounded-xl overflow-hidden border border-gray-200 dark:border-[#1A3626] bg-gray-50 dark:bg-[#091711] focus-within:border-[#5CD284] focus-within:ring-1 focus-within:ring-[#5CD284] transition-all">
+                  <div className="flex items-center gap-1.5 px-3.5 bg-gray-100 dark:bg-[#142e1d] border-r border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold text-sm select-none shrink-0">
+                    <span className="text-base leading-none">🇦🇪</span>
+                    <span>+971</span>
+                  </div>
+                  <input 
+                    required 
+                    name="whatsappNumber" 
+                    type="tel"
+                    value={formData.whatsappNumber ? formData.whatsappNumber.replace(/^\+971/, '').replace(/^971/, '') : ''} 
+                    onChange={handleWhatsappChange} 
+                    placeholder="50 123 4567" 
+                    className="w-full bg-transparent px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none text-sm font-medium" 
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Trakheesi Permit Number *</label>
@@ -746,25 +1049,72 @@ export default function AddSimplePropertyPage() {
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Reference Number *</label>
                 <input required name="referenceNumber" value={formData.referenceNumber} onChange={handleChange} placeholder="e.g. CPM-1029" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Unit Number *</label>
-                <input required name="unitNumber" value={formData.unitNumber} onChange={handleChange} placeholder="e.g. Apartment 1402" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
-              </div>
+              {fieldRules.unitNumber !== "forbidden" && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Unit Number {fieldRules.unitNumber === "required" ? "*" : ""}</label>
+                  <input required={fieldRules.unitNumber === "required"} name="unitNumber" value={formData.unitNumber} onChange={handleChange} placeholder="e.g. Apartment 1402" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Parking Spaces *</label>
                 <input required type="number" name="parkingSpaces" value={formData.parkingSpaces} onChange={handleChange} placeholder="e.g. 1" min="0" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Furnishing Status *</label>
-                <select name="furnishingStatus" value={formData.furnishingStatus} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
-                  <option value="NOT_FURNISHED">Unfurnished</option>
-                  <option value="SEMI">Semi-Furnished</option>
-                  <option value="FULL">Fully Furnished</option>
-                </select>
-              </div>
+              {fieldRules.furnishingStatus !== "forbidden" && (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Furnishing Status {fieldRules.furnishingStatus === "required" ? "*" : ""}</label>
+                  <select name="furnishingStatus" value={formData.furnishingStatus} onChange={handleChange} className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] transition-colors">
+                    <option value="NOT_FURNISHED">Not Furnished</option>
+                    <option value="SEMI">Semi Furnished</option>
+                    <option value="FULL">Fully Furnished</option>
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Availability *</label>
-                <input required name="availability" value={formData.availability} onChange={handleChange} placeholder="e.g. Vacant, or Date" className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl px-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284]" />
+                
+                {/* Segmented Control: Immediately vs From Date */}
+                <div className="grid grid-cols-2 p-1 bg-gray-100 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl mb-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleAvailabilityTypeChange("immediate")}
+                    className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      availabilityType === "immediate"
+                        ? "bg-[#0A3622] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                        : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Immediately
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAvailabilityTypeChange("date")}
+                    className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      availabilityType === "date"
+                        ? "bg-[#0A3622] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                        : "bg-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    From Date
+                  </button>
+                </div>
+
+                {/* Date Input displayed when "From Date" is selected */}
+                {availabilityType === "date" && (
+                  <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#0A3622] dark:text-[#5CD284]">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      required
+                      type="date"
+                      name="availabilityDate"
+                      min={new Date().toISOString().split("T")[0]}
+                      value={availabilityDate}
+                      onChange={handleAvailabilityDateChange}
+                      className="w-full bg-gray-50 dark:bg-[#091711] border border-gray-200 dark:border-[#1A3626] rounded-xl pl-10 pr-4 py-3 text-gray-900 dark:text-white focus:outline-none focus:border-[#5CD284] text-sm transition-colors cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -891,7 +1241,7 @@ export default function AddSimplePropertyPage() {
                         <input 
                           required
                           type="file" 
-                          accept=".pdf,image/*" 
+                          accept=".pdf,application/pdf,.png,image/png,.jpg,.jpeg,image/jpeg" 
                           onChange={(e) => handleDocumentChange(doc, e)}
                           className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#1A3626]/10 file:text-[#1A3626] dark:file:bg-[#c9a14b]/20 dark:file:text-[#c9a14b] hover:file:bg-[#1A3626]/20 cursor-pointer"
                         />

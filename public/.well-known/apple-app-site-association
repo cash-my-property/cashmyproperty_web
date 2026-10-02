@@ -5,13 +5,88 @@
       {
         "appID": "9HHW6835H6.com.cashmyproperty",
         "paths": [
+          "/",
+          "/en",
+          "/ar",
           "/property/*",
+          "/*/property/*",
           "/login",
+          "/*/login",
           "/public-property/*",
+          "/*/public-property/*",
           "/simple-property/*",
-          "/public-simple-property/*"
+          "/*/simple-property/*",
+          "/public-simple-property/*",
+          "/*/public-simple-property/*",
+          "/sellers/*",
+          "/*/sellers/*",
+          "/auctions/*",
+          "/*/auctions/*"
+        ],
+        "components": [
+          {
+            "/": "/",
+            "comment": "Matches homepage"
+          },
+          {
+            "/": "/en",
+            "comment": "Matches English homepage"
+          },
+          {
+            "/": "/ar",
+            "comment": "Matches Arabic homepage"
+          },
+          {
+            "/": "/property/*",
+            "comment": "Matches property detail pages"
+          },
+          {
+            "/": "/*/property/*",
+            "comment": "Matches localized property detail pages"
+          },
+          {
+            "/": "/public-property/*"
+          },
+          {
+            "/": "/*/public-property/*"
+          },
+          {
+            "/": "/simple-property/*"
+          },
+          {
+            "/": "/*/simple-property/*"
+          },
+          {
+            "/": "/public-simple-property/*"
+          },
+          {
+            "/": "/*/public-simple-property/*"
+          },
+          {
+            "/": "/login"
+          },
+          {
+            "/": "/*/login"
+          },
+          {
+            "/": "/sellers/*"
+          },
+          {
+            "/": "/*/sellers/*"
+          },
+          {
+            "/": "/auctions/*"
+          },
+          {
+            "/": "/*/auctions/*"
+          }
         ]
       }
     ]
+  },
+  "webcredentials": {
+    "apps": [
+      "9HHW6835H6.com.cashmyproperty"
+    ]
   }
-} 
+}

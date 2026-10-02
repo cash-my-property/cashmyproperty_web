@@ -36,9 +36,9 @@ export default function PlatformGuideClient() {
     gettingStarted: "1. Account & Verification",
     roleSwitcher: "2. Roles & Permissions",
     buyerSimple: "3. Buyer - Simple Listings",
-    buyerRealtime: "4. Buyer - Realtime Listings",
-    sellerSimple: "5. Seller - Simple Listings",
-    sellerRealtime: "6. Seller - Realtime Listings"
+    buyerRealtime: "4. Buyer - Live Bidding",
+    sellerSimple: "5. Agent - Simple Listings",
+    sellerRealtime: "6. Agent - Live Auctions"
   };
 
   const getTabIcon = (key: string) => {
@@ -77,10 +77,10 @@ export default function PlatformGuideClient() {
   );
 
   return (
-    <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-20 transition-colors">
+    <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pb-20 transition-colors">
       
       {/* 1. HERO BANNER */}
-      <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#1A3626] via-[#102418] to-[#091711] text-white py-14 sm:py-20 px-4 sm:px-6 lg:px-12 border-b border-[#1A3626]/50">
+      <section className="relative w-full overflow-hidden bg-gradient-to-b from-[#1A3626] via-[#102418] to-[#091711] text-white pt-24 sm:pt-32 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-12 border-b border-[#1A3626]/50">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5CD284]/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#c9a14b]/10 rounded-full blur-[100px] pointer-events-none" />
 
@@ -259,8 +259,8 @@ export default function PlatformGuideClient() {
                       <th className="py-3.5 px-4 font-bold rounded-l-xl">{guide.matrix?.headers?.feature || "Platform Feature"}</th>
                       <th className="py-3.5 px-4 font-bold text-center">{guide.matrix?.headers?.simpleBuyer || "Simple Buyer"}</th>
                       <th className="py-3.5 px-4 font-bold text-center">{guide.matrix?.headers?.realtimeBuyer || "Realtime Buyer"}</th>
-                      <th className="py-3.5 px-4 font-bold text-center">{guide.matrix?.headers?.simpleSeller || "Simple Seller"}</th>
-                      <th className="py-3.5 px-4 font-bold text-center rounded-r-xl">{guide.matrix?.headers?.realtimeSeller || "Realtime Seller"}</th>
+                      <th className="py-3.5 px-4 font-bold text-center">{guide.matrix?.headers?.simpleSeller || "Simple Agent"}</th>
+                      <th className="py-3.5 px-4 font-bold text-center rounded-r-xl">{guide.matrix?.headers?.realtimeSeller || "Realtime Agent"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-[#1A3626]/60">
@@ -424,7 +424,7 @@ export default function PlatformGuideClient() {
               <div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                   <Building className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
-                  {guide.sellerSimple?.title || "Seller Guide - Simple Listings"}
+                  {guide.sellerSimple?.title || "Agent Guide - Simple Listings"}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {guide.sellerSimple?.subtitle}
@@ -473,7 +473,7 @@ export default function PlatformGuideClient() {
               <div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
                   <Flame className="w-7 h-7 text-[#1A3626] dark:text-[#c9a14b]" />
-                  {guide.sellerRealtime?.title || "Seller Guide - Realtime Listings & Distress Offers"}
+                  {guide.sellerRealtime?.title || "Agent Guide - Live Auctions & Distress Offers"}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {guide.sellerRealtime?.subtitle}
@@ -569,7 +569,7 @@ export default function PlatformGuideClient() {
               {guide.cta?.title || "Ready to Experience the Future of UAE Real Estate?"}
             </h3>
             <p className="text-xs sm:text-sm text-gray-300">
-              {guide.cta?.subtitle || "Join thousands of verified buyers, sellers, and real estate brokers on Cash My Property today."}
+              {guide.cta?.subtitle || "Join thousands of verified buyers and real estate agents on Cash My Property today."}
             </p>
           </div>
 

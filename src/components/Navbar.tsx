@@ -4,27 +4,50 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2, RefreshCw } from "lucide-react";
+import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2 } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-
+import api from "@/lib/api";
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale, dict } = useDictionary();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isBuyer, isSeller, fetchProfile } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isAuth = mounted && isAuthenticated;
+
+  const isHomePage = pathname === `/${locale}` || pathname === `/${locale}/` || pathname === '/' || pathname === '';
   const isAuctionsActive = pathname.includes('/auctions') || pathname.includes('/property/') || pathname.includes('/public-property/');
   const isListingsActive = (pathname.includes('/listings') || pathname.includes('/simple-listings') || pathname.includes('/simple-property') || pathname.includes('/public-simple-property/')) && !isAuctionsActive;
+  const showRealtimeNav = isAuctionsActive;
+  const showListingsNav = !isAuctionsActive;
+
+  const handleToggleType = async (targetType: "SIMPLE" | "REGULAR", targetUrl: string) => {
+    if (isAuthenticated && user) {
+      try {
+        await api.put('/switch/toggleRole', { type: targetType });
+        if (fetchProfile) await fetchProfile();
+      } catch (err) {
+        console.error("Failed to switch type:", err);
+      }
+    }
+    router.push(targetUrl);
+  };
 
   const currentPurpose = searchParams.get('listingPurpose') || searchParams.get('purpose');
   const currentSort = searchParams.get('sortBy') || searchParams.get('sort');
+  const currentPropertyType = searchParams.get('propertyType')?.toUpperCase();
 
 
   const getNavLinks = () => {
@@ -38,8 +61,8 @@ export default function Navbar() {
 
     const baseLinks = rawLinks.filter((l: any) => l.href !== '/');
 
-    if (!isAuthenticated || !user) {
-      return baseLinks;
+    if (!isAuth || !user) {
+      return dict.navbar.links;
     }
 
     const findAgentsLink = baseLinks.find((l: any) => l.href === '/sellers') || { title: "Find Agents", href: "/sellers" };
@@ -85,103 +108,143 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 border-b ${
+        className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 ${
           scrolled
-            ? "bg-white/90 dark:bg-[#091711]/90 backdrop-blur-2xl shadow-md border-gray-200/60 dark:border-[#1A3626]/80 py-1.5"
-            : "bg-white/95 dark:bg-[#091711]/95 backdrop-blur-xl border-gray-200/40 dark:border-[#1A3626]/50 py-2 sm:py-2.5"
+            ? "bg-white/90 dark:bg-[#091711]/90 backdrop-blur-xl shadow-xs border-b border-gray-200/70 dark:border-[#1A3626]/70 py-1.5 sm:py-2"
+            : "bg-white/95 dark:bg-[#091711]/95 backdrop-blur-md border-b border-gray-200/50 dark:border-[#1A3626]/50 py-2 sm:py-2.5"
         }`}
       >
-        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center shrink-0">
-            <Link href="/" className="flex items-center group">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          {/* Left: Logo & Centered Platform Toggle */}
+          <div className="flex items-center flex-1 min-w-0">
+            <Link href="/" className="flex items-center group shrink-0">
               <Image
                 src="/cmpfavicon-removebg-preview.png"
                 alt="Cash My Property"
-                width={60}
-                height={17}
+                width={100}
+                height={28}
                 style={{ width: "auto", height: "auto" }}
-                className="object-contain max-h-5 sm:max-h-5.5 group-hover:scale-105 transition-transform duration-300"
+                className="object-contain max-h-5 sm:max-h-[27px] w-auto group-hover:scale-105 transition-transform duration-300"
                 priority
               />
             </Link>
+
+            {/* Platform Toggle Pill (Listings vs Real Time Offer) - Centered between Logo and Buy */}
+            <div className="flex-1 flex justify-center px-1 sm:px-4">
+              <div className="flex items-center shrink-0 bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner transition-colors duration-300">
+                <button
+                  type="button"
+                  onClick={() => handleToggleType("SIMPLE", `/${locale}/listings`)}
+                  className={`px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11.5px] font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer active:scale-95 ${
+                    isListingsActive && !isHomePage
+                      ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
+                      : "text-gray-300 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <span>Listings</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleType("REGULAR", `/${locale}/auctions`)}
+                  className={`px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11.5px] font-bold transition-all duration-300 ease-out flex items-center gap-1 cursor-pointer active:scale-95 ${
+                    isAuctionsActive && !isHomePage
+                      ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
+                      : "text-gray-300 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <span>Real Time Offer</span>
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Platform Toggle Pill (Listings vs Real Time Offer) & Simple Listings Sub-Navigations */}
-          <div className="flex items-center ml-3 sm:ml-6 lg:ml-8 mr-auto lg:mr-6 shrink-0 gap-4 sm:gap-6">
-            <div className="flex items-center bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner">
-              <Link
-                href={`/${locale}/listings`}
-                className={`px-3 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-[11.5px] font-bold transition-all flex items-center gap-1.5 ${
-                  isListingsActive && !isAuctionsActive
-                    ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
-                    : "text-gray-300 hover:text-white"
-                }`}
-              >
-                <span>Listings</span>
-              </Link>
-              <Link
-                href={`/${locale}/auctions`}
-                className={`px-3 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-[11.5px] font-bold transition-all flex items-center gap-1.5 ${
-                  isAuctionsActive
-                    ? "bg-[#5CD284] text-[#0A1C12] shadow-xs"
-                    : "text-gray-300 hover:text-white"
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                <span>Real Time Offer</span>
-              </Link>
-            </div>
-
-            {/* Simple Listings specific nav items: Buy, Rent, Sell (with red New badge), New Projects, Find Agents */}
-            {isListingsActive && !isAuctionsActive && (
-              <div className="hidden md:flex items-center gap-4 lg:gap-6 text-[13.5px] sm:text-[14px] font-semibold text-gray-700 dark:text-gray-200">
+          {/* Center: Navigation Links */}
+          <div className="hidden md:flex items-center justify-center shrink-0 mx-2 lg:mx-4">
+            {showListingsNav ? (
+              <nav className="flex items-center gap-7 lg:gap-8 xl:gap-10 text-[14px] lg:text-[15px] font-semibold text-gray-700 dark:text-gray-200">
                 <Link
                   href={`/${locale}/listings?listingPurpose=SALE`}
-                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors ${
-                    currentPurpose === 'SALE' || currentPurpose === 'BUY' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                    !isHomePage && (currentPurpose === 'SALE' || currentPurpose === 'BUY') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
                   Buy
                 </Link>
                 <Link
                   href={`/${locale}/listings?listingPurpose=RENT`}
-                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors ${
-                    currentPurpose === 'RENT' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                    !isHomePage && currentPurpose === 'RENT' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
                   Rent
                 </Link>
                 <Link
                   href={`/${locale}/listings?sortBy=newest`}
-                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap ${
-                    currentSort === 'newest' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
+                    !isHomePage && currentSort === 'newest' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
                   New Projects
                 </Link>
                 <Link
                   href={`/${locale}/sellers`}
-                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap ${
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
                     pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
                   {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
                 </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Right Side (Nav + Actions) */}
-          <div className="hidden lg:flex items-center gap-8 mr-2">
-            {/* Desktop Navigation (Only when not in listings mode, since Find Agents is in inline strip) */}
-            {!isListingsActive && (
-              <nav className="flex items-center gap-1">
+              </nav>
+            ) : showRealtimeNav ? (
+              <nav className="flex items-center gap-6 lg:gap-8 xl:gap-9 text-[14px] lg:text-[15px] font-semibold text-gray-700 dark:text-gray-200">
+                <Link
+                  href={`/${locale}/auctions`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
+                    isAuctionsActive && !currentPropertyType && !pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  All Offers
+                </Link>
+                <Link
+                  href={`/${locale}/auctions?propertyType=APARTMENT`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                    currentPropertyType === 'APARTMENT' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  Apartments
+                </Link>
+                <Link
+                  href={`/${locale}/auctions?propertyType=VILLA`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                    currentPropertyType === 'VILLA' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  Villas
+                </Link>
+                <Link
+                  href={`/${locale}/auctions?propertyType=COMMERCIAL`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                    currentPropertyType === 'COMMERCIAL' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  Commercial
+                </Link>
+                <Link
+                  href={`/${locale}/sellers`}
+                  className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
+                    pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                  }`}
+                >
+                  {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                </Link>
+              </nav>
+            ) : (
+              <nav className="flex items-center gap-6 lg:gap-8 text-[14px] lg:text-[15px] font-semibold text-gray-700 dark:text-gray-200">
                 {navLinks.map((item, index) => (
                   <Link
                     key={index}
                     href={`/${locale}${item.href === "/" ? "" : item.href}`}
-                    className="relative px-3.5 py-1.5 font-semibold text-[14px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#c9a14b] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
+                    className="relative px-3.5 py-1.5 font-semibold text-[14px] tracking-wide text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-[#5CD284] rounded-full hover:bg-gray-100 dark:hover:bg-[#163321]/80 transition-all duration-300"
                     style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
                   >
                     {item.title}
@@ -189,9 +252,12 @@ export default function Navbar() {
                 ))}
               </nav>
             )}
+          </div>
 
+          {/* Right Side Actions & Mobile Trigger */}
+          <div className="flex items-center justify-end flex-1 shrink-0 gap-2">
             {/* Desktop Actions */}
-            <div className="flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-4">
               <div className="flex items-center gap-1 border-r border-gray-200 dark:border-[#1A3626] pr-4">
                 <div className="scale-90">
                   <ThemeToggle />
@@ -211,9 +277,8 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {isAuthenticated ? (
+              {isAuth ? (
                 <div className="flex items-center gap-3">
-
                   {/* Notifications Center */}
                   <div className="relative flex items-center">
                     <button 
@@ -356,11 +421,10 @@ export default function Navbar() {
                 </Link>
               )}
             </div>
-          </div>
 
           {/* Mobile Menu Toggle & Notifications */}
           <div className="flex items-center gap-2 lg:hidden">
-            {isAuthenticated && (
+            {isAuth && (
               <div className="relative">
                 <button 
                   onClick={() => {
@@ -482,28 +546,119 @@ export default function Navbar() {
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+          </div>
         </div>
 
         {/* Mobile Menu Drawer */}
         <div
-          className={`lg:hidden fixed inset-x-4 top-[70px] bg-white/95 dark:bg-[#091711]/95 backdrop-blur-xl border border-gray-100 dark:border-[#1A3626]/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300 origin-top overflow-hidden pointer-events-auto ${mobileMenuOpen ? "opacity-100 scale-y-100 max-h-[85vh]" : "opacity-0 scale-y-0 max-h-0"
-            }`}
+          className={`lg:hidden absolute top-full left-0 right-0 w-full bg-white/98 dark:bg-[#091711]/98 backdrop-blur-2xl border-b border-gray-200/80 dark:border-[#1A3626] shadow-2xl transition-all duration-300 origin-top overflow-hidden pointer-events-auto ${
+            mobileMenuOpen ? "opacity-100 scale-y-100 max-h-[85vh] overflow-y-auto" : "opacity-0 scale-y-0 max-h-0 pointer-events-none"
+          }`}
         >
-          <div className="flex flex-col px-6 py-6 gap-4">
+          <div className="flex flex-col px-6 py-6 gap-4 w-full">
             <nav className="flex flex-col gap-4 font-semibold text-[16px] text-gray-800 dark:text-gray-200">
-              {navLinks.map((item, index) => (
-                <Link
-                  key={index}
-                  href={`/${locale}${item.href === "/" ? "" : item.href}`}
-                  className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors tracking-wide"
-                  style={{ fontFamily: "var(--font-inter), sans-serif" }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.title}
-                </Link>
-              ))}
+              {showListingsNav ? (
+                <>
+                  <Link
+                    href={`/${locale}/listings?listingPurpose=SALE`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                      !isHomePage && (currentPurpose === 'SALE' || currentPurpose === 'BUY') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Buy
+                  </Link>
+                  <Link
+                    href={`/${locale}/listings?listingPurpose=RENT`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                      !isHomePage && currentPurpose === 'RENT' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Rent
+                  </Link>
+                  <Link
+                    href={`/${locale}/listings?sortBy=newest`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
+                      !isHomePage && currentSort === 'newest' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    New Projects
+                  </Link>
+                  <Link
+                    href={`/${locale}/sellers`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
+                      pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                  </Link>
+                </>
+              ) : showRealtimeNav ? (
+                <>
+                  <Link
+                    href={`/${locale}/auctions`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                      isAuctionsActive && !currentPropertyType && !pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    All Offers
+                  </Link>
+                  <Link
+                    href={`/${locale}/auctions?propertyType=APARTMENT`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                      currentPropertyType === 'APARTMENT' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Apartments
+                  </Link>
+                  <Link
+                    href={`/${locale}/auctions?propertyType=VILLA`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                      currentPropertyType === 'VILLA' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Villas
+                  </Link>
+                  <Link
+                    href={`/${locale}/auctions?propertyType=COMMERCIAL`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors py-1 ${
+                      currentPropertyType === 'COMMERCIAL' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Commercial
+                  </Link>
+                  <Link
+                    href={`/${locale}/sellers`}
+                    className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
+                      pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                  </Link>
+                </>
+              ) : (
+                navLinks.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={`/${locale}${item.href === "/" ? "" : item.href}`}
+                    className="hover:text-[#1A3626] dark:hover:text-[#c9a14b] transition-colors tracking-wide py-1"
+                    style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.title}
+                  </Link>
+                ))
+              )}
 
-              <div className="h-px bg-gray-200 dark:bg-[#102418] my-1" />
+
 
               {/* Mobile Theme Toggle */}
               <div className="flex items-center justify-between py-1">
@@ -524,7 +679,7 @@ export default function Navbar() {
             </nav>
 
             <div className="mt-2 pt-4 border-t border-gray-200 dark:border-[#1A3626]">
-              {isAuthenticated ? (
+              {isAuth ? (
                 <Link
                   href={`/${locale}/dashboard`}
                   className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
@@ -553,6 +708,7 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+
     </>
   );
 }

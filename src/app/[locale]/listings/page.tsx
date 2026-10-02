@@ -4,13 +4,18 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, MapPin, Filter, Bed, Bath, Square, ChevronDown, ArrowRight, Building, Home, Key, Loader2, CheckCircle2, Heart, Phone, MessageCircle } from "lucide-react";
+import { MapPin, Bed, Bath, Square, ChevronDown, Loader2, Building, LayoutGrid, List } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
+import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
+import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import PropertyGridCard from "@/components/listings/PropertyGridCard";
+import PropertyListCard from "@/components/listings/PropertyListCard";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
@@ -19,10 +24,9 @@ export default function ListingsPage() {
 
   // Filter state
   const [activeType, setActiveType] = useState("All");
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const [properties, setProperties] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,8 +35,18 @@ export default function ListingsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+
+  useEffect(() => {
+    if (isAuthenticated && isBuyer && buyerType !== 'SIMPLE') {
+      api.put('/switch/toggleRole', { type: 'SIMPLE' })
+        .then(() => {
+          if (fetchProfile) fetchProfile();
+        })
+        .catch((err) => console.error("Auto switch in listings page failed", err));
+    }
+  }, [isAuthenticated, isBuyer, buyerType]);
 
   // Only the latest non-append request may update the list (filters can change faster than the API answers)
   const latestRequestRef = useRef(0);
@@ -91,8 +105,24 @@ export default function ListingsPage() {
       if (activeType && activeType !== 'All') {
         if (activeType === 'Commercial') {
           queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.delete('propertyType');
+        } else if (activeType === 'Office' || activeType === 'Office Space') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'OFFICES');
+        } else if (activeType === 'Retail') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'RETAIL');
+        } else if (activeType === 'Warehouse') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'WAREHOUSE');
+        } else if (activeType === 'Building') {
+          queryParams.set('propertyCategory', 'COMMERCIAL');
+          queryParams.set('propertyType', 'BUILDING');
+        } else if (activeType === 'Land') {
+          queryParams.set('propertyCategory', 'RESIDENTIAL');
+          queryParams.set('propertyType', 'LAND');
         } else {
-          queryParams.set('propertyType', activeType.toUpperCase());
+          queryParams.set('propertyType', activeType.toUpperCase().replace(/\s+/g, '_'));
         }
       } else if (paramType) {
         queryParams.set('propertyType', paramType.toUpperCase());
@@ -114,8 +144,16 @@ export default function ListingsPage() {
       const queryString = queryParams.toString();
 
       let res;
-      if (isAuthenticated && isBuyer && buyerType === 'SIMPLE') {
-        res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
+      if (isAuthenticated && isBuyer) {
+        try {
+          res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
+        } catch (buyerErr: any) {
+          if (buyerErr?.response?.status === 401 || buyerErr?.response?.status === 403) {
+            res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
+          } else {
+            throw buyerErr;
+          }
+        }
       } else {
         res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
       }
@@ -187,7 +225,7 @@ export default function ListingsPage() {
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       
       {/* HERO BANNER */}
-      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center overflow-hidden">
+      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
           style={{
@@ -209,7 +247,7 @@ export default function ListingsPage() {
 
           {/* Upgraded Hero Search Bar Widget */}
           <HeroSearchWidget 
-            initialTab="RENT"
+            initialTab={(searchParams?.get("tab") as any) || (searchParams?.get("listingPurpose") === "RENT" ? "RENT" : "BUY")}
             showTabs={true}
           />
         </div>
@@ -217,18 +255,20 @@ export default function ListingsPage() {
 
       {/* SELLER RESTRICTION BANNER */}
       {isAuthenticated && isSeller && (
-        <section className="w-full max-w-7xl mx-auto px-6 py-12">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
             <Building className="w-12 h-12 text-amber-500 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Mode Active</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              {dict.sellerModeBanner?.title || "Seller Mode Active"}
+            </h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
-              You are currently logged in as a Seller. Buyer simple listings are reserved exclusively for buyers.
+              {dict.sellerModeBanner?.description || "You are currently logged in as a Seller. Buyer simple listings are reserved exclusively for buyers."}
             </p>
             <Link
               href={`/${locale}/dashboard/seller/simple-listings`}
               className="px-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl text-sm"
             >
-              Go to My Simple Listings
+              {dict.sellerModeBanner?.buttonText || "Go to My Simple Listings"}
             </Link>
           </div>
         </section>
@@ -236,138 +276,191 @@ export default function ListingsPage() {
 
       {/* SIMPLE LISTINGS GRID */}
       {(!isAuthenticated || !isSeller) && (
-      <section className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] animate-pulse"></span>
-              <span className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[12px] uppercase">
-                Direct Sale & Rent
-              </span>
-            </div>
-            <h2 className="text-gray-900 dark:text-white text-[32px] sm:text-[40px] font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Simple Listings
-            </h2>
-          </div>
-
-          {/* Property Category Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {["All", "Apartment", "Villa", "Commercial"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setActiveType(type)}
-                className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  activeType === type
-                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
-                    : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        {/* Header Block */}
+        <div className="mb-8">
+          <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            {dict.listings?.pageTitle || "Listings"}
+          </h2>
+          <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
+            {dict.listings?.pageSubtitle || "Explore direct properties for rent or purchase with verified details and direct agent contact."}
+          </p>
         </div>
 
-        {/* Listings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4">
-                <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-xl w-full" />
-                <div className="p-4 flex flex-col gap-3">
-                  <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
-                </div>
-              </div>
-            ))
-          ) : (() => {
-            const filteredProperties = properties;
-
-            if (filteredProperties.length === 0) {
-              return <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">No properties match the selected filters.</div>;
-            }
-
-            return filteredProperties.map((item, idx) => {
-              const details = item.propertyDetails || item || {};
-              const title = item.title || details.propertyTitle || "Untitled Property";
-              const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-              const formattedLocation = (() => {
-                const words = rawLocation.trim().split(/\s+/);
-                return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
-              })();
-              const image = item.image || details.propertyImages?.[0]?.url || "/property-placeholder.svg";
-              const beds = item.specs?.beds || details.propertyBedrooms || 0;
-              const baths = item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
-              const area = item.area?.value ? `${item.area.value} ${item.area.unit || 'sqft'}` : (details.propertyArea?.value ? `${details.propertyArea.value} ${details.propertyArea.unit || 'sqft'}` : (details.propertyBuiltUpArea || 0) + ' sqft');
-              const price = item.price?.amount || details.propertyPrice?.amount || details.propertyPrice || 0;
-              const type = details.propertyType || "Property";
-
+        {/* Filter & View Controls Bar */}
+        <div className="flex items-center justify-between mb-10 gap-4">
+          {/* Property Category Pills (Left Side) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-1 min-w-0">
+            {[
+              { key: "all", value: "All" },
+              { key: "apartment", value: "Apartment" },
+              { key: "villa", value: "Villa" },
+              { key: "townhouse", value: "Townhouse" },
+              { key: "penthouse", value: "Penthouse" },
+              { key: "land", value: "Land" },
+              { key: "commercial", value: "Commercial" },
+              { key: "office", value: "Office" },
+              { key: "retail", value: "Retail" },
+              { key: "warehouse", value: "Warehouse" },
+            ].map(({ key, value }) => {
+              const label = dict.categories?.[key as keyof typeof dict.categories] || value;
               return (
-              <Link 
-                href={`/${locale}/simple-listings/${item._id || item.id}`} 
-                key={item._id || item.id} 
-                className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer"
-              >
-                <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
-                  <Image
-                    src={image}
-                    alt={title}
-                    fill
-                    priority={idx < 3}
-                    loading={idx < 3 ? undefined : "lazy"}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                    {item.status || "Active"}
-                  </div>
-                </div>
+                <button
+                  key={key}
+                  onClick={() => setActiveType(value)}
+                  className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                    activeType === value
+                      ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
+                      : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
 
-                <div className="p-4 pt-5 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                    <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
-                      <Dirham className="mr-1 text-[20px]" /> {price.toLocaleString()}
-                    </span>
-                  </div>
-                  
-                  <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                    <MapPin className="w-4 h-4" /> {formattedLocation}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                      <Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                      <Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                      <Square className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}
-                    </div>
-                  </div>
-
-                  {/* Footer Grid */}
-                  <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
-                    </div>
-                    <div className="flex flex-col items-center justify-center text-center px-1">
-                      <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
-                      <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            );
-          });
-        })()}
+          {/* View Mode Toggle: Grid / List (Right Side) */}
+          <div className="hidden sm:flex items-center bg-white dark:bg-[#102418] p-1 rounded-full border border-gray-100 dark:border-[#1A3626] shadow-sm shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                viewMode === "grid"
+                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              title="List View"
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Listings Grid / List Container */}
+        {isLoading ? (
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+                >
+                  <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                  <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Mobile Skeleton: Always Grid style */}
+              <div className="grid grid-cols-1 gap-8 md:hidden">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div
+                    key={`mob-skel-${idx}`}
+                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+                  >
+                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Skeleton: List style */}
+              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={`desk-skel-${idx}`}
+                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col md:flex-row gap-4 min-h-[200px]"
+                  >
+                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl w-full md:w-[280px] h-[200px] md:h-auto" />
+                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )
+        ) : (() => {
+          const filteredProperties = properties;
+
+          if (filteredProperties.length === 0) {
+            return (
+              <div className="col-span-full py-16 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-100 dark:border-[#1A3626] p-8">
+                <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                  {dict.listings?.emptyTitle || "No Properties Found"}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+                  {dict.listings?.emptyDesc || "We couldn't find any properties matching your current search criteria. Try adjusting your filters."}
+                </p>
+              </div>
+            );
+          }
+
+          if (viewMode === "grid") {
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredProperties.map((item, idx) => (
+                  <PropertyGridCard
+                    key={item._id || item.id || idx}
+                    item={item}
+                    locale={locale}
+                    priority={idx < 3}
+                  />
+                ))}
+              </div>
+            );
+          }
+
+          return (
+            <>
+              {/* Mobile View (< md): Always renders default Grid style */}
+              <div className="grid grid-cols-1 gap-8 md:hidden">
+                {filteredProperties.map((item, idx) => (
+                  <PropertyGridCard
+                    key={`mob-${item._id || item.id || idx}`}
+                    item={item}
+                    locale={locale}
+                    priority={idx < 3}
+                  />
+                ))}
+              </div>
+
+              {/* Laptop/Desktop View (md+): Renders List style */}
+              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
+                {filteredProperties.map((item, idx) => (
+                  <PropertyListCard
+                    key={`desk-${item._id || item.id || idx}`}
+                    item={item}
+                    locale={locale}
+                    priority={idx < 3}
+                  />
+                ))}
+              </div>
+            </>
+          );
+        })()}
 
         {/* PAGINATION / INFINITE SCROLL LOADER */}
         {hasMore && (
@@ -380,16 +473,20 @@ export default function ListingsPage() {
               {isFetchingMore ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Loading More Properties...</span>
+                  <span>{dict.listings?.loadingMore || "Loading More Listings..."}</span>
                 </>
               ) : (
                 <>
-                  <span>Load More Properties</span>
+                  <span>{dict.listings?.loadMore || "Load More Listings"}</span>
                   <ChevronDown className="w-4 h-4" />
                 </>
               )}
             </button>
-            <span className="text-xs text-gray-500 font-medium">Showing page {page} of {totalPages}</span>
+            <span className="text-xs text-gray-500 font-medium">
+              {(dict.listings?.showingPage || "Showing page {page} of {totalPages}")
+                .replace("{page}", page.toString())
+                .replace("{totalPages}", totalPages.toString())}
+            </span>
           </div>
         )}
       </section>

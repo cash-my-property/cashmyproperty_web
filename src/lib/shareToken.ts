@@ -1,6 +1,6 @@
 import CryptoJS from "crypto-js";
 
-const SHARE_ENCRYPTION_KEY = process.env.NEXT_PUBLIC_SHARE_ENCRYPTION_KEY || "cmp_share_2024";
+const SHARE_ENCRYPTION_KEY = process.env.NEXT_PUBLIC_SHARE_ENCRYPTION_KEY!;
 
 const key = CryptoJS.enc.Utf8.parse(
   SHARE_ENCRYPTION_KEY.padEnd(32, "0").slice(0, 32)

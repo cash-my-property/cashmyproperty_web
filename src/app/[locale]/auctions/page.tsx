@@ -5,25 +5,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { 
-  Search, 
   MapPin, 
   Clock, 
-  Filter, 
   Bed, 
   Bath, 
   Square, 
   ChevronDown, 
-  ArrowRight, 
-  Building, 
   Share2, 
-  Maximize, 
-  Home, 
-  Key, 
   Loader2,
-  CheckCircle2,
-  Heart,
-  Phone,
-  MessageCircle
+  Building,
+  Maximize,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import axios from "axios";
@@ -32,24 +25,36 @@ import { useSocket } from "@/context/SocketContext";
 import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
+import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
+import PropertyGridCard from "@/components/listings/PropertyGridCard";
+import PropertyListCard from "@/components/listings/PropertyListCard";
+import { extractPropertyImages } from "@/utils/imageUrl";
 
 export default function AuctionsListingPage() {
   const { dict, locale } = useDictionary();
   const searchParams = useSearchParams();
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
   const content = dict.home;
-  const realtimeOffers = dict.home.realtimebids.items;
 
   // Filter state
   const [activeType, setActiveType] = useState("All");
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
-  const [searchQuery, setSearchQuery] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [appliedLocation, setAppliedLocation] = useState("");
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
-  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const buyerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR');
+
+  useEffect(() => {
+    if (isAuthenticated && isBuyer && buyerType !== 'REGULAR') {
+      api.put('/switch/toggleRole', { type: 'REGULAR' })
+        .then(() => {
+          if (fetchProfile) fetchProfile();
+        })
+        .catch((err) => console.error("Auto switch in auctions page failed", err));
+    }
+  }, [isAuthenticated, isBuyer, buyerType]);
 
   const [liveAuctions, setLiveAuctions] = useState<any[]>([]);
   const [upcomingAuctions, setUpcomingAuctions] = useState<any[]>([]);
@@ -65,8 +70,15 @@ export default function AuctionsListingPage() {
   useEffect(() => {
     const urlLocation = searchParams.get("location");
     const urlSearch = searchParams.get("search");
+    const urlType = searchParams.get("propertyType");
     if (urlLocation) setAppliedLocation(urlLocation);
     if (urlSearch) setAppliedSearch(urlSearch);
+    if (urlType) {
+      const formatted = urlType.charAt(0).toUpperCase() + urlType.slice(1).toLowerCase();
+      setActiveType(formatted);
+    } else if (urlType === null && activeType !== "All") {
+      setActiveType("All");
+    }
   }, [searchParams]);
 
   // Listen to socket events for real-time price and auction updates
@@ -166,9 +178,29 @@ export default function AuctionsListingPage() {
       if (paramMaxPrice) queryParams.append('maxPrice', paramMaxPrice);
 
       if (activeType && activeType !== 'All') {
-        queryParams.append('propertyType', activeType.toUpperCase());
+        if (activeType === 'Commercial') {
+          queryParams.set('category', 'COMMERCIAL');
+          queryParams.delete('propertyType');
+        } else if (activeType === 'Office' || activeType === 'Office Space') {
+          queryParams.set('category', 'COMMERCIAL');
+          queryParams.set('propertyType', 'OFFICES');
+        } else if (activeType === 'Retail') {
+          queryParams.set('category', 'COMMERCIAL');
+          queryParams.set('propertyType', 'RETAIL');
+        } else if (activeType === 'Warehouse') {
+          queryParams.set('category', 'COMMERCIAL');
+          queryParams.set('propertyType', 'WAREHOUSE');
+        } else if (activeType === 'Building') {
+          queryParams.set('category', 'COMMERCIAL');
+          queryParams.set('propertyType', 'BUILDING');
+        } else if (activeType === 'Land') {
+          queryParams.set('category', 'RESIDENTIAL');
+          queryParams.set('propertyType', 'LAND');
+        } else {
+          queryParams.set('propertyType', activeType.toUpperCase().replace(/\s+/g, '_'));
+        }
       } else if (paramType) {
-        queryParams.append('propertyType', paramType.toUpperCase());
+        queryParams.set('propertyType', paramType.toUpperCase());
       }
 
       if (selectedType && selectedType !== 'all') {
@@ -185,11 +217,22 @@ export default function AuctionsListingPage() {
       const queryString = queryParams.toString();
 
       let liveRes, upcomingRes;
-      if (isAuthenticated && isBuyer && buyerType === 'REGULAR') {
-        [liveRes, upcomingRes] = await Promise.all([
-          api.get(`/buyer/live-listings?${queryString}`),
-          api.get(`/buyer/upcoming-listings?${queryString}`)
-        ]);
+      if (isAuthenticated && isBuyer) {
+        try {
+          [liveRes, upcomingRes] = await Promise.all([
+            api.get(`/buyer/live-listings?${queryString}`),
+            api.get(`/buyer/upcoming-listings?${queryString}`)
+          ]);
+        } catch (buyerErr: any) {
+          if (buyerErr?.response?.status === 401 || buyerErr?.response?.status === 403) {
+            [liveRes, upcomingRes] = await Promise.all([
+              axios.get(`${API_URL}/public/live-properties?${queryString}`),
+              axios.get(`${API_URL}/public/upcoming-properties?${queryString}`)
+            ]);
+          } else {
+            throw buyerErr;
+          }
+        }
       } else {
         [liveRes, upcomingRes] = await Promise.all([
           axios.get(`${API_URL}/public/live-properties?${queryString}`),
@@ -307,18 +350,20 @@ export default function AuctionsListingPage() {
 
       {/* SELLER RESTRICTION BANNER */}
       {isAuthenticated && isSeller && (
-        <section className="w-full max-w-7xl mx-auto px-6 py-12">
+        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
             <Building className="w-12 h-12 text-amber-500 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Seller Mode Active</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              {dict.sellerModeBanner?.title || "Seller Mode Active"}
+            </h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
-              You are currently logged in as a Seller. Buyer listings and real-time offer bidding are reserved exclusively for buyers.
+              {dict.sellerModeBanner?.description || "You are currently logged in as a Seller. Buyer listings and real-time offer bidding are reserved exclusively for buyers."}
             </p>
             <Link
               href={`/${locale}/dashboard/seller/properties`}
               className="px-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl text-sm"
             >
-              Go to My Listings
+              {dict.sellerModeBanner?.buttonText || "Go to My Listings"}
             </Link>
           </div>
         </section>
@@ -326,181 +371,179 @@ export default function AuctionsListingPage() {
 
       {/* REALTIME OFFERS GRID */}
       {(!isAuthenticated || !isSeller) && (
-      <section className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#5CD284] animate-pulse"></span>
-              <span className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-[0.2em] text-[12px] uppercase">
-                Active & Upcoming Live Offers
-              </span>
-            </div>
-            <h2 className="text-gray-900 dark:text-white text-[32px] sm:text-[40px] font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Realtime Offers
-            </h2>
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        {/* Header Block */}
+        <div className="mb-8">
+          <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            {dict.auctions?.pageTitle || "Realtime Offers"}
+          </h2>
+          <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
+            {dict.auctions?.pageSubtitle || "Explore live competitive offers with transparent real-time updates and verified sellers."}
+          </p>
+        </div>
+
+        {/* Filter & View Controls Bar */}
+        <div className="flex items-center justify-between mb-10 gap-4">
+          {/* Property Category Pills (Left Side) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-1 min-w-0">
+            {[
+              { key: "all", value: "All" },
+              { key: "apartment", value: "Apartment" },
+              { key: "villa", value: "Villa" },
+              { key: "townhouse", value: "Townhouse" },
+              { key: "penthouse", value: "Penthouse" },
+              { key: "land", value: "Land" },
+              { key: "commercial", value: "Commercial" },
+              { key: "office", value: "Office" },
+              { key: "retail", value: "Retail" },
+              { key: "warehouse", value: "Warehouse" },
+            ].map(({ key, value }) => {
+              const label = dict.categories?.[key as keyof typeof dict.categories] || value;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveType(value)}
+                  className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                    activeType === value
+                      ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
+                      : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Property Category Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            {["All", "Apartment", "Villa", "Commercial"].map((type) => (
-              <button
-                key={type}
-                onClick={() => setActiveType(type)}
-                className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer ${
-                  activeType === type
-                    ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
-                    : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
+          {/* View Mode Toggle: Grid / List (Right Side) */}
+          <div className="hidden sm:flex items-center bg-white dark:bg-[#102418] p-1 rounded-full border border-gray-100 dark:border-[#1A3626] shadow-sm shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              title="Grid View"
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                viewMode === "grid"
+                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              title="List View"
+              className={`p-2 rounded-full transition-all cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Listings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, idx) => (
-              <div key={idx} className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4">
-                <div className="h-[240px] bg-gray-200 dark:bg-[#163321] rounded-xl w-full" />
-                <div className="p-4 flex flex-col gap-3">
-                  <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+        {/* Listings Grid / List Container */}
+        {isLoading ? (
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+                >
+                  <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                  <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                  </div>
                 </div>
-              </div>
-            ))
-          ) : liveAuctions.length === 0 && upcomingAuctions.length === 0 ? (
-            <div className="col-span-full py-16 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-100 dark:border-[#1A3626] p-8">
-              <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">No Realtime Offers Available</h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-                No active or upcoming live offers match your selected criteria. Try adjusting your search filters.
-              </p>
+              ))}
             </div>
           ) : (
-            (() => {
-              const allItems = [...liveAuctions, ...upcomingAuctions];
-              const filteredItems = selectedStatus === "All" 
-                ? allItems 
-                : allItems.filter((i: any) => (i.status || 'LIVE') === selectedStatus);
-
-              return filteredItems.map((item: any) => {
-                const details = item.propertyDetails || {};
-                const title = details.propertyTitle || "Untitled Property";
-                const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
-                const formattedLocation = (() => {
-                  const words = rawLocation.trim().split(/\s+/);
-                  return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
-                })();
-                const image = details.propertyImages?.[0]?.url || "/property-placeholder.svg";
-                const beds = details.propertyBedrooms || 0;
-                const baths = details.propertyWashrooms || details.propertyBathrooms || 0;
-                
-                const getAreaVal = (a: any) => typeof a === 'object' ? a.value : (a || 0);
-                const area = `${getAreaVal(details.propertyArea)} sqft`;
-                
-                const type = details.propertyType || "APARTMENT";
-                const highestBid = item.currentHighestBid || (typeof item.currentHighestOffer === 'object' ? item.currentHighestOffer?.amount : item.currentHighestOffer);
-                const fallbackPrice = details.propertyPrice?.amount || details.propertyPrice || 0;
-
-                const now = new Date().getTime();
-                const endDate = new Date(item.endTime || Date.now() + 86400000 * 7);
-                const startDate = new Date(item.startTime || Date.now());
-
-                let timeDisplay = "";
-                if (item.status === 'UPCOMING') {
-                  timeDisplay = `Starts: ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-                } else {
-                  const timeDiff = endDate.getTime() - now;
-                  if (timeDiff > 0) {
-                    const d = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                    const h = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const m = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-                    timeDisplay = `${d}d ${h}h ${m}m`;
-                  } else {
-                    timeDisplay = 'Ended';
-                  }
-                }
-
-                const priceValue = highestBid ? highestBid.toLocaleString() : fallbackPrice.toLocaleString();
-
-                return (
-                <Link 
-                  href={`/${locale}/auctions/${item._id}`} 
-                  key={item._id} 
-                  className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group block cursor-pointer"
-                >
-                  <div className="relative h-[240px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711]">
-                    <Image
-                      src={image}
-                      alt={title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-3 left-3 bg-[#1A3626]/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${item.status === 'UPCOMING' ? 'bg-amber-400' : 'bg-emerald-400'}`}></span>
-                      {item.status || "Live Offer"}
-                    </div>
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-[#5CD284]" /> {timeDisplay}
+            <>
+              {/* Mobile Skeleton: Always Grid style */}
+              <div className="grid grid-cols-1 gap-8 md:hidden">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <div
+                    key={`mob-skel-${idx}`}
+                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+                  >
+                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
                     </div>
                   </div>
+                ))}
+              </div>
 
-                  <div className="p-4 pt-5 flex flex-col flex-1">
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <h3 className="font-bold text-[20px] text-gray-900 dark:text-white leading-tight line-clamp-1">{title}</h3>
-                      <span className="font-bold text-[22px] text-gray-900 dark:text-[#c9a14b] leading-none whitespace-nowrap">
-                        <Dirham className="mr-1 text-[20px]" /> {priceValue}
-                      </span>
-                    </div>
-                    
-                    <p className="text-[#1A3626] dark:text-[#c9a14b] text-[13px] font-medium flex items-center gap-1.5 mb-4">
-                      <MapPin className="w-4 h-4" /> {formattedLocation}
-                    </p>
-                    
-                    <div className="flex items-center gap-4 mb-5">
-                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                        <Bed className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {beds}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                        <Bath className="w-5 h-5 text-[#1A3626] dark:text-[#c9a14b]" /> {baths}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-900 dark:text-white">
-                        <Maximize className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b]" /> {area}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-5">
-                      <span className="font-bold text-[14px] text-gray-900 dark:text-white">Total Offers {item.totalOffers || 0}</span>
-                      <div className="px-5 py-2.5 bg-[#0A3622] dark:bg-[#c9a14b] text-white dark:text-[#0A3622] rounded-lg font-bold text-[14px] hover:bg-[#124d31] dark:hover:bg-[#b38d3f] transition-colors inline-block text-center">
-                        Make Offer
-                      </div>
-                    </div>
-
-                    {/* Footer Grid */}
-                    <div className="mt-auto bg-[#F4F5F7] dark:bg-[#091711] rounded-xl p-3 grid grid-cols-3 divide-x divide-gray-300 dark:divide-[#1A3626]">
-                      <div className="flex flex-col items-center justify-center text-center px-1">
-                        <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Category</span>
-                        <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{details.propertyCategory || "Residential"}</span>
-                      </div>
-                      <div className="flex flex-col items-center justify-center text-center px-1">
-                        <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Type</span>
-                        <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{type}</span>
-                      </div>
-                      <div className="flex flex-col items-center justify-center text-center px-1">
-                        <span className="text-[#1A3626] dark:text-[#c9a14b] text-[10px] font-bold uppercase tracking-wider mb-0.5">Status</span>
-                        <span className="text-gray-900 dark:text-white text-[12px] font-bold uppercase truncate w-full">{item.status || "Ready"}</span>
-                      </div>
+              {/* Desktop Skeleton: List style */}
+              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={`desk-skel-${idx}`}
+                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col md:flex-row gap-4 min-h-[200px]"
+                  >
+                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl w-full md:w-[280px] h-[200px] md:h-auto" />
+                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
                     </div>
                   </div>
-                </Link>
-                );
-              });
-            })()
-          )}
-        </div>
+                ))}
+              </div>
+            </>
+          )
+        ) : (() => {
+          const allItems = [...liveAuctions, ...upcomingAuctions];
+          const filteredItems = selectedStatus === "All" 
+            ? allItems 
+            : allItems.filter((i: any) => (i.status || 'LIVE') === selectedStatus);
+
+          if (filteredItems.length === 0) {
+            return (
+              <div className="col-span-full py-16 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-100 dark:border-[#1A3626] p-8">
+                <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                  {dict.auctions?.emptyTitle || "No Realtime Offers Available"}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+                  {dict.auctions?.emptyDesc || "No active or upcoming realtime offers match your selected criteria. Try adjusting your search filters."}
+                </p>
+              </div>
+            );
+          }
+
+          return viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredItems.map((item: any, idx: number) => (
+                <PropertyGridCard
+                  key={item._id || idx}
+                  item={item}
+                  locale={locale}
+                  priority={idx === 0}
+                  isAuction={true}
+                  href={`/${locale}/auctions/${item._id}`}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5 max-w-4xl mx-auto w-full">
+              {filteredItems.map((item: any, idx: number) => (
+                <PropertyListCard
+                  key={item._id || idx}
+                  item={item}
+                  locale={locale}
+                  priority={idx === 0}
+                  isAuction={true}
+                  href={`/${locale}/auctions/${item._id}`}
+                />
+              ))}
+            </div>
+          );
+        })()}
 
         {/* PAGINATION / INFINITE SCROLL LOADER */}
         {hasMore && (
@@ -513,16 +556,20 @@ export default function AuctionsListingPage() {
               {isFetchingMore ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Loading More Offers...</span>
+                  <span>{dict.auctions?.loadingMore || "Loading More Offers..."}</span>
                 </>
               ) : (
                 <>
-                  <span>Load More Offers</span>
+                  <span>{dict.auctions?.loadMore || "Load More Offers"}</span>
                   <ChevronDown className="w-4 h-4" />
                 </>
               )}
             </button>
-            <span className="text-xs text-gray-500 font-medium">Showing page {page} of {totalPages}</span>
+            <span className="text-xs text-gray-500 font-medium">
+              {(dict.auctions?.showingPage || "Showing page {page} of {totalPages}")
+                .replace("{page}", page.toString())
+                .replace("{totalPages}", totalPages.toString())}
+            </span>
           </div>
         )}
       </section>
