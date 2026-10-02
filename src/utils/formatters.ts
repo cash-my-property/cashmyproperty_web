@@ -226,3 +226,18 @@ export const formatAuctionRemainingTime = (
   return null;
 };
 
+export const formatBlogDate = (dateStr?: string | Date | null, locale: string = "en"): string => {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    return new Intl.DateTimeFormat(locale === "ar" ? "ar-AE" : "en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    }).format(d);
+  } catch {
+    return String(dateStr);
+  }
+};
+

@@ -222,6 +222,21 @@ export const content = {
       label: "Our Blog",
       heading: "Latest Articles",
       readMore: "Read Full Article",
+      searchPlaceholder: "Search articles by title, topic or tag...",
+      allCategories: "All Topics",
+      noBlogsFound: "No articles found",
+      noBlogsDesc: "We couldn't find any articles matching your selected criteria. Try adjusting your search or category filter.",
+      clearFilters: "Clear Filters",
+      minRead: "min read",
+      views: "views",
+      publishedOn: "Published on",
+      author: "Author",
+      shareArticle: "Share Article",
+      linkCopied: "Article link copied to clipboard!",
+      relatedArticles: "More Insights from CMP Blog",
+      backToBlogs: "Back to All Articles",
+      notFoundTitle: "Article Not Found",
+      notFoundDesc: "The blog post you're looking for does not exist, has been unpublished, or is temporarily unavailable.",
       posts: [
         {
           id: 1,
@@ -229,20 +244,6 @@ export const content = {
           date: "August 4, 2026",
           category: "Market Trends",
           excerpt: "How technology is reshaping the property market and making transactions more transparent than ever before."
-        },
-        {
-          id: 2,
-          title: "Understanding BRN Verification on Cash My Property",
-          date: "July 28, 2026",
-          category: "Platform Updates",
-          excerpt: "A deep dive into our verification process and how it ensures maximum security for all participants."
-        },
-        {
-          id: 3,
-          title: "Top 5 Neighborhoods for Investment in 2026",
-          date: "July 15, 2026",
-          category: "Investment Guide",
-          excerpt: "Our analysis of the most promising areas for real estate investment across the Emirates this year."
         }
       ]
     }

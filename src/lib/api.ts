@@ -15,6 +15,10 @@ const api = axios.create({
 // Request interceptor to attach Bearer token to every authenticated request
 api.interceptors.request.use(
   (config) => {
+    // Never attach auth token to public endpoints
+    if (config.url?.includes('/public/')) {
+      return config;
+    }
     const token = Cookies.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
     if (token && token.startsWith('eyJ') && !config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
