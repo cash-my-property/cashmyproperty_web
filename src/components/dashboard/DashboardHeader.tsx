@@ -82,54 +82,6 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
   const userName = user ? (user.fullName || `${user.first_name || user.firstName || ''} ${user.last_name || user.lastName || ''}`.trim() || user.name || "User") : "User";
   const firstName = userName.split(' ')[0] || "User";
 
-  const handleSwitchRole = async (targetRole: "BUYER" | "SELLER") => {
-    if (currentRole === targetRole || isSwitching) return;
-    try {
-      setIsSwitching(true);
-      await api.put('/switch/toggleRole', { 
-        main: targetRole, 
-        type: currentType 
-      });
-
-      if (fetchProfile) {
-        await fetchProfile();
-      }
-
-      const roleLabel = targetRole === 'BUYER' ? 'Buyer Mode' : 'Seller Mode';
-
-      addToast(
-        "Role Switched", 
-        `You have successfully switched to ${roleLabel}.`, 
-        "success"
-      );
-
-      // Redirect user to relevant dashboard page
-      if (targetRole === 'BUYER') {
-        if (currentType === 'SIMPLE') {
-          router.push(`/${locale}/listings`);
-        } else {
-          router.push(`/${locale}/auctions`);
-        }
-      } else {
-        if (currentType === 'SIMPLE') {
-          router.push(`/${locale}/dashboard/seller/simple-listings`);
-        } else {
-          router.push(`/${locale}/dashboard/seller/properties`);
-        }
-      }
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
-    } catch (err: any) {
-      console.error("Failed to switch role:", err);
-      const errorMsg = err?.response?.data?.message || "Failed to switch role. Please try again.";
-      addToast("Error", errorMsg, "warning");
-    } finally {
-      setIsSwitching(false);
-    }
-  };
-
   return (
     <>
       <header className="h-16 sm:h-20 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md border-b border-gray-100 dark:border-[#1A3626] flex items-center justify-between px-3 sm:px-6 lg:px-8 sticky top-0 z-40 transition-colors gap-2">

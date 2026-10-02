@@ -885,6 +885,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         {label}
       </button>
     );
+  };
 
   const renderLoadingOrEmpty = () => (
     <span className="text-sm text-gray-500 dark:text-gray-400">{activeConfig ? "No options available" : "Loading options..."}</span>

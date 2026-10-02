@@ -8,15 +8,22 @@ import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user, isSeller } = useAuth();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push("/login");
+      } else if (isSeller) {
+        const isHold = user?.agencyStatus === 'PENDING' || user?.onboardingStatus === 'HOLD' || user?.status === 'PENDING';
+        if (isHold) {
+          router.push("/onboarding-hold");
+        }
+      }
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, isSeller, user, router]);
 
   if (isLoading) {
     return (

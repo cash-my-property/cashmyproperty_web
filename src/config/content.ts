@@ -77,7 +77,7 @@ export const content = {
     },
     main: {
       label: "About Cash My Property",
-      heading: "The premier digital real estate platform in the UAE",
+      heading: "The premier digital real estate offer platform in the UAE",
       paragraphs: [
         "Founded on the principles of transparency, efficiency, and innovation, Cash My Property is redefining how real estate is bought and sold in the UAE.",
         "We provide a secure, encrypted platform that connects verified agents with qualified buyers. Our digital offers eliminate the noise of traditional listings, ensuring that every property transacted on our platform is genuine and tied to a real BRN, checked against official regulations."
@@ -319,7 +319,7 @@ export const content = {
     },
     cta: {
       heading: "Ready to find your next property?",
-      description: "Join the premier digital real estate platform in the UAE. Verified listings, transparent processes, and secure transactions.",
+      description: "Join the premier digital real estate offer platform in the UAE. Verified listings, transparent processes, and secure transactions.",
       buttonText: "Create an Account"
     }
   },

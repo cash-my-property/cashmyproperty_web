@@ -73,6 +73,10 @@ export default function LoginPage() {
         router.push(`/${locale}/verify-otp?email=${encodeURIComponent(err.response.data.email || email)}&type=verify`);
         return;
       }
+      if (err.response?.data?.status === "onboarding_pending" || err.response?.data?.status === "agency_pending") {
+        router.push(`/${locale}/onboarding-hold`);
+        return;
+      }
       setError(err.response?.data?.message || "Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);

@@ -175,6 +175,24 @@ export default function SignupPage() {
 
       if (referralCode) formData.append('referal_code', referralCode);
 
+      // Document dates matching backend payload format
+      if (emiratesIdIssue) {
+        formData.append('emiratesIdIssueDate', emiratesIdIssue);
+        formData.append('emirates_id_issue', emiratesIdIssue);
+      }
+      if (emiratesIdExpiry) {
+        formData.append('emiratesIdExpiry', emiratesIdExpiry);
+        formData.append('emirates_id_expiry', emiratesIdExpiry);
+      }
+      if (brokerCardIssue) {
+        formData.append('brokerCardIssueDate', brokerCardIssue);
+        formData.append('broker_card_issue', brokerCardIssue);
+      }
+      if (brokerCardExpiry) {
+        formData.append('brokerCardExpiry', brokerCardExpiry);
+        formData.append('broker_card_expiry', brokerCardExpiry);
+      }
+
       if (emiratesIdFile) formData.append("emiratesId", emiratesIdFile);
 
       const response = await api.post("/auth/signup", formData, {
@@ -184,7 +202,7 @@ export default function SignupPage() {
       });
 
       if (response.data) {
-        router.push(`/${locale}/verify-otp?email=${encodeURIComponent(email)}`);
+        router.push(`/${locale}/verify-otp?email=${encodeURIComponent(email)}&isNewSeller=true`);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "An error occurred during signup.");
