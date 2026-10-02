@@ -184,7 +184,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const { io } = await import('socket.io-client');
         if (!isSubscribed) return;
 
-        const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+        const API_URL = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
         const socketUrl = API_URL.replace(/\/api\/?$/, '');
         const rawToken = Cookies.get('authToken') || Cookies.get('token');
         const token = (rawToken && rawToken.startsWith('eyJ')) ? rawToken : undefined;
@@ -194,13 +194,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           auth: {
             token: token
           },
-          transports: ['polling', 'websocket'],
+          transports: ['websocket'],
+          upgrade: false,
           withCredentials: true,
           reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 2500,
+          reconnectionAttempts: 10,
+          reconnectionDelay: 2000,
           reconnectionDelayMax: 10000,
-          timeout: 15000
+          timeout: 20000
         });
 
         socketRef.current = socketInstance;
