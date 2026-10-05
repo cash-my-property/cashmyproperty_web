@@ -29,7 +29,8 @@ import {
   Hash,
   Info,
   QrCode,
-  ExternalLink
+  ExternalLink,
+  ArrowUpRight
 } from "lucide-react";
 import { 
   formatPropertyType, 
@@ -53,6 +54,7 @@ import Dirham from "@/components/Dirham";
 import { generateShareToken } from "@/lib/shareToken";
 import PropertyRegulatoryInfo from "@/components/listings/PropertyRegulatoryInfo";
 import PropertyBreadcrumb from "@/components/listings/PropertyBreadcrumb";
+import { getOptimizedImageUrl } from "@/utils/imageUrl";
 
 const PropertyMapCard = dynamic(() => import("@/components/listings/PropertyMapCard"), {
   ssr: false,
@@ -164,6 +166,21 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
       
       if (res?.data) {
         const data = res.data.data || res.data;
+        const fallbackAgentId = 
+          initialData?.sellerInfo?.agentId || 
+          initialData?.sellerInfo?._id || 
+          initialData?.sellerInfo?.id ||
+          initialData?.sellerId?._id ||
+          (typeof initialData?.sellerId === 'string' ? initialData?.sellerId : null);
+          
+        if (data && fallbackAgentId) {
+          if (!data.sellerInfo) {
+            data.sellerInfo = { agentId: fallbackAgentId };
+          } else if (!data.sellerInfo.agentId) {
+            data.sellerInfo.agentId = fallbackAgentId;
+          }
+        }
+
         setPropertyInfo(data);
         if (typeof data?.isFavourited === 'boolean') {
           setIsFavourited(data.isFavourited);
@@ -705,40 +722,97 @@ export default function SimpleListingDetailClient({ id, initialData, locale }: S
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Interested in this property?</h3>
               </div>
 
-              {/* Seller / Agent Profile Card */}
-              {propertyInfo.sellerInfo && (
-                <div className="flex items-center gap-3.5 p-4 bg-gray-50 dark:bg-[#142e1d] rounded-2xl border border-gray-100 dark:border-[#1A3626]">
-                  <div className="relative w-13 h-13 rounded-full overflow-hidden shrink-0 bg-gray-200 dark:bg-[#091711] border-2 border-[#5CD284]/40">
-                    <Image
-                      src={propertyInfo.sellerInfo.thumbnail || "/placeholder-avatar.png"}
-                      alt={propertyInfo.sellerInfo.name || "Agent"}
-                      fill
-                      sizes="52px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white truncate">
-                        {propertyInfo.sellerInfo.name || "Real Estate Agent"}
-                      </h4>
-                      {propertyInfo.sellerInfo.isVerified && (
-                        <span title="Verified Agent">
-                          <ShieldCheck className="w-4 h-4 text-[#5CD284] shrink-0" />
+              {/* Seller / Agent Profile Card (matching property card design) */}
+              {(propertyInfo.sellerInfo || propertyInfo.sellerId || propertyInfo.seller) && (() => {
+                const rawSeller = propertyInfo.sellerInfo || propertyInfo.sellerId || propertyInfo.seller;
+                const trakheesiAgency = propertyInfo.propertyDocuments?.propertyTrakheesi?.agencyName || "";
+                const agentId = 
+                  rawSeller?.agentId || 
+                  rawSeller?._id || 
+                  rawSeller?.id || 
+                  propertyInfo.sellerId?._id || 
+                  (typeof propertyInfo.sellerId === 'string' ? propertyInfo.sellerId : null) ||
+                  propertyInfo.seller?._id || 
+                  (typeof propertyInfo.seller === 'string' ? propertyInfo.seller : null) ||
+                  propertyInfo.userId?._id || 
+                  (typeof propertyInfo.userId === 'string' ? propertyInfo.userId : null);
+                
+                const sellerName = rawSeller?.name || rawSeller?.fullName || trakheesiAgency || "Real Estate Agent";
+                const sellerThumbnail = rawSeller?.thumbnail || rawSeller?.picture || rawSeller?.avatar || "";
+                const sellerPhone = rawSeller?.phone || propertyInfo.phone || "";
+                const isVerified = Boolean(propertyInfo.isVerified || rawSeller?.isVerified || itemIsVerified(propertyInfo));
+                const agencyName = rawSeller?.officeName || rawSeller?.agencyName || trakheesiAgency || "CPM Certified Real Estate Agent";
+
+                function itemIsVerified(p: any) {
+                  return p?.isVerified || p?.sellerInfo?.isVerified || false;
+                }
+
+                const cardElement = (
+                  <div className={`flex items-center gap-3.5 p-4 bg-gray-50 dark:bg-[#142e1d] rounded-2xl border border-gray-100 dark:border-[#1A3626] transition-all duration-300 ${agentId ? 'group/agent hover:border-[#5CD284]/50 hover:bg-gray-100/90 dark:hover:bg-[#183924] hover:shadow-md cursor-pointer' : ''}`}>
+                    {/* Avatar with ShieldCheck verified badge */}
+                    <div className="relative w-12 h-12 rounded-full shrink-0">
+                      <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#5CD284]/40 bg-gray-200 dark:bg-[#091711] shadow-sm relative">
+                        {sellerThumbnail ? (
+                          <Image
+                            src={getOptimizedImageUrl(sellerThumbnail)}
+                            alt={sellerName}
+                            fill
+                            sizes="48px"
+                            className="object-cover group-hover/agent:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center font-bold text-sm text-[#0A1C12] bg-[#5CD284]">
+                            {(sellerName || "A").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {isVerified && (
+                        <span
+                          className="absolute -bottom-1 -right-1 p-0.5 bg-[#5CD284] text-[#0A1C12] rounded-full shadow-md border border-white dark:border-[#142e1d] flex items-center justify-center"
+                          title="Verified Agent"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
-                      {propertyInfo.sellerInfo.agencyName || "CPM Certified Real Estate Agent"}
-                    </p>
-                    {propertyInfo.sellerInfo.phone && (
-                      <p className="text-xs text-[#1A3626] dark:text-[#5CD284] font-bold font-mono mt-0.5">
-                        {propertyInfo.sellerInfo.phone}
-                      </p>
-                    )}
+
+                    {/* Details: LISTED BY, Name with ArrowUpRight, Verified/Agency, Phone */}
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider leading-none mb-0.5">
+                        LISTED BY
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm font-bold text-gray-900 dark:text-white truncate group-hover/agent:text-[#5CD284] transition-colors leading-tight">
+                          {sellerName}
+                        </span>
+                        {agentId && (
+                          <ArrowUpRight className="w-3.5 h-3.5 text-gray-400 group-hover/agent:text-[#5CD284] transition-colors shrink-0" />
+                        )}
+                      </div>
+                      <span className="text-[11px] font-medium text-gray-500 dark:text-[#5CD284] truncate leading-tight mt-0.5">
+                        {agencyName}
+                      </span>
+                      {sellerPhone && (
+                        <span className="text-xs text-[#1A3626] dark:text-[#5CD284] font-bold font-mono mt-0.5">
+                          {sellerPhone}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+
+                return agentId ? (
+                  <Link 
+                    href={`/${locale}/sellers/${agentId}`} 
+                    title="View Agent Profile" 
+                    className="block focus:outline-none"
+                  >
+                    {cardElement}
+                  </Link>
+                ) : (
+                  cardElement
+                );
+              })()}
 
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                 Connect directly with the authorized agent to schedule a private viewing or ask questions.
