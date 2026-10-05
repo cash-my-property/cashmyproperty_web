@@ -36,7 +36,7 @@ export default function Navbar() {
   const handleToggleType = async (targetType: "SIMPLE" | "REGULAR", targetUrl: string) => {
     if (isAuthenticated && user) {
       try {
-        await api.put('/switch/toggleRole', { type: targetType });
+        await api.put('/switch/toggleRole', { main: 'BUYER', type: targetType });
         if (fetchProfile) await fetchProfile();
       } catch (err) {
         console.error("Failed to switch type:", err);

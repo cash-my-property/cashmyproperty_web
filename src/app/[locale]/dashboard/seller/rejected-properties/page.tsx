@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "@/lib/api";
-import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
+import { Loader2, Building, MapPin, Eye, Edit, Trash2, Bed, Bath, Maximize, X, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, FileText, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Dirham from "@/components/Dirham";
@@ -99,17 +99,41 @@ export default function RejectedPropertiesPage() {
     fetchProperties(currentPage + 1, true);
   };
 
+  const observerTarget = useRef<HTMLDivElement | null>(null);
+
+  // 1. Intersection Observer for bottom scroll detection
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore && !isLoading) {
+          loadNextPage();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMore, isFetchingMore, isLoading, currentPage]);
+
+  // 2. Window Scroll listener fallback
   useEffect(() => {
     const handleScroll = () => {
       if (isFetchingMore || isLoading || !hasMore) return;
-      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollHeight = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+      );
       const currentScroll = window.innerHeight + window.scrollY;
-      if (currentScroll >= scrollHeight - 600) {
+      if (currentScroll >= scrollHeight - 500) {
         loadNextPage();
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [currentPage, hasMore, isFetchingMore, isLoading]);
 
@@ -354,6 +378,32 @@ export default function RejectedPropertiesPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* PAGINATION / INFINITE SCROLL LOADER */}
+      <div ref={observerTarget} className="h-6 w-full pointer-events-none" />
+
+      {hasMore && (
+        <div className="flex flex-col items-center justify-center my-8 gap-3">
+          <button
+            onClick={loadNextPage}
+            disabled={isFetchingMore}
+            className="px-8 py-3.5 rounded-2xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm hover:opacity-90 transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            {isFetchingMore ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Loading More Properties...</span>
+              </>
+            ) : (
+              <>
+                <span>Load More Properties</span>
+                <ChevronDown className="w-4 h-4" />
+              </>
+            )}
+          </button>
+          <span className="text-xs text-gray-500 font-medium">Showing page {currentPage} of {totalPages}</span>
         </div>
       )}
 

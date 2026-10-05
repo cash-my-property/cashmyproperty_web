@@ -47,8 +47,8 @@ export default function AuctionsListingPage() {
   const buyerType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR');
 
   useEffect(() => {
-    if (isAuthenticated && isBuyer && buyerType !== 'REGULAR') {
-      api.put('/switch/toggleRole', { type: 'REGULAR' })
+    if (isAuthenticated && (!isBuyer || buyerType !== 'REGULAR')) {
+      api.put('/switch/toggleRole', { main: 'BUYER', type: 'REGULAR' })
         .then(() => {
           if (fetchProfile) fetchProfile();
         })

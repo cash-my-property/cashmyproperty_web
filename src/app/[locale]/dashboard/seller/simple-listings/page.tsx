@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import api from "@/lib/api";
 import { Loader2, Building, MapPin, Eye, Edit, Bed, Bath, Maximize, X, Lock, ArrowRight, Share2, ChevronDown } from "lucide-react";
 import Image from "next/image";
@@ -30,6 +30,7 @@ export default function MySimpleListingsPage() {
   const [hasMore, setHasMore] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const observerTarget = useRef<HTMLDivElement | null>(null);
 
   const handleShareProperty = (property: any) => {
     const propId = property._id || property.propertyId || property.id;
@@ -97,18 +98,39 @@ export default function MySimpleListingsPage() {
     fetchProperties(currentPage + 1, true);
   };
 
-  // Scroll listener for Infinite Scroll
+  // 1. Intersection Observer for reliable bottom scroll detection
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isFetchingMore && !isLoading) {
+          loadNextPage();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [hasMore, isFetchingMore, isLoading, currentPage]);
+
+  // 2. Window Scroll listener fallback
   useEffect(() => {
     const handleScroll = () => {
       if (isFetchingMore || isLoading || !hasMore) return;
-      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollHeight = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+      );
       const currentScroll = window.innerHeight + window.scrollY;
-      if (currentScroll >= scrollHeight - 600) {
+      if (currentScroll >= scrollHeight - 500) {
         loadNextPage();
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [currentPage, hasMore, isFetchingMore, isLoading]);
 
@@ -244,6 +266,8 @@ export default function MySimpleListingsPage() {
       )}
 
       {/* PAGINATION / INFINITE SCROLL LOADER */}
+      <div ref={observerTarget} className="h-6 w-full pointer-events-none" />
+
       {hasMore && (
         <div className="flex flex-col items-center justify-center my-8 gap-3">
           <button

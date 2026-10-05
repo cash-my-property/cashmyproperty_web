@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import Image from "next/image";
 import { compressImage } from "@/utils/imageCompressor";
+import ProfileCropModal from "@/components/modals/ProfileCropModal";
 
 const POPULAR_LANGUAGES = [
   "English",
@@ -250,6 +251,10 @@ export default function SettingsPage() {
   const languageRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Profile Picture Crop Modal states
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string>("");
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (nationalityRef.current && !nationalityRef.current.contains(event.target as Node)) {
@@ -358,29 +363,48 @@ export default function SettingsPage() {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      setProfileMessage({ type: "error", text: "Image file size exceeds 10MB limit." });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        setCropImageSrc(reader.result as string);
+        setCropModalOpen(true);
+      }
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
     setIsUploadingImage(true);
     setProfileMessage({ type: "", text: "" });
 
     try {
-      const compressedFile = await compressImage(file, 800, 800, 0.85);
+      const croppedFile = new File([croppedBlob], "profile-picture.jpg", { type: "image/jpeg" });
       const formData = new FormData();
-      formData.append("profilePicture", compressedFile);
+      formData.append("profilePicture", croppedFile);
 
       await api.put('/auth/uploadProfilePicture', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 60000
       });
+
       setProfileMessage({ type: "success", text: "Profile picture updated successfully!" });
+      setCropModalOpen(false);
       fetchProfile();
     } catch (error: any) {
       setProfileMessage({ type: "error", text: error.response?.data?.message || "Failed to upload image." });
     } finally {
       setIsUploadingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -508,7 +532,7 @@ export default function SettingsPage() {
                     accept="image/png, image/jpeg, image/jpg" 
                     className="hidden" 
                     ref={fileInputRef} 
-                    onChange={handleImageUpload} 
+                    onChange={handleImageSelect} 
                   />
                 </div>
                 <div>
@@ -1034,6 +1058,17 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Profile Picture Cropper Modal */}
+      {cropImageSrc && (
+        <ProfileCropModal
+          imageSrc={cropImageSrc}
+          isOpen={cropModalOpen}
+          onClose={() => setCropModalOpen(false)}
+          onCropComplete={handleCropComplete}
+          isUploading={isUploadingImage}
+        />
+      )}
     </div>
   );
 }

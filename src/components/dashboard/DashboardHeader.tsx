@@ -2,7 +2,7 @@
 
 import { useDictionary } from "@/components/DictionaryProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Bell, Globe, ChevronDown, Menu, Check, Trash2, LayoutDashboard, Loader2 } from "lucide-react";
+import { Bell, Globe, ChevronDown, Menu, Check, Trash2, LayoutDashboard, Loader2, Building } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
@@ -110,41 +110,35 @@ export default function DashboardHeader({ onMenuClick }: { onMenuClick?: () => v
           </div>
         </div>
 
-        {/* 2. CENTER ZONE: Buyer / Agent Toggle + Type Badge */}
+        {/* 2. CENTER ZONE: Dedicated Seller Switch & Active Mode Indicator */}
         <div className="flex items-center justify-center gap-2 sm:gap-3 mx-1 sm:mx-6">
-          <div className="bg-gray-100 dark:bg-[#163321] p-0.5 sm:p-1 rounded-full border border-gray-200/80 dark:border-[#1A3626] flex items-center shadow-inner">
-            <button
-              type="button"
-              disabled={isSwitching}
-              onClick={() => handleToggleRole("BUYER")}
-              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                !isSeller
-                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
-                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              {isSwitching && !isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
-              <span>Buyer</span>
-            </button>
+          {!isSeller ? (
             <button
               type="button"
               disabled={isSwitching}
               onClick={() => handleToggleRole("SELLER")}
-              className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                isSeller
-                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
-                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-bold bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] hover:opacity-90 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
             >
-              {isSwitching && isSeller && <Loader2 className="w-3 h-3 animate-spin" />}
-              <span>Seller</span>
+              {isSwitching ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Building className="w-3.5 h-3.5" />
+              )}
+              <span>Switch to Seller</span>
             </button>
-          </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] border border-[#1A3626]/20 dark:border-[#5CD284]/30">
+              <span className="w-2 h-2 rounded-full bg-[#5CD284] animate-pulse" />
+              <span>Seller ({currentType === 'SIMPLE' ? 'Listings' : 'Realtime'})</span>
+            </div>
+          )}
 
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#5CD284] animate-pulse" />
-            <span>{currentType === 'SIMPLE' ? 'Listings' : 'Realtime'}</span>
-          </div>
+          {!isSeller && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#5CD284]/10 text-[#1A3626] dark:text-[#5CD284] border border-[#5CD284]/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#5CD284] animate-pulse" />
+              <span>{currentType === 'SIMPLE' ? 'Listings' : 'Realtime'}</span>
+            </div>
+          )}
         </div>
 
         {/* 3. RIGHT ZONE: Action Controls (Optimized for Mobile & Laptop) */}

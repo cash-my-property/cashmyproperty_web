@@ -39,8 +39,8 @@ export default function ListingsPage() {
   const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
 
   useEffect(() => {
-    if (isAuthenticated && isBuyer && buyerType !== 'SIMPLE') {
-      api.put('/switch/toggleRole', { type: 'SIMPLE' })
+    if (isAuthenticated && (!isBuyer || buyerType !== 'SIMPLE')) {
+      api.put('/switch/toggleRole', { main: 'BUYER', type: 'SIMPLE' })
         .then(() => {
           if (fetchProfile) fetchProfile();
         })
