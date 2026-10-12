@@ -1,4 +1,4 @@
-export const siteConfig = {
+﻿export const siteConfig = {
   name: "Cash My Property",
   description: "The premier digital real estate platform in the UAE.",
   url: "https://cashmyproperty.ae",
@@ -28,9 +28,9 @@ export const siteConfig = {
       email: "info@cmpdubai.com",
     },
     socials: {
-      facebook: "#",
-      instagram: "#",
-      twitter: "#",
+      facebook: "https://www.facebook.com/cashmypropertyofficial",
+      instagram: "https://www.instagram.com/cashmypropertyofficial?xtok=NnM2ZHhmazdqd2cw",
+      linkedin: "https://www.linkedin.com/company/cashmyproperty",
     },
     copyright: "© 2026 Cash My Property. All rights reserved.",
   }
