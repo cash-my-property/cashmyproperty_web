@@ -31,6 +31,8 @@
       facebook: "https://www.facebook.com/cashmypropertyofficial",
       instagram: "https://www.instagram.com/cashmypropertyofficial?xtok=NnM2ZHhmazdqd2cw",
       linkedin: "https://www.linkedin.com/company/cashmyproperty",
+      x: "https://x.com/Cmpdubai",
+      twitter: "https://x.com/Cmpdubai",
     },
     copyright: "© 2026 Cash My Property. All rights reserved.",
   }
