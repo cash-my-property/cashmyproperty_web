@@ -2,19 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, Loader2, Share2 } from "lucide-react";
+import { Clock, ShieldCheck, Zap, HeartHandshake, ArrowRight, Bed, Bath, Maximize, MapPin, Building, Home, Key, Smartphone, Download, Loader2, Share2, Compass } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
-import { useSocket } from "@/context/SocketContext";
-import api from "@/lib/api";
+import { rtoService, rtoCardToGridItem, type RtoCard } from "@/services/rtoService";
 import Image from "next/image";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
-import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
-import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import HeroBackground from "@/components/search/HeroBackground";
+import { features } from "@/config/features";
 import PropertyGridCard from "@/components/listings/PropertyGridCard";
-import { formatPropertyCategory, formatPropertyType, formatPropertyPlan } from "@/utils/formatters";
-import { extractPropertyImages } from "@/utils/imageUrl";
+import connectPublicService, { PublicHomeData, PublicListingCard } from "@/services/connectPublicService";
 
 export default function HomePage() {
   const { dict, locale } = useDictionary();
@@ -22,98 +20,34 @@ export default function HomePage() {
 
   const [liveProperties, setLiveProperties] = useState<any[]>([]);
   const [upcomingProperties, setUpcomingProperties] = useState<any[]>([]);
-  const [simpleLiveProperties, setSimpleLiveProperties] = useState<any[]>([]);
+  const [homeData, setHomeData] = useState<PublicHomeData | null>(null);
+  const [featuredProperties, setFeaturedProperties] = useState<PublicListingCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller } = useAuth();
-  const { socket, addToast } = useSocket();
-  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
-
-  // Listen to socket events for real-time price and auction updates
-  useEffect(() => {
-    if (!socket) return;
-
-    const handlePriceUpdate = (data: any) => {
-      console.log("📡 [Homepage Socket] Received listing_price_update:", data);
-      const { auctionId, newPrice, newEndTime, bidCounter } = data;
-
-      setLiveProperties(prev => prev.map(p => {
-        if (p._id === auctionId) {
-          return {
-            ...p,
-            currentHighestBid: newPrice,
-            currentHighestOffer: newPrice, // fallback
-            endTime: newEndTime || p.endTime,
-            bidCounter: bidCounter || p.bidCounter,
-            totalOffers: (p.totalOffers || 0) + 1
-          };
-        }
-        return p;
-      }));
-    };
-
-    const handleNewAuction = (fullCard: any) => {
-      console.log("📡 [Homepage Socket] Received new_auction_live:", fullCard);
-      if (!fullCard || !fullCard._id) return;
-
-      setLiveProperties(prev => {
-        if (prev.some(p => p._id === fullCard._id)) return prev;
-        return [fullCard, ...prev].slice(0, 6);
-      });
-    };
-
-    const handleAuctionEnded = (data: any) => {
-      console.log("📡 [Homepage Socket] Received auction_ended_global:", data);
-      const { auctionId, status } = data;
-
-      setLiveProperties(prev => prev.map(p => {
-        if (p._id === auctionId) {
-          return {
-            ...p,
-            status: status || 'ENDED'
-          };
-        }
-        return p;
-      }));
-    };
-
-    socket.on("listing_price_update", handlePriceUpdate);
-    socket.on("new_auction_live", handleNewAuction);
-    socket.on("auction_ended_global", handleAuctionEnded);
-
-    return () => {
-      socket.off("listing_price_update", handlePriceUpdate);
-      socket.off("new_auction_live", handleNewAuction);
-      socket.off("auction_ended_global", handleAuctionEnded);
-    };
-  }, [socket]);
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     if (authLoading) return;
     const fetchProperties = async () => {
       try {
         setIsLoading(true);
-        if (isAuthenticated && isSeller) {
-          // Seller Mode: Do NOT fetch any buyer listings — sellers have no business browsing properties
-          setLiveProperties([]);
-          setUpcomingProperties([]);
-          setSimpleLiveProperties([]);
-          return;
-        }
 
-        const [liveRes, upcomingRes, simpleLiveRes] = await Promise.all([
-          api.get('/public/live-properties?limit=6').catch(() => ({ data: { data: [] } })),
-          api.get('/public/upcoming-properties?limit=6').catch(() => ({ data: { data: [] } })),
-          api.get('/public/simple-live-properties?limit=6').catch(() => ({ data: { data: [] } }))
+        const [publicHome, liveRes, upcomingRes] = await Promise.all([
+          connectPublicService.getHome().catch(() => null),
+          // Real Time Offers — CMP Connect public RTO API (legacy /public/*-properties ki jagah)
+          features.realTimeOffers ? rtoService.getLive({ limit: 6 }).catch(() => ({ data: [] as RtoCard[] })) : { data: [] as RtoCard[] },
+          features.realTimeOffers ? rtoService.getUpcoming({ limit: 6 }).catch(() => ({ data: [] as RtoCard[] })) : { data: [] as RtoCard[] }
         ]);
 
-        const liveData = liveRes.data?.data || [];
-        const upcomingData = upcomingRes.data?.data || [];
-        const simpleLiveData = simpleLiveRes.data?.data || [];
+        if (publicHome) {
+          setHomeData(publicHome);
+          if (Array.isArray(publicHome.featured)) {
+            setFeaturedProperties(publicHome.featured);
+          }
+        }
 
-        setLiveProperties(Array.isArray(liveData) ? liveData : (liveData?.data || []));
-        setUpcomingProperties(Array.isArray(upcomingData) ? upcomingData : (upcomingData?.data || []));
-        setSimpleLiveProperties(Array.isArray(simpleLiveData) ? simpleLiveData : (simpleLiveData?.data || []));
+        setLiveProperties(liveRes.data.map(rtoCardToGridItem));
+        setUpcomingProperties(upcomingRes.data.map(rtoCardToGridItem));
       } catch (err) {
         console.error("Error fetching homepage properties", err);
       } finally {
@@ -121,34 +55,14 @@ export default function HomePage() {
       }
     };
     fetchProperties();
-  }, [authLoading, isAuthenticated, isSeller]);
+  }, [authLoading]);
 
   return (
     <main className="flex-1 flex flex-col min-h-screen transition-colors bg-[#F4F5F7] dark:bg-[#091711]">
       
       {/* 1. HERO SECTION */}
       <section className="relative w-full min-h-[780px] lg:min-h-[860px] flex items-center justify-center pt-24 pb-16">
-        {/* Full-width Background Image Layer */}
-        <div className="absolute inset-0 overflow-hidden bg-[#091711]">
-          {/* Main Full-Width Dubai Skyline with complete, uncropped Burj Khalifa */}
-          <div className="absolute inset-0">
-            <Image
-              src="/hero-dubai-skyline.jpeg"
-              alt="Dubai Skyline with Burj Khalifa"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover object-[center_top] pointer-events-none opacity-90 dark:opacity-85"
-            />
-          </div>
-
-          {/* Subtle Dark Gradient Overlay: keeps Burj Khalifa clear and vibrant, ensures text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#091711]/70 via-black/25 to-[#091711] pointer-events-none" />
-
-          {/* Glow Effects */}
-          <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
-        </div>
+        <HeroBackground />
         
         <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-4">
           <h1 className="text-white text-4xl sm:text-5xl lg:text-[60px] font-bold mb-6 leading-[1.15] tracking-tight max-w-4xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -158,64 +72,55 @@ export default function HomePage() {
             {home.hero.subheadline}
           </p>
 
-          {/* Upgraded Hero Search Bar Widget */}
           <HeroSearchWidget showTabs={true} />
         </div>
 
-        {/* Bottom fade out to background */}
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#F4F5F7] dark:from-[#091711] to-transparent pointer-events-none" />
       </section>
 
-      {/* SELLER CTA PANEL — Only shown when user is in Seller Mode */}
-      {isAuthenticated && isSeller && (
-        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
-          <div className="relative overflow-hidden rounded-3xl bg-[#1A3626] dark:bg-[#102418] p-10 sm:p-14 flex flex-col lg:flex-row items-center gap-10 shadow-2xl border border-[#2a4f38] dark:border-[#1A3626]">
-            {/* Background glow */}
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#c9a14b]/5 rounded-full blur-[80px] pointer-events-none" />
-
-            {/* Left: Icon Badge */}
-            <div className="relative z-10 w-24 h-24 rounded-3xl bg-[#5CD284]/15 border border-[#5CD284]/30 flex items-center justify-center shrink-0">
-              <Building className="w-12 h-12 text-[#5CD284]" />
-            </div>
-
-            {/* Center: Text */}
-            <div className="relative z-10 flex-1 text-center lg:text-left">
-              <span className="text-[#5CD284] font-bold tracking-[0.2em] text-[11px] uppercase block mb-3">
-                Agent Mode Active
+      {/* PLATFORM STATS STRIP (From Home API totals) */}
+      {homeData?.totals && (
+        <section className="relative z-20 -mt-10 px-4 sm:px-6 lg:px-8 w-full max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-white/95 dark:bg-[#102418]/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-100 dark:border-[#1A3626]">
+            <div className="text-center p-3">
+              <span className="block text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#5CD284]">
+                {homeData.totals.live?.toLocaleString() || "0"}
               </span>
-              <h2 className="text-white text-[28px] sm:text-[36px] font-bold mb-4 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                You&apos;re here to manage listings,<br className="hidden sm:block" /> not to browse.
-              </h2>
-              <p className="text-white/65 text-[15px] sm:text-[16px] leading-relaxed max-w-xl">
-                As an agent, property listings and realtime offers are not accessible to you. Head to your dashboard to manage your listings, track offers, and monitor your activity.
-              </p>
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                Live Properties
+              </span>
             </div>
-
-            {/* Right: CTA Buttons */}
-            <div className="relative z-10 flex flex-col gap-3 shrink-0">
-              <Link
-                href={`/${locale}/dashboard/seller/properties`}
-                className="inline-flex items-center justify-center gap-2 bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-bold px-8 py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(92,210,132,0.4)] text-[15px] whitespace-nowrap"
-              >
-                <Key className="w-5 h-5" />
-                My Listings
-              </Link>
-              <Link
-                href={`/${locale}/dashboard`}
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 text-[15px] whitespace-nowrap"
-              >
-                <Home className="w-5 h-5" />
-                Go to Dashboard
-              </Link>
+            <div className="text-center p-3 border-l border-gray-200 dark:border-[#1A3626]">
+              <span className="block text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#c9a14b]">
+                {homeData.totals.forSale?.toLocaleString() || "0"}
+              </span>
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                For Sale
+              </span>
+            </div>
+            <div className="text-center p-3 border-l border-gray-200 dark:border-[#1A3626]">
+              <span className="block text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#5CD284]">
+                {homeData.totals.forRent?.toLocaleString() || "0"}
+              </span>
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                For Rent
+              </span>
+            </div>
+            <div className="text-center p-3 border-l border-gray-200 dark:border-[#1A3626]">
+              <span className="block text-2xl sm:text-3xl font-extrabold text-[#1A3626] dark:text-[#c9a14b]">
+                {homeData.totals.agencies?.toLocaleString() || "0"}
+              </span>
+              <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">
+                Verified Agencies
+              </span>
             </div>
           </div>
         </section>
       )}
 
-      {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) */}
-      {!(isAuthenticated && isSeller) && (
-        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
+      {/* 2. REALTIME OFFERS (DISTRESS LISTINGS) — feature flag */}
+      {features.realTimeOffers && (
+      <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
             <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
@@ -248,15 +153,6 @@ export default function HomePage() {
                     <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-1/4" />
                   </div>
                   <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
-                  <div className="flex gap-4">
-                    <div className="h-5 bg-gray-200 dark:bg-[#163321] rounded-md w-16" />
-                    <div className="h-5 bg-gray-200 dark:bg-[#163321] rounded-md w-16" />
-                    <div className="h-5 bg-gray-200 dark:bg-[#163321] rounded-md w-20" />
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#1A3626] flex justify-between">
-                    <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-24" />
-                    <div className="h-8 bg-gray-200 dark:bg-[#163321] rounded-md w-24" />
-                  </div>
                 </div>
               </div>
             ))
@@ -268,28 +164,30 @@ export default function HomePage() {
                 locale={locale}
                 priority={idx === 0}
                 isAuction={true}
-                href={`/${locale}/auctions/${item._id}`}
+                href={`/${locale}/auctions/${item.id}`}
               />
             ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
-              No live properties available at the moment.
+              No live auction properties available at the moment.
             </div>
           )}
         </div>
       </section>
       )}
 
-      {/* 3. SIMPLE LISTINGS */}
-      {!(isAuthenticated && isSeller) && (
-        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
+      {/* 3. FEATURED PUBLIC LISTINGS (FROM /home API) */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div>
+            <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase">
+              Featured Properties
+            </p>
             <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Listings
+              Explore Top Properties
             </h2>
             <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
-              Explore direct properties for rent or purchase with verified details and direct agent contact.
+              Verified properties for sale and rent from licensed brokers and authentic agencies across the UAE.
             </p>
           </div>
           <Link href={`/${locale}/listings`} className="group inline-flex items-center gap-2 font-semibold text-[#1A3626] dark:text-[#c9a14b] hover:opacity-80 transition-opacity">
@@ -303,35 +201,86 @@ export default function HomePage() {
               <div key={i} className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden border border-gray-100 dark:border-[#1A3626] flex flex-col p-1.5 animate-pulse shadow-sm">
                 <div className="relative h-[240px] rounded-xl bg-gray-200 dark:bg-[#163321] w-full" />
                 <div className="p-4 pt-5 flex flex-col flex-1 gap-4">
-                  <div className="flex justify-between items-center gap-4">
-                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-2/3" />
-                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-1/4" />
-                  </div>
+                  <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-2/3" />
                   <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
                 </div>
               </div>
             ))
-          ) : simpleLiveProperties.length > 0 ? (
-            simpleLiveProperties.slice(0, 6).map((item, idx) => (
+          ) : featuredProperties.length > 0 ? (
+            featuredProperties.slice(0, 6).map((item: any, idx) => (
               <PropertyGridCard
-                key={item._id || item.id || idx}
+                key={item.ref || item.id || idx}
                 item={item}
                 locale={locale}
                 priority={idx === 0}
                 isAuction={false}
-                href={`/${locale}/simple-listings/${item._id || item.id}`}
+                href={`/${locale}/listings/${item.ref || item.id}`}
               />
             ))
           ) : (
             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
-              No listings available at the moment.
+              No featured listings available at the moment.
             </div>
           )}
         </div>
       </section>
+
+      {/* 4. POPULAR COMMUNITIES (FROM /home API) */}
+      {homeData?.communities && homeData.communities.length > 0 && (
+        <section className="py-20 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto border-t border-gray-200 dark:border-[#1A3626]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <p className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-3 uppercase flex items-center gap-2">
+                <Compass className="w-4 h-4 text-[#5CD284]" />
+                Explore Neighborhoods
+              </p>
+              <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                Popular Communities
+              </h2>
+              <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
+                Discover vibrant neighborhoods and prime communities in Dubai with high-demand residential options.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {homeData.communities.map((c, idx) => (
+              <Link
+                key={c.name || idx}
+                href={`/${locale}/listings?location=${encodeURIComponent(c.name)}`}
+                className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-900 shadow-md hover:shadow-2xl transition-all duration-300 block"
+              >
+                {c.coverImage ? (
+                  <Image
+                    src={c.coverImage}
+                    alt={c.name}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-95"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#1A3626] to-[#0A1C12]" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <h3 className="font-bold text-lg mb-1 group-hover:text-[#5CD284] transition-colors">
+                    {c.name}
+                  </h3>
+                  <div className="flex items-center gap-3 text-xs text-gray-300">
+                    <span>{c.count} {c.count === 1 ? 'Property' : 'Properties'}</span>
+                    <span>•</span>
+                    <span>{c.forSale} For Sale</span>
+                    <span>•</span>
+                    <span>{c.forRent} For Rent</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* 4. HOW IT WORKS */}
+      {/* 5. HOW IT WORKS */}
       <section className="py-24 bg-white dark:bg-[#102418] border-y border-gray-200 dark:border-[#1A3626]/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
@@ -342,7 +291,6 @@ export default function HomePage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-8 relative">
-             {/* Connecting Line (Desktop Only) */}
              <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-0.5 bg-gray-100 dark:bg-[#163321]/50 -z-10" />
 
              {home.howItWorks.steps.map((step, idx) => (
@@ -362,15 +310,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. APP DOWNLOAD BANNER */}
+      {/* 6. APP DOWNLOAD BANNER */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative w-full bg-[#1A3626] dark:bg-[#091711] rounded-[32px] overflow-hidden shadow-2xl border border-[#5CD284]/10 dark:border-[#1A3626] flex flex-col md:flex-row items-center justify-between">
           
-          {/* Decorative Background */}
           <div className="absolute top-0 left-0 w-full h-full bg-grid-pattern opacity-10 pointer-events-none" />
           <div className="absolute -top-24 -left-24 w-64 h-64 bg-[#5CD284]/20 rounded-full blur-[100px] pointer-events-none" />
 
-          {/* Text Content */}
           <div className="relative z-10 w-full md:w-3/5 p-10 sm:p-14 lg:p-16 flex flex-col items-center md:items-start text-center md:text-left">
             <span className="text-[#5CD284] font-bold tracking-widest text-[12px] mb-4 uppercase bg-white/10 px-4 py-1.5 rounded-full border border-white/10">
               {home.appDownload.tagline}
@@ -382,7 +328,6 @@ export default function HomePage() {
               {home.appDownload.description}
             </p>
             
-            {/* Download Buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
               <a 
                 href="https://apps.apple.com/pk/app/cmp-cashmyproperty/id6762503025" 
@@ -411,7 +356,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Phone Mockup Graphic */}
           <div className="relative z-10 w-full md:w-2/5 flex justify-center md:justify-end pr-0 md:pr-12 lg:pr-20 pt-10 md:pt-0 overflow-hidden">
              <div className="relative w-[280px] h-[350px] md:h-[450px] overflow-visible">
                <Image 
@@ -426,7 +370,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. WHY CHOOSE US */}
+      {/* 7. WHY CHOOSE US */}
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <p className="text-[#1A3626] dark:text-[#c9a14b] font-bold tracking-widest text-[12px] mb-4 uppercase">
@@ -454,11 +398,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. BOTTOM CTA */}
+      {/* 8. BOTTOM CTA */}
       <section className="pb-24 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         <div className="relative w-full bg-gradient-to-br from-[#1B3A2D] to-[#0A1C12] dark:from-[#102418] dark:to-[#091711] rounded-[40px] p-10 sm:p-16 lg:p-20 overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
           
-          {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 dark:bg-[#c9a14b]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-white/5 dark:bg-[#c9a14b]/5 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
 
@@ -479,45 +422,24 @@ export default function HomePage() {
                 </Link>
               </div>
             </>
-          ) : (() => {
-            const role = typeof user?.role === 'string' ? user.role.toLowerCase() : (user?.role as any)?.main?.toLowerCase() || "buyer";
-            const isSeller = role === 'seller';
-            
-            const headingText = isSeller 
-              ? "Manage Your Real Estate Portfolio"
-              : "Ready to discover your next home?";
-            
-            const descText = isSeller
-              ? "Access your agent command center to add verified properties, inspect real-time bidding logs, and accept offers."
-              : "Go to your buyer dashboard to track your live bids, view favorite properties, and explore direct simple deals.";
-            
-            const btnLink = isSeller
-              ? `/${locale}/dashboard/seller/properties`
-              : `/${locale}/dashboard`;
-            
-            const btnText = isSeller
-              ? "Manage Properties"
-              : "Go to Dashboard";
-            
-            return (
-              <>
-                <div className="relative z-10 flex-1 max-w-2xl">
-                  <h2 className="text-white text-[32px] sm:text-[40px] lg:text-[48px] font-bold mb-6 tracking-tight leading-[1.1]" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                    {headingText}
-                  </h2>
-                  <p className="text-green-100/70 dark:text-gray-400 text-[16px] sm:text-[18px] max-w-xl leading-relaxed">
-                    {descText}
-                  </p>
-                </div>
-                
-                <div className="relative z-10">
-                  <Link href={btnLink} className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#c9a14b] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
-                    {btnText} <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-              </>
-            );
-          })()}
+          ) : (
+            <>
+              <div className="relative z-10 flex-1 max-w-2xl">
+                <h2 className="text-white text-[32px] sm:text-[40px] lg:text-[48px] font-bold mb-6 tracking-tight leading-[1.1]" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                  Ready to discover your next home?
+                </h2>
+                <p className="text-green-100/70 dark:text-gray-400 text-[16px] sm:text-[18px] max-w-xl leading-relaxed">
+                  Go to your buyer dashboard to track your live bids, view favorite properties, and explore direct simple deals.
+                </p>
+              </div>
+              
+              <div className="relative z-10">
+                <Link href={`/${locale}/dashboard`} className="group inline-flex items-center justify-center gap-3 bg-white dark:bg-[#c9a14b] text-[#1A3626] dark:text-[#091711] px-8 sm:px-10 py-4 sm:py-5 rounded-full font-bold text-[15px] sm:text-[16px] tracking-wide hover:bg-gray-100 dark:hover:bg-[#b38d3f] transition-all duration-300 shadow-[0_10px_30px_rgba(255,255,255,0.1)] dark:shadow-[0_10px_30px_rgba(92,210,132,0.2)] hover:scale-105 whitespace-nowrap">
+                  Go to Dashboard <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 

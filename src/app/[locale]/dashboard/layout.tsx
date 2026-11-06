@@ -6,24 +6,19 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, user, isSeller } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const { locale } = useDictionary();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        router.push("/login");
-      } else if (isSeller) {
-        const isHold = user?.agencyStatus === 'PENDING' || user?.onboardingStatus === 'HOLD' || user?.status === 'PENDING';
-        if (isHold) {
-          router.push("/onboarding-hold");
-        }
-      }
+    if (!isLoading && !isAuthenticated) {
+      router.push(`/${locale}/login`);
     }
-  }, [isLoading, isAuthenticated, isSeller, user, router]);
+  }, [isLoading, isAuthenticated, router, locale]);
 
   if (isLoading) {
     return (
@@ -33,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!isAuthenticated) return null; // prevent flashing content before redirect
+  if (!isAuthenticated) return null;
 
   return (
     <div className="flex w-full min-h-screen bg-[#F8F9FA] dark:bg-[#091711]">
@@ -46,12 +41,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Sidebar - fixed on desktop, slide over on mobile */}
-      <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 lg:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* start-0 = LTR mein left, RTL mein right. Closed state RTL mein right ki taraf slide hota hai. */}
+      <div className={`fixed inset-y-0 start-0 z-50 transition-transform duration-300 lg:translate-x-0 lg:rtl:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'}`}>
         <Sidebar onClose={() => setIsMobileMenuOpen(false)} />
       </div>
 
       {/* Main Content wrapper */}
-      <div className="flex-1 flex flex-col lg:ltr:pl-64 lg:rtl:pr-64 w-full overflow-hidden">
+      <div className="flex-1 flex flex-col lg:ps-64 w-full overflow-hidden">
         <DashboardHeader onMenuClick={() => setIsMobileMenuOpen(true)} />
         
         {/* Page Content */}

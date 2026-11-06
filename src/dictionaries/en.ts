@@ -575,7 +575,7 @@ export const content = {
   navbar: {
     links: [
       { title: "Home", href: "/" },
-      { title: "Find Agents", href: "/sellers" },
+      { title: "Find Agents", href: "/agents" },
       { title: "About Us", href: "/about" },
       { title: "Blog", href: "/blog" },
       { title: "Contact", href: "/contact" }
@@ -605,7 +605,7 @@ export const content = {
     sidebar: {
       overview: "Overview",
       myBids: "My Offers",
-      favorites: "Favorites",
+      favorites: "Favorites",
       settings: "Settings",
       logout: "Log Out"
     },
@@ -649,7 +649,7 @@ export const content = {
       browseAuctions: "Browse Realtime Offers",
       browseDirectListings: "Browse Direct Listings",
       browse: "Browse Properties"
-    },
+    },
     settings: {
       title: "Account Settings",
       description: "Manage your account details and preferences.",
@@ -1949,5 +1949,221 @@ export const content = {
     subtitle: "Explore similar properties handpicked based on your preferences",
     viewAll: "View All Listings",
     noRecommendations: "No similar properties found at the moment."
+  },
+  rto: {
+    "status": {
+      "paused": "Paused",
+      "sold": "Sold",
+      "notSold": "Not sold"
+    },
+    "tabs": {
+      "live": "Live now",
+      "upcoming": "Opening soon",
+      "results": "Results"
+    },
+    "sort": {
+      "label": "Sort",
+      "ending_soon": "Ending soon",
+      "newest": "Newest",
+      "price_asc": "Price: low to high",
+      "price_desc": "Price: high to low",
+      "popular": "Most offers"
+    },
+    "list": {
+      "searchPlaceholder": "Search by title, area or CRID reference",
+      "emptyLive": "No offers are live right now.",
+      "emptyUpcoming": "No offers are scheduled yet.",
+      "emptyResults": "No finished offers yet.",
+      "emptyHint": "Check the other tabs or try a different search.",
+      "loadError": "Could not load offers. Please try again.",
+      "retry": "Try again"
+    },
+    "detail": {
+      "currentPrice": "Current offer",
+      "startingPrice": "Starting price",
+      "finalPrice": "Final price",
+      "offers": "Offers",
+      "endsIn": "Ends in",
+      "startsIn": "Starts in",
+      "ended": "Ended",
+      "pausedNote": "This offer is paused. The countdown will continue when it resumes.",
+      "minimumOffer": "Your offer must be more than",
+      "trakheesi": "Trakheesi permit",
+      "area": "Area",
+      "builtUp": "Built-up area",
+      "description": "About this property",
+      "amenities": "Amenities",
+      "location": "Location",
+      "history": "Offer history",
+      "noOffers": "No offers yet. Be the first.",
+      "leading": "You are the highest offer",
+      "outbid": "You have been outbid",
+      "won": "You won this offer",
+      "lost": "This offer went to another buyer",
+      "yourOffer": "Your offer",
+      "notFound": "This offer is no longer available.",
+      "backToOffers": "Back to Real Time Offers",
+      "extended": "A last-minute offer added 10 minutes to the countdown.",
+      "soldFor": "Sold for",
+      "notSoldNote": "This offer ended without a sale.",
+      "days": "d",
+      "hours": "h",
+      "minutes": "m",
+      "seconds": "s"
+    },
+    "contract": {
+      "title": "Register to make offers",
+      "subtitle": "Upload the documents below. CMP reviews them before you can place offers.",
+      "loginTitle": "Brokers make the offers",
+      "loginBody": "Real Time Offer is for DLD-registered brokers. Log in with your agency's CMP Connect account to register and place offers.",
+      "loginCta": "Broker log in",
+      "notSigned": "Not registered yet",
+      "pending": "Your documents are under review by CMP. We will let you know when you can make offers.",
+      "approved": "You're approved — you can place offers.",
+      "rejected": "Your documents were not accepted",
+      "rejectedHint": "Please fix the issue and upload again.",
+      "required": "Required",
+      "optional": "Optional",
+      "choose": "Choose file",
+      "replace": "Change",
+      "submit": "Submit documents",
+      "uploading": "Uploading documents…",
+      "submitted": "Documents submitted. CMP will review them.",
+      "missing": "Please add all required documents.",
+      "tooLarge": "is larger than the allowed size",
+      "badFormat": "is not an allowed file type",
+      "emiratesIdExpiry": "Emirates ID expiry (optional)",
+      "brokerCardExpiry": "Broker card expiry (optional)",
+      "closed": "Registration is closed for this offer.",
+      "publicTitle": "View-only for buyers",
+      "publicBody": "Offers are placed by DLD-registered brokers. You can follow this offer here — to buy, contact a licensed agency broker who can bid on your behalf.",
+      "findBroker": "Find a broker",
+      "developerBlocked": "Developer team accounts can view Real Time Offers but can't place offers. Offers are for agency brokers.",
+      "ownAgency": "This property is listed by your own agency, so your team can't take part in this offer.",
+      "submission": "Submission"
+    },
+    "offer": {
+      "title": "Place your offer",
+      "amountLabel": "Your offer (AED)",
+      "submit": "Place offer",
+      "placing": "Placing offer…",
+      "success": "Offer placed",
+      "successBody": "You are now the highest offer.",
+      "tooLow": "Enter an amount higher than",
+      "raced": "Someone placed a higher offer first. The price has been updated — please try again.",
+      "notLive": "Offers open when the countdown starts."
+    },
+    "dashboard": {
+      "myOffers": "My Offers",
+      "myOffersSubtitle": "Track every Real Time Offer you have taken part in.",
+      "myContracts": "My Contracts",
+      "myContractsSubtitle": "Registration documents you have sent for Real Time Offers.",
+      "emptyOffers": "You haven't placed any offers yet.",
+      "emptyContracts": "You haven't registered for any offers yet.",
+      "brokersOnly": "My Offers and My Contracts are for agency brokers who take part in Real Time Offers.",
+      "browse": "Browse Real Time Offers",
+      "viewOffer": "View offer",
+      "offersPlaced": "offers placed",
+      "lastOffer": "Last offer",
+      "signedAt": "Sent",
+      "reviewedAt": "Reviewed",
+      "loadError": "Could not load. Please try again.",
+      "statusLabels": {
+        "LEADING": "Leading",
+        "OUTBID": "Outbid",
+        "WON": "Won",
+        "LOST": "Lost",
+        "NOT_SIGNED": "Not registered",
+        "PENDING": "Under review",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
+    }
+  },
+  agentContact: {
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "whatsappMessage": "Hi {name}, I found your profile on Cash My Property and would like to know more about your properties.",
+    "emailSubject": "Enquiry via Cash My Property",
+    "forSale": "For Sale",
+    "forRent": "For Rent",
+    "sold": "Sold",
+    "rented": "Rented",
+    "dealsValue": "Deals value",
+    "activeListings": "Active Listings",
+    "closedDeals": "Closed Deals"
+  },
+  contactForm: {
+    "sending": "Sending...",
+    "sentTitle": "Message sent",
+    "sentBody": "Thanks! Your message has been received. Our team will get back to you.",
+    "failed": "Couldn't send your message. Please try again.",
+    "messageTooShort": "Please write at least 10 characters so we can help."
+  },
+  directory: {
+    "tabs": {
+      "agents": "Agents",
+      "agencies": "Agencies",
+      "developers": "Developers"
+    },
+    "agenciesTitle": "Find a Verified Agency",
+    "agenciesSubtitle": "Browse CMP-verified real estate agencies across the UAE and their live listings.",
+    "developersTitle": "Find a Property Developer",
+    "developersSubtitle": "Explore verified developers and their off-plan and ready projects.",
+    "searchPlaceholder": "Search by name…",
+    "search": "Search",
+    "found": "{count} found",
+    "sort": {
+      "mostListings": "Most listings",
+      "nameAsc": "Name (A–Z)",
+      "newest": "Newest"
+    },
+    "listings": "Listings",
+    "forSale": "For Sale",
+    "forRent": "For Rent",
+    "agents": "Agents",
+    "orn": "ORN",
+    "viewProfile": "View profile",
+    "empty": "No companies match your search.",
+    "loadError": "Could not load. Please try again.",
+    "retry": "Try again",
+    "loadMore": "Load more"
+  },
+  transactionsPage: {
+    "badge": "Verified deals register",
+    "title": "Property Transactions",
+    "subtitle": "Confirmed sold and rented deals closed by CMP-verified agencies across the UAE.",
+    "tabs": {
+      "ALL": "All deals",
+      "SOLD": "Sold",
+      "RENTED": "Rented"
+    },
+    "locationPlaceholder": "Filter by area, community or building…",
+    "search": "Search",
+    "found": "{count} deals",
+    "sold": "Sold",
+    "rented": "Rented",
+    "closedBy": "Closed by",
+    "empty": "No transactions match your filters yet.",
+    "loadError": "Could not load transactions. Please try again.",
+    "retry": "Try again",
+    "loadMore": "Load more"
+  },
+  blogPage: {
+    "badge": "Insights & guides",
+    "title": "Real Estate Blog",
+    "subtitle": "Market updates, area guides and buying tips from the Cash My Property team.",
+    "searchPlaceholder": "Search articles…",
+    "all": "All",
+    "readMore": "Read article",
+    "empty": "No articles found.",
+    "loadError": "Could not load articles. Please try again.",
+    "retry": "Try again",
+    "loadMore": "Load more",
+    "notFound": "This article is not available.",
+    "back": "Back to blog",
+    "related": "Related articles",
+    "by": "By"
   }
 };

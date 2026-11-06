@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { Geist, DM_Sans } from "next/font/google";
 import "../globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { DictionaryProvider } from "@/components/DictionaryProvider";
+import LocaleDictionaryProvider from "@/components/dictionary/LocaleDictionaryProvider";
 import { AuthProvider } from "@/context/AuthContext";
 import { SocketProvider } from "@/context/SocketContext";
 import RouteLayout from "@/components/RouteLayout";
-import { Locale } from "@/dictionaries";
+import { isLocale } from "@/dictionaries";
+import { notFound } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -45,6 +46,7 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  if (!isLocale(locale)) notFound();
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
@@ -62,13 +64,14 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <SocketProvider>
-              <DictionaryProvider locale={locale as Locale}>
+              {/* Sirf current locale ki dictionary ka JS chunk load hota hai (dekho LocaleDictionaryProvider) */}
+              <LocaleDictionaryProvider locale={locale}>
                 <RouteLayout>
                   {children}
                 </RouteLayout>
                 <Analytics />
                 <SpeedInsights />
-              </DictionaryProvider>
+              </LocaleDictionaryProvider>
             </SocketProvider>
           </AuthProvider>
         </ThemeProvider>

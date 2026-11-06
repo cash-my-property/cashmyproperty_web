@@ -5,7 +5,7 @@ import { useDictionary } from "@/components/DictionaryProvider";
 import { Heart, Building2, ArrowRight, MapPin, Loader2, Trash2, Tag, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import api from "@/lib/api";
+import api, { PUBLIC_API_PREFIX } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
 import Dirham from "@/components/Dirham";
@@ -15,7 +15,7 @@ export default function FavoritesPage() {
   const { dict, locale } = useDictionary();
   const content = dict.dashboard.favorites;
   
-  const { isAuthenticated, isBuyer, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { addToast } = useSocket();
 
   const [favourites, setFavourites] = useState<any[]>([]);
@@ -24,7 +24,7 @@ export default function FavoritesPage() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   const fetchFavourites = async () => {
-    if (!isAuthenticated || !isBuyer) {
+    if (!isAuthenticated) {
       setIsLoading(false);
       return;
     }
@@ -32,9 +32,10 @@ export default function FavoritesPage() {
     try {
       setIsLoading(true);
       setApiError(null);
-      const res = await api.get("/buyer/favourites?limit=100");
+      const res = await api.get(`${PUBLIC_API_PREFIX}/me/favourites?limit=50`);
       console.log("Raw Favourites Response:", res.data);
-      setFavourites(res.data.data || []);
+      const list = res.data?.data || [];
+      setFavourites(Array.isArray(list) ? list : []);
     } catch (err: any) {
       console.error("Error fetching favorites:", err);
       const msg = err.response?.data?.message || err.message || "Failed to load favorites";
@@ -49,19 +50,25 @@ export default function FavoritesPage() {
     if (!authLoading) {
       fetchFavourites();
     }
-  }, [authLoading, isAuthenticated, isBuyer]);
+  }, [authLoading, isAuthenticated]);
 
   const handleRemoveFavourite = async (e: React.MouseEvent, item: any) => {
     e.preventDefault();
     e.stopPropagation();
+    const targetRef = item.ref || item.listingRef || item.id || item._id;
+    const favKey = item.favouriteId || item.id || item._id || item.ref;
     try {
-      setIsRemovingId(item.favouriteId);
-      await api.put("/buyer/favourites", {
-        _id: item._id,
-        listingType: item.listingType,
-        isFavourited: false
+      setIsRemovingId(favKey);
+      await api.put(`${PUBLIC_API_PREFIX}/me/favourites/${targetRef}`, {
+        saved: false
       });
-      setFavourites((prev) => prev.filter((fav) => fav.favouriteId !== item.favouriteId));
+      setFavourites((prev) => prev.filter((fav) => {
+        const idMatches = (fav.id && item.id && fav.id === item.id) ||
+                          (fav._id && item._id && fav._id === item._id) ||
+                          (fav.favouriteId && item.favouriteId && fav.favouriteId === item.favouriteId) ||
+                          (fav.ref && item.ref && fav.ref === item.ref);
+        return !idMatches;
+      }));
       addToast("Success", "Removed from favorites successfully.", "success");
     } catch (err: any) {
       console.error("Error removing favorite", err);
@@ -96,28 +103,6 @@ export default function FavoritesPage() {
     );
   }
 
-  // Auth/Role Check Warning
-  if (!isBuyer) {
-    return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-            {content.title}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">{content.description}</p>
-        </div>
-
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 flex flex-col items-center text-center shadow-sm max-w-xl mx-auto mt-8">
-          <AlertCircle className="w-12 h-12 text-amber-600 dark:text-amber-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Switch to Buyer Mode</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-            Your current active session is in Seller mode. Favourites is a Buyer feature. Please click the button at the top header to switch to Buyer mode.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
@@ -138,8 +123,6 @@ export default function FavoritesPage() {
         </div>
       )}
 
-
-
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
           {content.title}
@@ -159,52 +142,50 @@ export default function FavoritesPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href={`/${locale}/auctions`}
+              href={`/${locale}/listings`}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] font-bold rounded-xl shadow-md transition-all hover:-translate-y-0.5"
             >
-              <Building2 className="w-4 h-4" /> {content.browseAuctions} <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href={`/${locale}/listings`}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
-            >
-              {content.browseDirectListings} <ArrowRight className="w-4 h-4" />
+              <Building2 className="w-4 h-4" /> {content.browseDirectListings} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
       ) : (
         /* Grid of Favourites */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favourites.map((item) => {
-            const isRegular = item.listingType === "REGULAR";
-            const listingId = item._id;
+          {favourites.map((item, idx) => {
+            const isRegular = item.listingType === "REGULAR" || item.isAuction;
+            const targetRef = item.ref || item.listingRef || item.id || item._id;
             const detailPath = isRegular 
-              ? `/${locale}/auctions/${listingId}` 
-              : `/${locale}/simple-listings/${listingId}`;
+              ? `/${locale}/auctions/${targetRef}` 
+              : `/${locale}/listings/${targetRef}`;
             
-            // Extract details depending on listing type (regular/auctions have details nested in propertyDetails)
-            const details = isRegular ? (item.propertyDetails || {}) : item;
+            const details = item.propertyDetails || item;
             
-            const rawLocation = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE");
+            const rawLocation = typeof details.location === 'string'
+              ? details.location
+              : typeof details.propertyLocation === 'string'
+              ? details.propertyLocation
+              : (details.propertyLocation?.city || "Dubai, UAE");
+
             const formattedLocation = (() => {
               const words = rawLocation.trim().split(/\s+/);
               return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
             })();
-            const image = extractPropertyImages(details)[0];
-            const price = isRegular
-              ? (item.currentHighestBid || details.propertyPrice?.amount || details.propertyPrice || 0)
-              : (details.propertyPrice?.amount || details.propertyPrice || 0);
+
+            const image = item.coverImage || extractPropertyImages(details)[0] || "/property-placeholder.svg";
+            const price = item.price || item.currentHighestBid || details.propertyPrice?.amount || details.propertyPrice || 0;
+            const favKey = item.favouriteId || item.id || item._id || item.ref || idx;
 
             return (
               <Link 
                 href={detailPath} 
-                key={item.favouriteId} 
+                key={favKey} 
                 className="bg-white dark:bg-[#102418] rounded-2xl overflow-hidden shadow-xs hover:shadow-xl dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-[#1A3626] transition-all duration-300 flex flex-col p-1.5 group relative block cursor-pointer hover:-translate-y-1"
               >
                 <div className="relative h-[210px] overflow-hidden rounded-xl bg-gray-100 dark:bg-[#091711] w-full">
                   <Image
                     src={image}
-                    alt={details.propertyTitle || "Property"}
+                    alt={details.title || details.propertyTitle || "Property"}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -218,7 +199,7 @@ export default function FavoritesPage() {
                       </>
                     ) : (
                       <>
-                        <Tag className="w-3.5 h-3.5 text-[#5CD284]" /> Direct Deal
+                        <Tag className="w-3.5 h-3.5 text-[#5CD284]" /> {item.purpose || "Listing"}
                       </>
                     )}
                   </div>
@@ -226,11 +207,11 @@ export default function FavoritesPage() {
                   {/* Remove Button */}
                   <button
                     onClick={(e) => handleRemoveFavourite(e, item)}
-                    disabled={isRemovingId === item.favouriteId}
+                    disabled={isRemovingId === favKey}
                     className="absolute top-3 right-3 w-8 h-8 bg-white/90 dark:bg-[#102418]/90 hover:bg-rose-50 dark:hover:bg-rose-500/20 text-gray-500 hover:text-rose-600 rounded-full flex items-center justify-center shadow-md backdrop-blur-sm transition-all cursor-pointer z-10"
                     title="Remove from favorites"
                   >
-                    {isRemovingId === item.favouriteId ? (
+                    {isRemovingId === favKey ? (
                       <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
@@ -240,7 +221,9 @@ export default function FavoritesPage() {
 
                 <div className="p-4 pt-4 flex flex-col flex-1">
                   <h3 className="font-bold text-[16px] sm:text-[17px] text-gray-900 dark:text-white leading-snug line-clamp-2 mb-2 min-h-[44px] group-hover:text-[#5CD284] transition-colors">
-                    {details.propertyTitle || "Untitled Property"}
+                    {locale === "ar"
+                      ? details.titleAr || details.propertyTitleAr || item.titleAr || details.title || details.propertyTitle || "عقار بدون عنوان"
+                      : details.title || details.propertyTitle || "Untitled Property"}
                   </h3>
                   
                   <p title={rawLocation} className="text-gray-500 dark:text-gray-400 text-xs font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
@@ -252,7 +235,7 @@ export default function FavoritesPage() {
                       {isRegular ? "Highest Offer" : "Price"}
                     </span>
                     <span className="font-bold text-lg sm:text-xl text-[#1A3626] dark:text-[#5CD284] leading-none flex items-center gap-1">
-                      <Dirham className="text-[15px]" /> {price.toLocaleString()}
+                      <Dirham className="text-[15px]" /> {Number(price).toLocaleString()}
                     </span>
                   </div>
                 </div>

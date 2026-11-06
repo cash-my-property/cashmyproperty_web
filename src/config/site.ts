@@ -23,7 +23,9 @@
       { title: "Cookie Policy", href: "#" },
     ],
     contact: {
-      address: "Business Bay, Opus Tower B601, Dubai, UAE",
+      address: "Business Bay, Opus Tower, B601, Dubai, UAE",
+      // Google Maps pin ke liye (unit number ke bina — warna geocoder galat jagah pin kar deta hai)
+      mapQuery: "Opus Tower, Business Bay, Dubai, UAE",
       phone: "+971 50 240 2661",
       email: "info@cmpdubai.com",
     },

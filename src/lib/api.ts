@@ -1,123 +1,120 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
+import { clearAuthHint } from '@/lib/authHint';
 
-const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
-const API_URL = (envApiUrl ? envApiUrl.replace(/\/auth\/?$/, '') : 'https://testapi.cmpdubai.com/api');
+const rawApiUrl = (process.env.NEXT_PUBLIC_API_URL || 'https://testapi.cmpdubai.com')
+  .trim()
+  .replace(/\/+$/, '')
+  .replace(/\/auth$/i, '');
+
+export const SERVER_BASE_URL = rawApiUrl.replace(/\/api$/i, '');
+export const API_URL = `${SERVER_BASE_URL}/api`;
+export const PUBLIC_API_PREFIX = '/cmpConnect/public';
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // authToken + refreshToken cookies automatically sent by browser
+  withCredentials: true, // Sends httpOnly cookies (cmpp_at, cmpp_rt) automatically
 });
 
-// Request interceptor to attach Bearer token to every authenticated request
+// Request interceptor: normalize URLs & ensure no localStorage/Bearer tokens on public portal endpoints
 api.interceptors.request.use(
   (config) => {
-    // Never attach auth token to public endpoints
-    if (config.url?.includes('/public/')) {
-      return config;
-    }
-    const token = Cookies.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
-    if (token && token.startsWith('eyJ') && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (config.url?.startsWith('/api/')) {
+      config.url = config.url.slice(4);
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+// Single shared refresh promise across concurrent 401s (and across tabs via navigator.locks)
+let refreshPromise: Promise<boolean> | null = null;
 
+export async function refreshPublicSession(): Promise<boolean> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (token: string | null) => void;
-  reject: (error: any) => void;
-}> = [];
-
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
+  const runRefresh = async (): Promise<boolean> => {
+    try {
+      await api.post(`${PUBLIC_API_PREFIX}/auth/refresh`);
+      return true;
+    } catch {
+      return false;
     }
-  });
-  failedQueue = [];
-};
+  };
 
-// Response interceptor to handle token expiry / unauthenticated
+  refreshPromise = (async () => {
+    try {
+      if (typeof window !== 'undefined' && 'locks' in navigator && navigator.locks?.request) {
+        return await navigator.locks.request('cmp_public_refresh_lock', async () => {
+          return await runRefresh();
+        });
+      }
+      return await runRefresh();
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+const NO_REFRESH_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/verify-email',
+  '/auth/resend-verification',
+  '/auth/google',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
+
+// Response interceptor to handle 401 token expiry via httpOnly cookie refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if the error status is 401 and the request has not been retried yet
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      // Avoid refreshing token for public endpoints or auth actions
-      if (
-        originalRequest.url?.includes('/public/') ||
-        originalRequest.url?.includes('/auth/login') ||
-        originalRequest.url?.includes('/auth/signup') ||
-        originalRequest.url?.includes('/auth/refresh') ||
-        originalRequest.url?.includes('/auth/verify') ||
-        originalRequest.url?.includes('/auth/reset-password') ||
-        originalRequest.url?.includes('/auth/forgot-password')
-      ) {
+      const reqUrl = String(originalRequest.url || '');
+      // Public session refresh sirf CMP Connect public endpoints ke 401 ko theek kar sakta hai.
+      // Legacy endpoints (/buyer/*, /seller/*, /switch/*) ka 401 refresh se kabhi theek nahi hota —
+      // pehle har aise 401 pe faltu refresh + retry (2 extra requests) jaati thin.
+      const isPublicSessionRequest = reqUrl.includes(PUBLIC_API_PREFIX);
+      const shouldSkipRefresh =
+        !isPublicSessionRequest ||
+        originalRequest.skipAuthRefresh === true ||
+        NO_REFRESH_PATHS.some((path) => reqUrl.includes(path));
+
+      if (shouldSkipRefresh) {
         return Promise.reject(error);
       }
 
-      if (isRefreshing) {
-        return new Promise<string | null>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((newToken) => {
-            if (newToken) {
-              originalRequest.headers = originalRequest.headers || {};
-              originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            }
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
-
       originalRequest._retry = true;
-      isRefreshing = true;
 
-      try {
-        const refreshResponse = await api.post('/auth/refresh');
-        const newToken = refreshResponse.data?.token || refreshResponse.data?.accessToken;
-
-        if (newToken) {
-          Cookies.set('token', newToken, { expires: 7 });
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('token', newToken);
-          }
-          originalRequest.headers = originalRequest.headers || {};
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        }
-
-        isRefreshing = false;
-        processQueue(null, newToken || null);
+      const refreshed = await refreshPublicSession();
+      if (refreshed) {
         return api(originalRequest);
-      } catch (refreshError) {
-        isRefreshing = false;
-        processQueue(refreshError, null);
-
-        if (typeof window !== 'undefined' && originalRequest.url !== '/auth/logout') {
-          Cookies.remove('token');
-          localStorage.removeItem('token');
-          const isDashboardRoute = window.location.pathname.includes('/dashboard');
-          if (isDashboardRoute) {
-            const locale = window.location.pathname.split('/')[1] || 'en';
-            window.location.href = `/${locale}/login`;
-          }
-        }
-        return Promise.reject(refreshError);
       }
+
+      // Refresh failed -> login hint hatao
+      if (typeof window !== 'undefined') {
+        clearAuthHint();
+
+        // Do not hard-redirect on initial /auth/me check; DashboardLayout handles protected routes
+        if (!reqUrl.includes('/auth/me') && window.location.pathname.includes('/dashboard')) {
+          const locale = window.location.pathname.split('/')[1] || 'en';
+          const next = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `/${locale}/login?next=${next}`;
+        }
+      }
+
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);
@@ -125,3 +122,10 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /** true = is request ke 401 pe public session refresh try mat karo */
+    skipAuthRefresh?: boolean;
+  }
+}

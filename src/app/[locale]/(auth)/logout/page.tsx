@@ -6,7 +6,7 @@ import { ArrowRight, Home } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 
 export default function LogoutPage() {
-  const { dict } = useDictionary();
+  const { dict, locale } = useDictionary();
   const content = dict;
   const [animateIn, setAnimateIn] = useState(false);
 
@@ -98,14 +98,14 @@ export default function LogoutPage() {
             {/* Buttons */}
             <div className="space-y-4 w-full">
               <Link
-                href="/login"
+                href={`/${locale}/login`}
                 className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-white dark:text-[#1A3626] text-[15px] font-semibold transition-colors shadow-sm bg-[#1A3626] dark:bg-[#c9a14b] hover:bg-[#12261a] dark:hover:bg-[#b38d3f]"
               >
                 {content.auth.logout.reloginButton} <ArrowRight className="w-4 h-4" />
               </Link>
 
               <Link
-                href="/"
+                href={`/${locale}`}
                 className="flex items-center justify-center gap-2 w-full py-4 rounded-lg text-gray-700 dark:text-gray-300 text-[15px] font-semibold transition-colors bg-white dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] hover:bg-gray-50 dark:hover:bg-[#163321]"
               >
                 <Home className="w-4 h-4" />

@@ -110,10 +110,12 @@ export default function PropertyBreadcrumb({
             <li className="flex items-center text-gray-400 dark:text-gray-600">
               <ChevronRight className="w-3.5 h-3.5 shrink-0" />
             </li>
-            <li className="flex items-center">
+            {/* min-w-0 + truncate: lambe location names (e.g. "Dubai Harbour Yacht Club - ...")
+                mobile pe page ko horizontally overflow nahi karenge; poora naam title tooltip mein */}
+            <li className="flex items-center min-w-0 max-w-full">
               <Link
                 href={`${effectiveBasePath}?location=${encodeURIComponent(segment)}`}
-                className={`${hoverClass} transition-colors whitespace-nowrap capitalize`}
+                className={`${hoverClass} transition-colors block truncate capitalize max-w-[220px] sm:max-w-[320px] md:max-w-[420px]`}
                 title={`Properties in ${segment}`}
               >
                 {segment}

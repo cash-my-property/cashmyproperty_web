@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HelpCircle, X, ArrowRight, ShieldCheck, RefreshCw, Zap, Building } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
+import { features } from "@/config/features";
 
 export default function FloatingGuideWidget() {
   const { locale } = useDictionary();
@@ -39,7 +40,7 @@ export default function FloatingGuideWidget() {
               <>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <Building className="w-4 h-4 text-[#5CD284] shrink-0 mt-0.5" />
-                  <span><strong>Agent Mode:</strong> Add listings or launch Realtime Distress Offers from your Dashboard.</span>
+                  <span><strong>Agent Mode:</strong> {features.realTimeOffers ? "Add listings or launch Realtime Distress Offers from your Dashboard." : "Manage your listings from the CMP Connect portal."}</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <RefreshCw className="w-4 h-4 text-[#c9a14b] shrink-0 mt-0.5" />
@@ -48,10 +49,12 @@ export default function FloatingGuideWidget() {
               </>
             ) : (
               <>
+                {features.realTimeOffers && (
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <Zap className="w-4 h-4 text-[#5CD284] shrink-0 mt-0.5" />
                   <span><strong>Realtime Offers:</strong> Sign your digital MOA Undertaking Letter before placing live offers.</span>
                 </div>
+                )}
                 <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] flex items-start gap-2 text-gray-700 dark:text-gray-300">
                   <ShieldCheck className="w-4 h-4 text-[#c9a14b] shrink-0 mt-0.5" />
                   <span><strong>Listings:</strong> Contact verified agents directly via WhatsApp, Call, or Email.</span>

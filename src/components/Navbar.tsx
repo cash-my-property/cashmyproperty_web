@@ -4,21 +4,23 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Menu, X, Globe, ChevronDown, User, Bell, CheckCircle2, AlertTriangle, FileText, ShieldCheck, Check, Trash2 } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import { Menu, X, Globe, ChevronDown, User, Bell, Check, Trash2, LogOut, LayoutDashboard, Building2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
 import { useSocket } from "@/context/SocketContext";
-import api from "@/lib/api";
+import { features } from "@/config/features";
+import PushOptIn from "@/components/notifications/PushOptIn";
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { locale, dict } = useDictionary();
-  const { isAuthenticated, user, isBuyer, isSeller, fetchProfile } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const { notifications, markAllAsRead, clearAllNotifications, markAsRead, deleteNotification } = useSocket();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -33,15 +35,7 @@ export default function Navbar() {
   const showRealtimeNav = isAuctionsActive;
   const showListingsNav = !isAuctionsActive;
 
-  const handleToggleType = async (targetType: "SIMPLE" | "REGULAR", targetUrl: string) => {
-    if (isAuthenticated && user) {
-      try {
-        await api.put('/switch/toggleRole', { main: 'BUYER', type: targetType });
-        if (fetchProfile) await fetchProfile();
-      } catch (err) {
-        console.error("Failed to switch type:", err);
-      }
-    }
+  const handleToggleType = (_targetType: "SIMPLE" | "REGULAR", targetUrl: string) => {
     router.push(targetUrl);
   };
 
@@ -49,11 +43,10 @@ export default function Navbar() {
   const currentSort = searchParams.get('sortBy') || searchParams.get('sort');
   const currentPropertyType = searchParams.get('propertyType')?.toUpperCase();
 
-
   const getNavLinks = () => {
     const rawLinks = dict?.navbar?.links || [
       { title: "Home", href: "/" },
-      { title: "Find Agents", href: "/sellers" },
+      { title: "Find Agents", href: "/agents" },
       { title: "About Us", href: "/about" },
       { title: "Blog", href: "/blog" },
       { title: "Contact", href: "/contact" }
@@ -65,7 +58,7 @@ export default function Navbar() {
       return dict.navbar.links;
     }
 
-    const findAgentsLink = baseLinks.find((l: any) => l.href === '/sellers') || { title: "Find Agents", href: "/sellers" };
+    const findAgentsLink = baseLinks.find((l: any) => l.href === '/agents') || { title: "Find Agents", href: "/agents" };
 
     return [findAgentsLink];
   };
@@ -76,7 +69,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Add scroll effect for glassmorphism enhancement on scroll
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -88,7 +80,6 @@ export default function Navbar() {
   const switchLanguage = (newLocale: string) => {
     if (newLocale === locale) return;
 
-    // Remove current locale from pathname and add new one
     const segments = pathname.split('/');
     if (segments[1] === locale) {
       segments[1] = newLocale;
@@ -96,14 +87,16 @@ export default function Navbar() {
       segments.splice(1, 0, newLocale);
     }
 
-    // Construct new path
     const newPath = segments.join('/') || '/';
 
-    // Set cookie explicitly to help middleware
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
     router.push(newPath);
     router.refresh();
   };
+
+  const displayName = user?.fullName || user?.firstName || "Account";
+  const shortName = displayName.split(" ")[0] || "Account";
+  const agentCompany = user?.accountType === "AGENT" ? user?.agent?.companyName : null;
 
   return (
     <>
@@ -129,8 +122,10 @@ export default function Navbar() {
               />
             </Link>
 
-            {/* Platform Toggle Pill (Listings vs Real Time Offer) - Centered between Logo and Buy */}
-            <div className="flex-1 flex justify-center px-1 sm:px-4">
+            {/* Platform Toggle Pill (Listings vs Real Time Offer) */}
+            {/* Mobile pe start-align: centered + shrink-0 pill jagah kam hone pe left mein overflow karke logo ke upar aa jata tha */}
+            <div className="flex-1 min-w-0 flex justify-start sm:justify-center ps-2 pe-1 sm:px-4">
+              {features.realTimeOffers && (
               <div className="flex items-center shrink-0 bg-[#102418] dark:bg-[#142e1d] p-0.5 sm:p-1 rounded-full border border-[#1A3626] shadow-inner transition-colors duration-300">
                 <button
                   type="button"
@@ -155,6 +150,7 @@ export default function Navbar() {
                   <span>Real Time Offer</span>
                 </button>
               </div>
+              )}
             </div>
           </div>
 
@@ -187,12 +183,12 @@ export default function Navbar() {
                   New Projects
                 </Link>
                 <Link
-                  href={`/${locale}/sellers`}
+                  href={`/${locale}/agents`}
                   className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
-                    pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    pathname.includes('/agents') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
-                  {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                  {dict?.navbar?.links?.find((l: any) => l.href === '/agents' || l.href === '/sellers')?.title || "Find Agents"}
                 </Link>
               </nav>
             ) : showRealtimeNav ? (
@@ -230,12 +226,12 @@ export default function Navbar() {
                   Commercial
                 </Link>
                 <Link
-                  href={`/${locale}/sellers`}
+                  href={`/${locale}/agents`}
                   className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
-                    pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    pathname.includes('/agents') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
-                  {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                  {dict?.navbar?.links?.find((l: any) => l.href === '/agents' || l.href === '/sellers')?.title || "Find Agents"}
                 </Link>
               </nav>
             ) : (
@@ -284,6 +280,7 @@ export default function Navbar() {
                     <button 
                       onClick={() => {
                         setShowNotifications(!showNotifications);
+                        setShowAccountMenu(false);
                       }}
                       className="relative w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-[#102418] transition-colors cursor-pointer"
                     >
@@ -306,9 +303,7 @@ export default function Navbar() {
                               <div className="flex gap-2.5 items-center">
                                 {notifications.some((n: any) => !n.read) && (
                                   <button 
-                                    onClick={() => {
-                                      markAllAsRead();
-                                    }}
+                                    onClick={() => markAllAsRead()}
                                     className="text-[11px] font-bold text-[#5CD284] hover:text-[#4ab872] transition-colors cursor-pointer"
                                   >
                                     Mark all as read
@@ -328,20 +323,20 @@ export default function Navbar() {
                             )}
                           </div>
                           
+                          <PushOptIn />
                           <div className="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-[#1A3626] max-h-[320px] custom-scrollbar">
                             {notifications.length === 0 ? (
                               <div className="p-8 flex flex-col items-center justify-center text-center">
                                 <Bell className="w-8 h-8 text-gray-300 dark:text-[#1A3626] mb-2" />
-                                <p className="text-[12px] text-gray-400 font-medium">You don't have any notifications yet</p>
+                                <p className="text-[12px] text-gray-400 font-medium">You don&apos;t have any notifications yet</p>
                               </div>
                             ) : (
                               notifications.map((notif: any) => (
                                 <div 
                                   key={notif.id} 
                                   onClick={() => {
-                                    if (!notif.read) {
-                                      markAsRead(notif.id);
-                                    }
+                                    if (!notif.read) markAsRead(notif.id);
+                                    if (notif.href) { setShowNotifications(false); router.push(notif.href); }
                                   }}
                                   className={`p-4 flex gap-3 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors group/item relative cursor-pointer ${!notif.read ? 'bg-green-50/10 dark:bg-[#163321]/10' : ''}`}
                                 >
@@ -361,7 +356,6 @@ export default function Navbar() {
                                       {notif.timestamp}
                                     </span>
                                   </div>
-                                  {/* Hover Action Buttons */}
                                   <div className="absolute right-3 top-3.5 flex items-center gap-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                     {!notif.read && (
                                       <button 
@@ -395,13 +389,65 @@ export default function Navbar() {
                     )}
                   </div>
 
-                  <Link
-                    href={`/${locale}/dashboard`}
-                    className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-5 py-2.5 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] hover:-translate-y-0.5"
-                  >
-                    <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 group-hover:translate-x-full transition-transform duration-500 ease-out -translate-x-full skew-x-12"></div>
-                    <span className="relative flex items-center gap-2"><User className="w-4 h-4" /> Dashboard</span>
-                  </Link>
+                  {/* Account Dropdown Menu (Shows account name, agent company if AGENT, My account, Saved, Log out) */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAccountMenu(!showAccountMenu);
+                        setShowNotifications(false);
+                      }}
+                      className="relative group overflow-hidden bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] px-4 py-2 rounded-full font-bold text-[13px] tracking-wide transition-all duration-300 hover:shadow-[0_8px_20px_rgba(26,54,38,0.2)] dark:hover:shadow-[0_8px_20px_rgba(201,161,75,0.3)] flex items-center gap-2 cursor-pointer"
+                    >
+                      <User className="w-4 h-4 shrink-0" />
+                      <span className="max-w-[130px] truncate">{shortName}</span>
+                      <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                    </button>
+
+                    {showAccountMenu && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-30"
+                          onClick={() => setShowAccountMenu(false)}
+                        />
+                        <div className="absolute top-[130%] right-0 mt-1 w-60 bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 overflow-hidden p-2 space-y-1">
+                          <div className="px-3 py-2.5 border-b border-gray-100 dark:border-[#1A3626]">
+                            <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{displayName}</p>
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                            {agentCompany && (
+                              <div className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284]">
+                                <Building2 className="w-3 h-3" />
+                                <span className="truncate max-w-[160px]">{agentCompany}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          <Link
+                            href={`/${locale}/dashboard`}
+                            onClick={() => setShowAccountMenu(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#163321] transition-colors"
+                          >
+                            <LayoutDashboard className="w-4 h-4 text-gray-400" />
+                            <span>Dashboard</span>
+                          </Link>
+
+                          <div className="border-t border-gray-100 dark:border-[#1A3626] pt-1 mt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowAccountMenu(false);
+                                logout();
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              <span>Log Out</span>
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               ) : isLoginPage ? (
                 <Link
@@ -422,130 +468,125 @@ export default function Navbar() {
               )}
             </div>
 
-          {/* Mobile Menu Toggle & Notifications */}
-          <div className="flex items-center gap-2 lg:hidden">
-            {isAuth && (
-              <div className="relative">
-                <button 
-                  onClick={() => {
-                    setShowNotifications(!showNotifications);
-                  }}
-                  className="relative p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418]/50 rounded-full transition-colors cursor-pointer"
-                >
-                  <Bell className="w-5 h-5" />
-                  {notifications.some((n: any) => !n.read) && (
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
-                  )}
-                </button>
-                
-                {showNotifications && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-35" 
-                      onClick={() => setShowNotifications(false)}
-                    />
-                    <div className="absolute top-[135%] right-0 mt-2 w-[280px] bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 overflow-hidden flex flex-col max-h-[350px]">
-                      <div className="px-4 py-3 border-b border-gray-50 dark:border-[#1A3626] flex items-center justify-between bg-gray-50/50 dark:bg-[#102418]/50">
-                        <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
-                        {notifications.length > 0 && (
-                          <div className="flex gap-2.5 items-center">
-                            {notifications.some((n: any) => !n.read) && (
+            {/* Mobile Menu Toggle & Notifications */}
+            <div className="flex items-center gap-2 lg:hidden">
+              {isAuth && (
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418]/50 rounded-full transition-colors cursor-pointer"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {notifications.some((n: any) => !n.read) && (
+                      <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
+                    )}
+                  </button>
+                  
+                  {showNotifications && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-35" 
+                        onClick={() => setShowNotifications(false)}
+                      />
+                      <div className="absolute top-[135%] right-0 mt-2 w-[280px] bg-white dark:bg-[#102418] rounded-2xl shadow-[0_10px_45px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_45px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-[#1A3626] z-40 overflow-hidden flex flex-col max-h-[350px]">
+                        <div className="px-4 py-3 border-b border-gray-50 dark:border-[#1A3626] flex items-center justify-between bg-gray-50/50 dark:bg-[#102418]/50">
+                          <span className="text-[13px] font-bold text-gray-900 dark:text-white">Notifications</span>
+                          {notifications.length > 0 && (
+                            <div className="flex gap-2.5 items-center">
+                              {notifications.some((n: any) => !n.read) && (
+                                <button 
+                                  onClick={() => markAllAsRead()}
+                                  className="text-[11px] font-bold text-[#5CD284] hover:text-[#4ab872] transition-colors cursor-pointer"
+                                >
+                                  Mark all as read
+                                </button>
+                              )}
+                              <span className="text-gray-300 dark:text-[#1A3626] text-[10px]">|</span>
                               <button 
                                 onClick={() => {
-                                  markAllAsRead();
+                                  clearAllNotifications();
+                                  setShowNotifications(false);
                                 }}
-                                className="text-[11px] font-bold text-[#5CD284] hover:text-[#4ab872] transition-colors cursor-pointer"
+                                className="text-[11px] font-bold text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
                               >
-                                Mark all as read
+                                Clear All
                               </button>
-                            )}
-                            <span className="text-gray-300 dark:text-[#1A3626] text-[10px]">|</span>
-                            <button 
-                              onClick={() => {
-                                clearAllNotifications();
-                                setShowNotifications(false);
-                              }}
-                              className="text-[11px] font-bold text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
-                            >
-                              Clear All
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-[#1A3626] max-h-[250px] custom-scrollbar">
-                        {notifications.length === 0 ? (
-                          <div className="p-8 flex flex-col items-center justify-center text-center">
-                            <Bell className="w-8 h-8 text-gray-300 dark:text-[#1A3626] mb-2" />
-                            <p className="text-[12px] text-gray-400 font-medium">You don't have any notifications yet</p>
-                          </div>
-                        ) : (
-                          notifications.map((notif: any) => (
-                            <div 
-                              key={notif.id} 
-                              onClick={() => {
-                                if (!notif.read) {
-                                  markAsRead(notif.id);
-                                }
-                              }}
-                              className={`p-3 flex gap-2 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors relative group/item cursor-pointer ${!notif.read ? 'bg-green-50/10 dark:bg-[#163321]/10' : ''}`}
-                            >
-                              <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                                notif.type === 'success' ? 'bg-green-500' :
-                                notif.type === 'warning' ? 'bg-amber-500' :
-                                'bg-[#1A3626] dark:bg-[#c9a14b]'
-                              }`} />
-                              <div className="flex-1 flex flex-col gap-0.5 pr-12">
-                                <span className={`text-[11.5px] font-bold text-gray-900 dark:text-white leading-tight animate-in fade-in ${notif.read ? 'opacity-60' : ''}`}>
-                                  {notif.title}
-                                </span>
-                                <span className={`text-[10.5px] text-gray-500 dark:text-gray-400 font-medium leading-normal ${notif.read ? 'opacity-60' : ''}`}>
-                                  {notif.message}
-                                </span>
-                                <span className="text-[9px] text-gray-400 dark:text-gray-500 font-semibold mt-0.5">
-                                  {notif.timestamp}
-                                </span>
-                              </div>
-                              {/* Action Buttons for Mobile */}
-                              <div className="absolute right-2 top-2.5 flex items-center gap-1">
-                                {!notif.read && (
+                            </div>
+                          )}
+                        </div>
+                        
+                        <PushOptIn />
+                        <div className="overflow-y-auto flex-1 divide-y divide-gray-50 dark:divide-[#1A3626] max-h-[250px] custom-scrollbar">
+                          {notifications.length === 0 ? (
+                            <div className="p-8 flex flex-col items-center justify-center text-center">
+                              <Bell className="w-8 h-8 text-gray-300 dark:text-[#1A3626] mb-2" />
+                              <p className="text-[12px] text-gray-400 font-medium">You don&apos;t have any notifications yet</p>
+                            </div>
+                          ) : (
+                            notifications.map((notif: any) => (
+                              <div 
+                                key={notif.id} 
+                                onClick={() => {
+                                  if (!notif.read) markAsRead(notif.id);
+                                    if (notif.href) { setShowNotifications(false); router.push(notif.href); }
+                                }}
+                                className={`p-3 flex gap-2 hover:bg-gray-50/40 dark:hover:bg-[#163321]/30 transition-colors relative group/item cursor-pointer ${!notif.read ? 'bg-green-50/10 dark:bg-[#163321]/10' : ''}`}
+                              >
+                                <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
+                                  notif.type === 'success' ? 'bg-green-500' :
+                                  notif.type === 'warning' ? 'bg-amber-500' :
+                                  'bg-[#1A3626] dark:bg-[#c9a14b]'
+                                }`} />
+                                <div className="flex-1 flex flex-col gap-0.5 pr-12">
+                                  <span className={`text-[11.5px] font-bold text-gray-900 dark:text-white leading-tight animate-in fade-in ${notif.read ? 'opacity-60' : ''}`}>
+                                    {notif.title}
+                                  </span>
+                                  <span className={`text-[10.5px] text-gray-500 dark:text-gray-400 font-medium leading-normal ${notif.read ? 'opacity-60' : ''}`}>
+                                    {notif.message}
+                                  </span>
+                                  <span className="text-[9px] text-gray-400 dark:text-gray-500 font-semibold mt-0.5">
+                                    {notif.timestamp}
+                                  </span>
+                                </div>
+                                <div className="absolute right-2 top-2.5 flex items-center gap-1">
+                                  {!notif.read && (
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        markAsRead(notif.id);
+                                      }}
+                                      className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] text-green-600 dark:text-green-400 border border-gray-200/40 dark:border-[#1A3626] cursor-pointer"
+                                    >
+                                      <Check className="w-3 h-3" />
+                                    </button>
+                                  )}
                                   <button 
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      markAsRead(notif.id);
+                                      deleteNotification(notif.id);
                                     }}
-                                    className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] text-green-600 dark:text-green-400 border border-gray-200/40 dark:border-[#1A3626] cursor-pointer"
+                                    className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] text-rose-500 dark:text-rose-400 border border-gray-200/40 dark:border-[#1A3626] cursor-pointer"
                                   >
-                                    <Check className="w-3 h-3" />
+                                    <Trash2 className="w-3 h-3" />
                                   </button>
-                                )}
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteNotification(notif.id);
-                                  }}
-                                  className="p-1 rounded-md bg-gray-50 hover:bg-gray-100 dark:bg-[#163321] text-rose-500 dark:text-rose-400 border border-gray-200/40 dark:border-[#1A3626] cursor-pointer"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
+                                </div>
                               </div>
-                            </div>
-                          ))
-                        )}
+                            ))
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-            
-            <button
-              className="p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-full transition-colors cursor-pointer"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+                    </>
+                  )}
+                </div>
+              )}
+              
+              <button
+                className="p-2.5 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#102418] rounded-full transition-colors cursor-pointer"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -587,13 +628,13 @@ export default function Navbar() {
                     New Projects
                   </Link>
                   <Link
-                    href={`/${locale}/sellers`}
+                    href={`/${locale}/agents`}
                     className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
-                      pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                      pathname.includes('/agents') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                    {dict?.navbar?.links?.find((l: any) => l.href === '/agents')?.title || "Find Agents"}
                   </Link>
                 </>
               ) : showRealtimeNav ? (
@@ -635,13 +676,13 @@ export default function Navbar() {
                     Commercial
                   </Link>
                   <Link
-                    href={`/${locale}/sellers`}
+                    href={`/${locale}/agents`}
                     className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
-                      pathname.includes('/sellers') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                      pathname.includes('/agents') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {dict?.navbar?.links?.find((l: any) => l.href === '/sellers')?.title || "Find Agents"}
+                    {dict?.navbar?.links?.find((l: any) => l.href === '/agents')?.title || "Find Agents"}
                   </Link>
                 </>
               ) : (
@@ -657,8 +698,6 @@ export default function Navbar() {
                   </Link>
                 ))
               )}
-
-
 
               {/* Mobile Theme Toggle */}
               <div className="flex items-center justify-between py-1">
@@ -678,15 +717,32 @@ export default function Navbar() {
               </div>
             </nav>
 
-            <div className="mt-2 pt-4 border-t border-gray-200 dark:border-[#1A3626]">
+            <div className="mt-2 pt-4 border-t border-gray-200 dark:border-[#1A3626] space-y-2">
               {isAuth ? (
-                <Link
-                  href={`/${locale}/dashboard`}
-                  className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-4 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <User className="w-4 h-4" /> Dashboard
-                </Link>
+                <>
+                  {agentCompany && (
+                    <div className="text-center text-xs font-semibold text-[#1A3626] dark:text-[#5CD284] pb-1">
+                      {displayName} · {agentCompany}
+                    </div>
+                  )}
+                  <Link
+                    href={`/${locale}/dashboard`}
+                    className="flex items-center justify-center gap-2 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] w-full py-3.5 rounded-full font-bold uppercase tracking-widest text-[13px] shadow-md hover:bg-[#12261a] dark:hover:bg-[#b38d3f] transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" /> Dashboard
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      logout();
+                    }}
+                    className="flex items-center justify-center gap-2 border border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400 w-full py-3 rounded-full font-bold uppercase tracking-widest text-[12px] transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" /> Log Out
+                  </button>
+                </>
               ) : isLoginPage ? (
                 <Link
                   href={`/${locale}/signup`}
@@ -708,7 +764,6 @@ export default function Navbar() {
           </div>
         </div>
       </header>
-
     </>
   );
 }

@@ -3,9 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Search, ChevronDown, Check, X, SlidersHorizontal, MapPin, Building, User, Building2, Loader2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import api from "@/lib/api";
+import connectPublicService from "@/services/connectPublicService";
+import { useFilterOptions } from "@/hooks/useFilterOptions";
+import { formatAmenity } from "@/utils/formatters";
 
 interface HeroSearchWidgetProps {
   onSearch?: (filters: any) => void;
@@ -14,24 +17,11 @@ interface HeroSearchWidgetProps {
   showTabs?: boolean;
 }
 
-// Shapes of GET /public/v2/search-filters and GET /public/v2/search-suggestions
+// Dropdown options: static lists (legacy /public/v2/search-filters hata diya — CMP Connect ke
+// fixed values, dekho /options). Suggestions: CMP Connect GET /search-suggestions.
 interface FilterOption {
   value: string;
   label: string;
-}
-
-interface FilterDef {
-  key: string;
-  label: string;
-  type: "single" | "multi" | "range";
-  options?: FilterOption[];
-  range?: { min: number; max: number };
-}
-
-interface FilterConfig {
-  key: string;
-  placeholder: string;
-  filters: FilterDef[];
 }
 
 interface SuggestionState {
@@ -53,7 +43,7 @@ const TAB_FILTERS: Record<string, string[]> = {
 
 const toOptions = (values: string[]): FilterOption[] => values.map((v) => ({ value: v, label: v }));
 
-// Static option lists only used until (or if) /v2/search-filters answers
+// Static option lists (CMP Connect /options ke values)
 const FALLBACK_BEDS = toOptions(["Studio", "1", "2", "3", "4", "5", "6", "7+"]);
 const FALLBACK_BATHS = toOptions(["1", "2", "3", "4", "5", "6", "7+"]);
 const FALLBACK_CATEGORIES: FilterOption[] = [
@@ -362,6 +352,7 @@ const csvList = (raw: string | null | undefined) => (raw || "").split(",").map((
 
 export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant = "HERO", showTabs = true }: HeroSearchWidgetProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { locale } = useDictionary();
 
@@ -437,7 +428,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     };
   }, [activeDropdown]);
 
-  // Filter States (values are the raw API values from /v2/search-filters)
+  // Filter States (CMP Connect API values)
   const [selectedCategory, setSelectedCategory] = useState<string>("RESIDENTIAL");
   const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>([]);
   const [selectedBeds, setSelectedBeds] = useState<string[]>([]);
@@ -463,8 +454,6 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   // Buy specific sub-tabs (All, Off-plan, Ready)
   const [buySubTab, setBuySubTab] = useState<"ALL" | "OFF_PLAN" | "READY">("ALL");
 
-  // Dropdown definitions loaded from GET /public/v2/search-filters
-  const [filterConfig, setFilterConfig] = useState<FilterConfig | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -487,17 +476,25 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   }, []);
 
   const isAgentTab = activeTab === "AGENTS";
-  // The Companies sub-tab is its own `tab` value for the search API
-  const apiTab = isAgentTab && agentSubTab === "COMPANIES" ? "COMPANIES" : activeTab;
   const plan = activeTab === "BUY" && buySubTab !== "ALL" ? buySubTab : "";
-  const configCategory = isAgentTab ? "" : selectedCategory;
-  const configKey = `${apiTab}|${configCategory}|${plan}`;
-  // Ignore a config that was loaded for another tab / category / plan while the new one is in flight
-  const activeConfig = filterConfig?.key === configKey ? filterConfig : null;
 
   const hasFilter = (key: string) => (TAB_FILTERS[activeTab] || []).includes(key);
-  const findFilter = (key: string) => activeConfig?.filters.find((f) => f.key === key);
-  const optionsOf = (key: string, fallback: FilterOption[] = []) => findFilter(key)?.options || fallback;
+  const optionsOf = (_key: string, fallback: FilterOption[] = []) => fallback;
+
+  // CMP Connect GET /options (ek baar, cached). Backend ke allowed values se lists filter hoti hain:
+  // jo type / amenity backend nahi jaanta wo dikhe hi nahi (warna /listings 400 deta hai).
+  // Load na ho to static lists hi chalti hain.
+  const filterOptions = useFilterOptions();
+  const allowTypes = (list: FilterOption[]): FilterOption[] => {
+    const labels = filterOptions?.typeLabels;
+    if (!labels) return list;
+    return list
+      .filter((t) => labels[t.value])
+      .map((t) => ({ value: t.value, label: locale === "ar" ? formatPropertyType(t.value, "ar") : labels[t.value] }));
+  };
+  const allowValues = (list: FilterOption[], allowed?: string[]) => (allowed ? list.filter((o) => allowed.includes(o.value)) : list);
+  const amenityCategory = activeTab === "NEW_PROJECTS" ? "RESIDENTIAL" : selectedCategory === "COMMERCIAL" ? "COMMERCIAL" : "RESIDENTIAL";
+  const apiAmenities = filterOptions?.amenities?.[amenityCategory as "RESIDENTIAL" | "COMMERCIAL"];
 
   const fallbackTypes =
     activeTab === "NEW_PROJECTS"
@@ -514,18 +511,15 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
         : RESIDENTIAL_PROPERTY_TYPES
       : ALL_PROPERTY_TYPES;
 
-  const propertyTypes =
-    activeTab === "NEW_PROJECTS"
-      ? NEW_PROJECTS_PROPERTY_TYPES
-      : activeTab === "BUY" || activeTab === "RENT"
-      ? fallbackTypes
-      : optionsOf("propertyType", fallbackTypes);
-  const amenityOptions = ALL_AMENITIES;
-  const categoryOptions = optionsOf("category", FALLBACK_CATEGORIES);
+  const propertyTypes = allowTypes(activeTab === "NEW_PROJECTS" ? NEW_PROJECTS_PROPERTY_TYPES : fallbackTypes);
+  const amenityOptions: FilterOption[] = apiAmenities
+    ? apiAmenities.map((name) => ({ value: name, label: locale === "ar" ? formatAmenity(name, "ar") : name }))
+    : ALL_AMENITIES;
+  const categoryOptions = allowValues(FALLBACK_CATEGORIES, filterOptions?.categories);
   const bedOptions = optionsOf("beds", FALLBACK_BEDS);
   const bathOptions = optionsOf("baths", FALLBACK_BATHS);
-  const furnishingOptions = optionsOf("furnishing", FALLBACK_FURNISHING);
-  const rentalPeriodOptions = optionsOf("rentalPeriod", FALLBACK_RENTAL_PERIODS);
+  const furnishingOptions = allowValues(FALLBACK_FURNISHING, filterOptions?.furnishing);
+  const rentalPeriodOptions = allowValues(FALLBACK_RENTAL_PERIODS, filterOptions?.rentalPeriods);
   const deliveryDateOptions = optionsOf("deliveryDate", FALLBACK_DELIVERY_DATES);
   const segmentOptions = optionsOf("segment", FALLBACK_SEGMENTS);
   const languageOptions = Array.from(
@@ -534,36 +528,6 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   const nationalityOptions = Array.from(
     new Map([...FALLBACK_NATIONALITIES, ...optionsOf("nationality", [])].map((o) => [o.value, o])).values()
   ).sort((a, b) => a.label.localeCompare(b.label));
-  const priceRange = findFilter("price")?.range;
-  const areaRange = findFilter("area")?.range;
-
-  // Load the dropdown definitions whenever the tab / category / plan changes
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .get("/public/v2/search-filters", {
-        params: { tab: apiTab, ...(configCategory ? { category: configCategory } : {}), ...(plan ? { plan } : {}) },
-      })
-      .then((res) => {
-        if (cancelled || !res.data?.success) return;
-        const filters: FilterDef[] = res.data.filters || [];
-        setFilterConfig({ key: configKey, placeholder: res.data.searchPlaceholder || "", filters });
-
-        // Drop selections the new tab / category / plan no longer offers
-        const prune = (key: string, setter: React.Dispatch<React.SetStateAction<string[]>>) => {
-          const allowed = (key === "propertyType" ? fallbackTypes : key === "amenities" ? amenityOptions : filters.find((f) => f.key === key)?.options)?.map((o) => o.value);
-          if (!allowed) return;
-          setter((prev) => (prev.every((v) => allowed.includes(v)) ? prev : prev.filter((v) => allowed.includes(v))));
-        };
-        prune("propertyType", setSelectedPropertyTypes);
-        prune("amenities", setSelectedAmenities);
-        prune("deliveryDate", setSelectedDeliveryDate);
-      })
-      .catch((err) => console.error("Search filters error:", err));
-    return () => {
-      cancelled = true;
-    };
-  }, [configKey]);
 
   // Rebuild the widget filters from the URL (without overriding the search bar's active tab)
   const urlKey = searchParams?.toString() || "";
@@ -597,13 +561,17 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   // Selected filters in the search v2 vocabulary — sent with suggestions and reused for the listing URL
   const buildFilterParams = () => {
     const params: Record<string, string> = {};
+    const allowedTypes = new Set(propertyTypes.map((o) => o.value));
+    const allowedAmenities = new Set(amenityOptions.map((o) => o.value));
+    const validTypes = selectedPropertyTypes.filter((v) => allowedTypes.has(v));
+    const validAmenities = selectedAmenities.filter((v) => allowedAmenities.has(v));
     const setCsv = (key: string, values: string[]) => {
       if (values.length) params[key] = values.join(",");
     };
 
     if (isAgentTab) {
       params.segment = selectedAgentSegment;
-      setCsv("propertyType", selectedPropertyTypes);
+      setCsv("propertyType", validTypes);
       if (selectedAgentLanguage) params.language = selectedAgentLanguage;
       if (selectedAgentNationality) params.nationality = selectedAgentNationality;
       return params;
@@ -611,7 +579,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
     params.category = selectedCategory;
     if (plan) params.plan = plan;
-    setCsv("propertyType", selectedPropertyTypes);
+    setCsv("propertyType", validTypes);
     if (hasFilter("beds")) setCsv("beds", selectedBeds);
     if (hasFilter("baths")) setCsv("baths", selectedBaths);
     if (hasFilter("price")) {
@@ -622,7 +590,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       if (minArea) params.minArea = minArea;
       if (maxArea) params.maxArea = maxArea;
     }
-    if (hasFilter("amenities")) setCsv("amenities", selectedAmenities);
+    if (hasFilter("amenities")) setCsv("amenities", validAmenities);
     if (hasFilter("furnishing")) setCsv("furnishing", selectedFurnishing);
     if (hasFilter("rentalPeriod") && selectedRentalPeriod) params.rentalPeriod = selectedRentalPeriod;
     if (hasFilter("deliveryDate") && selectedDeliveryDate.length) setCsv("deliveryDate", selectedDeliveryDate);
@@ -630,32 +598,26 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   };
 
   const filterParams = buildFilterParams();
-  const filterParamsKey = JSON.stringify(filterParams);
 
-  // 300ms debounced type-ahead. An empty box that has focus shows popular locations (per the v2 docs);
-  // the currently selected filters are sent along so suggestions only cover listings that exist for them.
+  // 300ms debounced type-ahead — CMP Connect GET /search-suggestions (2+ letters, doc ke mutabiq).
   useEffect(() => {
     if (!inputFocused) return;
     const q = searchQuery.trim();
+    if (q.length < 2 || selectedLocation) return;
 
     let cancelled = false;
     const timer = setTimeout(() => {
-      const params = new URLSearchParams();
-      params.append("tab", apiTab);
-      if (q && !selectedLocation) params.append("q", q);
-      Object.entries(filterParams).forEach(([k, v]) => params.append(k, v));
-
       setIsFetchingSuggestions(true);
       api
-        .get(`/public/v2/search-suggestions?${params.toString()}`)
+        .get(`/cmpConnect/public/search-suggestions?q=${encodeURIComponent(q)}`)
         .then((res) => {
-          if (cancelled || !res.data?.success) return;
-          const s = res.data.suggestions || {};
+          if (cancelled || !(res.data?.success || res.data?.status === "success")) return;
+          const s = res.data.data || res.data.suggestions || {};
           setSuggestions({
             locations: s.locations || [],
-            properties: s.properties || [],
+            properties: s.properties || (s.listings || []).map((l: any) => ({ title: l.title, count: 1, listingId: l.ref || l.id, location: l.location })),
             agents: s.agents || [],
-            companies: s.companies || [],
+            companies: (s.companies || []).map((c: any) => ({ name: c.name, id: c.id, type: c.type, agentCount: c.agentCount || 0, listingCount: c.listingCount || 0 })),
           });
           setShowDropdown(true);
         })
@@ -669,7 +631,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [inputFocused, searchQuery, selectedLocation, apiTab, filterParamsKey]);
+  }, [inputFocused, searchQuery, selectedLocation]);
 
   const closeSuggestions = () => {
     setShowDropdown(false);
@@ -690,14 +652,14 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
   const handleSelectAgent = (agentId: string) => {
     closeSuggestions();
-    router.push(`/${locale}/sellers/${agentId}`);
+    router.push(`/${locale}/agents/${agentId}`);
   };
 
   const handleSelectCompany = (name: string) => {
     setSelectedLocation(null);
     setSearchQuery(name);
     closeSuggestions();
-    router.push(`/${locale}/sellers?search=${encodeURIComponent(name)}`);
+    router.push(`/${locale}/agents?search=${encodeURIComponent(name)}`);
   };
 
   const handleTabClick = (tabKey: string) => {
@@ -713,13 +675,12 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   };
 
   const getSearchPlaceholder = () => {
-    if (activeConfig?.placeholder) return activeConfig.placeholder;
     if (!showTabs) return "City, community or building";
     switch (activeTab) {
       case "RENT":
         return "Search properties for rent (City, community, building)...";
       case "BUY":
-        return "Search properties for buy / auctions (City, community, building)...";
+        return "Search properties for buy (City, community, building)...";
       case "NEW_PROJECTS":
         return "Location, project or developer";
       case "TRANSACTIONS":
@@ -778,7 +739,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
     if (showTabs) {
       if (activeTab === "AGENTS") {
-        router.push(`/${locale}/sellers?${params.toString()}`);
+        router.push(`/${locale}/agents?${params.toString()}`);
       } else if (activeTab === "TRANSACTIONS") {
         router.push(`/${locale}/transactions?${params.toString()}`);
       } else {
@@ -830,6 +791,14 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     setDropdownCoords(null);
   };
 
+  // Results pages pe "Apply" turant filter lagaye (chips/sort ki tarah). Home page pe
+  // sirf dropdown band ho — wahan user kai filters set karke "Search" dabata hai.
+  const isResultsPage = /\/(listings|agents|transactions)\/?$/.test(pathname || "");
+  const applyFilters = () => {
+    closeDropdown();
+    if (isResultsPage || (!showTabs && onSearch)) handleExecuteSearch();
+  };
+
   const renderPill = (name: string, label: string, isActive: boolean) => (
     <div className="relative shrink-0" key={name}>
       <button type="button" onClick={(e) => toggleDropdown(name, e)} className={pillClass(isActive || activeDropdown === name)}>
@@ -868,7 +837,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
           </button>
           <button
             type="button"
-            onClick={closeDropdown}
+            onClick={applyFilters}
             className="flex-1 py-2.5 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] rounded-2xl font-bold text-sm transition-all cursor-pointer shadow-sm"
           >
             {label}
@@ -879,7 +848,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     return (
       <button
         type="button"
-        onClick={closeDropdown}
+        onClick={applyFilters}
         className="w-full py-2.5 bg-[#5CD284] hover:bg-[#4cb870] text-[#0A1C12] rounded-2xl font-bold text-sm transition-all cursor-pointer shadow-sm mt-1"
       >
         {label}
@@ -888,7 +857,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
   };
 
   const renderLoadingOrEmpty = () => (
-    <span className="text-sm text-gray-500 dark:text-gray-400">{activeConfig ? "No options available" : "Loading options..."}</span>
+    <span className="text-sm text-gray-500 dark:text-gray-400">No options available</span>
   );
 
   const hasSuggestions =
@@ -1090,7 +1059,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                         prop.title,
                         [prop.location, prop.propertyType].filter(Boolean).join(" • ") || undefined,
                         prop.count > 1 ? listingsLabel(prop.count) : "Property",
-                        () => handleSelectProperty(prop.title)
+                        () => { if (prop.listingId) { closeSuggestions(); router.push(`/${locale}/listings/${prop.listingId}`); } else { handleSelectProperty(prop.title); } }
                       )
                     )}
                   </div>
@@ -1130,7 +1099,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                         comp.name,
                         `${comp.agentCount} ${comp.agentCount === 1 ? "agent" : "agents"}`,
                         listingsLabel(comp.listingCount),
-                        () => handleSelectCompany(comp.name)
+                        () => { if ((comp as any).id) { closeSuggestions(); router.push(`/${locale}/${(comp as any).type === "DEVELOPER" ? "developers" : "agencies"}/${(comp as any).id}`); } else { handleSelectCompany(comp.name); } }
                       )
                     )}
                   </div>

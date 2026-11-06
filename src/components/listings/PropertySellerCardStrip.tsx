@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { Phone, Mail, ShieldCheck, ArrowUpRight } from "lucide-react";
 import { getOptimizedImageUrl } from "@/utils/imageUrl";
+import connectPublicService from "@/services/connectPublicService";
 
 export interface SellerInfo {
   agentId?: string;
@@ -22,6 +23,7 @@ interface PropertySellerCardStripProps {
   seller?: SellerInfo | null;
   propertyTitle?: string;
   variant?: "compact" | "cta";
+  listingRef?: string;
 }
 
 // Brand-accurate WhatsApp SVG Icon
@@ -37,6 +39,7 @@ export default function PropertySellerCardStrip({
   seller,
   propertyTitle = "this property",
   variant = "compact",
+  listingRef,
 }: PropertySellerCardStripProps) {
   const router = useRouter();
   const { dict, locale } = useDictionary();
@@ -64,13 +67,27 @@ export default function PropertySellerCardStrip({
     e.preventDefault();
     e.stopPropagation();
     if (agentId) {
-      router.push(`/${locale}/sellers/${agentId}`);
+      router.push(`/${locale}/agents/${agentId}`);
     }
   };
 
-  const handleWhatsApp = (e: React.MouseEvent) => {
+  const handleWhatsApp = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (listingRef) {
+      try {
+        const res = await connectPublicService.contactListing(listingRef, "WHATSAPP");
+        if (res?.whatsappUrl) {
+          window.open(res.whatsappUrl, "_blank", "noopener,noreferrer");
+          return;
+        } else if (res?.whatsapp) {
+          window.open(`https://wa.me/${res.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer");
+          return;
+        }
+      } catch (err) {
+        console.error("WhatsApp contact error", err);
+      }
+    }
     if (whatsappClean) {
       const text = encodeURIComponent(
         `Hi ${sellerName || ""}, I am interested in your property "${propertyTitle}" listed on Cash My Property.`
@@ -79,17 +96,40 @@ export default function PropertySellerCardStrip({
     }
   };
 
-  const handleCall = (e: React.MouseEvent) => {
+  const handleCall = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (listingRef) {
+      try {
+        const res = await connectPublicService.contactListing(listingRef, "CALL");
+        if (res?.phone) {
+          window.location.href = `tel:${res.phone.replace(/[^0-9+]/g, "")}`;
+          return;
+        }
+      } catch (err) {
+        console.error("Call contact error", err);
+      }
+    }
     if (phoneClean) {
       window.location.href = `tel:${phoneClean}`;
     }
   };
 
-  const handleEmail = (e: React.MouseEvent) => {
+  const handleEmail = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (listingRef) {
+      try {
+        const res = await connectPublicService.contactListing(listingRef, "EMAIL");
+        if (res?.email) {
+          const subject = encodeURIComponent(res.emailSubject || `Inquiry about ${propertyTitle}`);
+          window.location.href = `mailto:${res.email}?subject=${subject}`;
+          return;
+        }
+      } catch (err) {
+        console.error("Email contact error", err);
+      }
+    }
     if (sellerEmail) {
       const subject = encodeURIComponent(`Inquiry about ${propertyTitle}`);
       window.location.href = `mailto:${sellerEmail}?subject=${subject}`;

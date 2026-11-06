@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { content } from '@/config/content';
+import { features } from '@/config/features';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://cmpdubai.com';
@@ -10,7 +10,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/about',
     '/guide',
     '/listings',
-    '/auctions',
+    ...(features.realTimeOffers ? ['/auctions'] : []),
+    '/agents',
+    '/agencies',
+    '/developers',
+    '/transactions',
     '/blog',
     '/contact',
     '/terms',
@@ -18,30 +22,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/cookie-policy',
   ];
 
-  const blogPosts = content.blog.main.posts;
-  const routes: MetadataRoute.Sitemap = [];
-
-  locales.forEach((locale) => {
-    // Add static pages
-    staticPages.forEach((page) => {
-      routes.push({
-        url: `${baseUrl}/${locale}${page}`,
-        lastModified: new Date(),
-        changeFrequency: page === '' || page === '/blog' ? 'daily' : 'weekly',
-        priority: page === '' ? 1.0 : page === '/blog' ? 0.9 : 0.8,
-      });
-    });
-
-    // Add dynamic SEO blog post URLs
-    blogPosts.forEach((post) => {
-      routes.push({
-        url: `${baseUrl}/${locale}/blog/${(post as any).slug || post.id}`,
-        lastModified: new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.85,
-      });
-    });
-  });
-
-  return routes;
+  return locales.flatMap((locale) =>
+    staticPages.map((page) => ({
+      url: `${baseUrl}/${locale}${page}`,
+      lastModified: new Date(),
+      changeFrequency: page === '' || page === '/listings' || page === '/auctions' ? 'daily' : 'weekly',
+      priority: page === '' ? 1.0 : 0.8,
+    }))
+  );
 }

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
+import { features } from "@/config/features";
 
 export default function PlatformGuideClient() {
   const { dict, locale } = useDictionary();
@@ -32,7 +33,7 @@ export default function PlatformGuideClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   // Fallbacks if dictionary is loading
-  const tabs = guide.tabs || {
+  const allTabs = guide.tabs || {
     gettingStarted: "1. Account & Verification",
     roleSwitcher: "2. Roles & Permissions",
     buyerSimple: "3. Buyer - Simple Listings",
@@ -40,6 +41,17 @@ export default function PlatformGuideClient() {
     sellerSimple: "5. Agent - Simple Listings",
     sellerRealtime: "6. Agent - Live Auctions"
   };
+
+  // Real Time Offers off → live bidding / auction guide tabs bhi nahi
+  const RTO_TABS = ["buyerRealtime", "sellerRealtime"];
+  const tabs = features.realTimeOffers
+    ? allTabs
+    : (Object.fromEntries(
+        Object.entries(allTabs)
+          .filter(([k]) => !RTO_TABS.includes(k))
+          // "1. … 2. … 3. … 5." na dikhe — numbering dobara
+          .map(([k, label], i) => [k, String(label).replace(/^\d+\.\s*/, `${i + 1}. `)])
+      ) as typeof allTabs);
 
   const getTabIcon = (key: string) => {
     switch (key) {
@@ -69,11 +81,13 @@ export default function PlatformGuideClient() {
   };
 
   // Search filter across FAQs
+  const RTO_FAQ = /realtime|real-time|real time|auction|bidding|undertaking|\bMOA\b/i;
   const filteredFaqs = (guide.faqs?.list || []).filter(
     (item: any) =>
-      !isSearchActive ||
+      (features.realTimeOffers || !(RTO_FAQ.test(item.q || "") || RTO_FAQ.test(item.a || ""))) &&
+      (!isSearchActive ||
       item.q?.toLowerCase().includes(normalizedQuery) ||
-      item.a?.toLowerCase().includes(normalizedQuery)
+      item.a?.toLowerCase().includes(normalizedQuery))
   );
 
   return (
@@ -369,7 +383,7 @@ export default function PlatformGuideClient() {
         )}
 
         {/* TAB 4: BUYER GUIDE - REALTIME LIVE BIDDING */}
-        {(activeTab === "buyerRealtime" || isSearchActive) && (
+        {features.realTimeOffers && (activeTab === "buyerRealtime" || isSearchActive) && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 dark:border-[#1A3626] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -467,7 +481,7 @@ export default function PlatformGuideClient() {
         )}
 
         {/* TAB 6: SELLER GUIDE - REALTIME LIVE AUCTIONS */}
-        {(activeTab === "sellerRealtime" || isSearchActive) && (
+        {features.realTimeOffers && (activeTab === "sellerRealtime" || isSearchActive) && (
           <div className="space-y-6">
             <div className="border-b border-gray-200 dark:border-[#1A3626] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -575,10 +589,10 @@ export default function PlatformGuideClient() {
 
           <div className="flex flex-col sm:flex-row items-center gap-3 relative z-10 shrink-0">
             <Link
-              href={`/${locale}/auctions`}
+              href={features.realTimeOffers ? `/${locale}/auctions` : `/${locale}/listings`}
               className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-[#5CD284] hover:bg-[#4ab872] text-[#0A1C12] font-extrabold text-xs sm:text-sm transition-all shadow-md text-center"
             >
-              {guide.cta?.buyerButton || "Explore Live Auctions"}
+              {features.realTimeOffers ? (guide.cta?.buyerButton || "Explore Live Auctions") : "Explore Listings"}
             </Link>
             <Link
               href={`/${locale}/dashboard/seller/add-property`}

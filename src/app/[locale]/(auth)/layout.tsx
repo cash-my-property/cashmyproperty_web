@@ -4,6 +4,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useDictionary } from "@/components/DictionaryProvider";
+import { getSafeNextPath } from "@/lib/authHint";
 
 export default function AuthLayout({
   children,
@@ -12,12 +14,14 @@ export default function AuthLayout({
 }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const { locale } = useDictionary();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.push("/");
+      // ?next= (proxy/session-expiry redirect se) ho to wahin wapas, warna home
+      router.replace(getSafeNextPath(locale));
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, locale]);
 
   if (isLoading) {
     return (

@@ -5,35 +5,51 @@ import { MapPin, Phone, Mail, Clock, Send, MessageSquare, Loader2 } from "lucide
 import { siteConfig } from "@/config/site";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useSocket } from "@/context/SocketContext";
+import { useAuth } from "@/context/AuthContext";
+import connectPublicService from "@/services/connectPublicService";
+import { apiErrorMessage } from "@/services/rtoService";
 
 export default function ContactPage() {
   const { dict } = useDictionary();
   const { addToast } = useSocket();
+  const { user } = useAuth();
   const content = dict;
+  const cf = dict.contactForm;
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
+  // Logged-in user ka naam / email pehle se bhar do
+  const [formData, setFormData] = useState(() => ({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    email: user?.email || "",
+    phone: user?.mobile || "",
     message: ""
-  });
+  }));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // CMP Connect POST /contact-us (backend 4728f57). Pehle yeh form kuch bhejta hi nahi tha.
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    if (formData.message.trim().length < 10) {
+      setError(cf.messageTooShort);
+      return;
+    }
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      addToast("Message Sent", "Thank you! Your message has been received. We will get back to you shortly.", "success");
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        message: ""
+    try {
+      await connectPublicService.contactUs({
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email.trim(),
+        ...(formData.phone.trim() && { mobile: formData.phone.trim() }),
+        message: formData.message.trim(),
       });
-    }, 1200);
+      addToast(cf.sentTitle, cf.sentBody, "success");
+      setFormData((prev) => ({ ...prev, message: "" }));
+    } catch (err) {
+      setError(apiErrorMessage(err, cf.failed));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -157,6 +173,10 @@ export default function ContactPage() {
               ></textarea>
             </div>
 
+            {error && (
+              <p role="alert" className="text-sm font-semibold text-rose-600 dark:text-rose-400">{error}</p>
+            )}
+
             <button
               type="submit"
               disabled={isSubmitting}
@@ -165,7 +185,7 @@ export default function ContactPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Sending...
+                  {cf.sending}
                 </>
               ) : (
                 content.contact.main.form.submitButton
@@ -228,23 +248,25 @@ export default function ContactPage() {
             </div>
           </div>
           
-          {/* Map Card */}
-          <div className="w-full h-[280px] bg-gray-200 dark:bg-[#102418] rounded-3xl overflow-hidden shadow-sm border border-gray-150 dark:border-[#1A3626] relative group">
-            <div 
-              className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
-              style={{ backgroundImage: 'url("/property-placeholder.svg")' }}
+          {/* Map Card — office location (Business Bay, Opus Tower, B601) Google Maps embed */}
+          <div className="w-full h-[300px] bg-gray-200 dark:bg-[#102418] rounded-3xl overflow-hidden shadow-sm border border-gray-150 dark:border-[#1A3626] relative">
+            <iframe
+              title={`Cash My Property office — ${siteConfig.footer.contact.address}`}
+              src={`https://www.google.com/maps?q=${encodeURIComponent(siteConfig.footer.contact.mapQuery)}&z=16&output=embed`}
+              className="absolute inset-0 w-full h-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
             />
-            {/* Map Overlay Button */}
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-               <a 
-                 href="https://maps.google.com/?q=Al+Saaha+Offices+B,+Downtown+Dubai" 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 className="bg-white dark:bg-[#102418] text-gray-900 dark:text-white px-6 py-3 rounded-full font-bold text-[14px] shadow-lg hover:scale-105 transition-transform flex items-center gap-2 cursor-pointer border border-gray-200 dark:border-[#1A3626]"
-               >
-                 <MapPin className="w-4 h-4 text-[#5CD284]" /> Get Directions
-               </a>
-            </div>
+            {/* Directions — Google Maps mein raasta */}
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(siteConfig.footer.contact.mapQuery)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 start-4 bg-white dark:bg-[#102418] text-gray-900 dark:text-white px-5 py-2.5 rounded-full font-bold text-[13px] shadow-lg hover:scale-105 transition-transform flex items-center gap-2 cursor-pointer border border-gray-200 dark:border-[#1A3626]"
+            >
+              <MapPin className="w-4 h-4 text-[#5CD284]" /> Get Directions
+            </a>
           </div>
 
         </div>

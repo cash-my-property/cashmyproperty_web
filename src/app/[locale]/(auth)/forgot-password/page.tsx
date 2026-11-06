@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight, Mail } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
-import api from "@/lib/api";
+import api, { PUBLIC_API_PREFIX } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
-  const { dict, locale } = useDictionary();
+  const { locale } = useDictionary();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) {
+    if (!email.trim()) {
       setError("Please enter your email address.");
       return;
     }
@@ -26,10 +26,11 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const response = await api.post("/auth/forgot-password", { email });
+      const response = await api.post(`${PUBLIC_API_PREFIX}/auth/forgot-password`, {
+        email: email.trim(),
+      });
       if (response.data) {
-        // Redirect to OTP verification with type=reset
-        router.push(`/${locale}/verify-otp?email=${encodeURIComponent(email)}&type=reset`);
+        router.push(`/${locale}/reset-password?email=${encodeURIComponent(email.trim())}`);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Something went wrong. Please try again.");
@@ -41,16 +42,18 @@ export default function ForgotPasswordPage() {
   return (
     <main className="flex-1 flex items-center justify-center p-6 pt-32 sm:pt-36 min-h-[80vh]">
       <div className="w-full max-w-md bg-white dark:bg-[#102418] rounded-3xl p-8 sm:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.2)]">
-        
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-[#1A3626]/10 dark:bg-[#c9a14b]/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <Mail className="w-8 h-8 text-[#1A3626] dark:text-[#c9a14b]" />
           </div>
-          <h1 className="text-[32px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <h1
+            className="text-[32px] font-bold text-gray-900 dark:text-white mb-3 tracking-tight"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
             Forgot Password
           </h1>
           <p className="text-[14px] text-gray-500 dark:text-gray-400 leading-relaxed">
-            Enter the email address associated with your account and we'll send you an OTP to reset your password.
+            Enter your buyer account email address and we&apos;ll send you a 6-digit code to reset your password.
           </p>
         </div>
 
@@ -63,13 +66,15 @@ export default function ForgotPasswordPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">Email Address *</label>
+            <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Email Address *
+            </label>
             <input
               type="email"
-              placeholder="name@company.com"
+              placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
+              className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-[#102418] border border-gray-200 dark:border-[#1A3626] text-gray-900 dark:text-white text-[14px] focus:outline-none focus:border-[#1A3626] dark:focus:border-[#c9a14b] transition-colors"
               required
             />
           </div>
@@ -83,18 +88,24 @@ export default function ForgotPasswordPage() {
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
-                Send OTP <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                Send 6-Digit Code <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </>
             )}
           </button>
-          
+
+          <p className="text-[12px] text-center text-gray-400 dark:text-gray-500">
+            CMP Connect agents reset their password in the CMP Connect portal.
+          </p>
+
           <div className="text-center pt-2">
-            <Link href={`/${locale}/login`} className="text-[14px] text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors font-medium">
+            <Link
+              href={`/${locale}/login`}
+              className="text-[14px] text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors font-medium"
+            >
               Back to Login
             </Link>
           </div>
         </form>
-
       </div>
     </main>
   );

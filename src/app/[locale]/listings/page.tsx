@@ -1,26 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { MapPin, Bed, Bath, Square, ChevronDown, Loader2, Building, LayoutGrid, List } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
-import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
-import api from "@/lib/api";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
-import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
-import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
+import HeroBackground from "@/components/search/HeroBackground";
 import PropertyGridCard from "@/components/listings/PropertyGridCard";
 import PropertyListCard from "@/components/listings/PropertyListCard";
-import { extractPropertyImages } from "@/utils/imageUrl";
+import connectPublicService, { PublicListingCard, PublicFilterCounts } from "@/services/connectPublicService";
 
 export default function ListingsPage() {
   const { dict, locale } = useDictionary();
   const searchParams = useSearchParams();
-  const content = dict.home;
 
   // Filter state
   const [activeType, setActiveType] = useState("All");
@@ -28,27 +23,17 @@ export default function ListingsPage() {
   const [priceSort, setPriceSort] = useState<"asc" | "desc" | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const [properties, setProperties] = useState<any[]>([]);
+  const [properties, setProperties] = useState<PublicListingCard[]>([]);
+  const [filterCounts, setFilterCounts] = useState<PublicFilterCounts | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
 
-  const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
-  const buyerType = typeof user?.role === 'object' ? (user?.role as any)?.type?.toUpperCase() : 'REGULAR';
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (isAuthenticated && (!isBuyer || buyerType !== 'SIMPLE')) {
-      api.put('/switch/toggleRole', { main: 'BUYER', type: 'SIMPLE' })
-        .then(() => {
-          if (fetchProfile) fetchProfile();
-        })
-        .catch((err) => console.error("Auto switch in listings page failed", err));
-    }
-  }, [isAuthenticated, isBuyer, buyerType]);
-
-  // Only the latest non-append request may update the list (filters can change faster than the API answers)
   const latestRequestRef = useRef(0);
 
   const fetchProperties = async (pageNum: number = 1, append: boolean = false) => {
@@ -60,133 +45,127 @@ export default function ListingsPage() {
         setIsLoading(true);
       }
 
-      // Sellers are fully blocked from viewing buyer-facing simple listings
-      if (isAuthenticated && isSeller) {
-        setProperties([]);
-        return;
-      }
+      const paramLocation = searchParams?.get('location') || searchParams?.get('propertyLocation');
+      const paramSearch = searchParams?.get('search');
+      const paramPurpose = searchParams?.get('purpose') || searchParams?.get('listingPurpose');
+      const paramSortBy = searchParams?.get('sort') || searchParams?.get('sortBy');
+      const paramCategory = searchParams?.get('category') || searchParams?.get('propertyCategory');
+      const paramType = searchParams?.get('type') || searchParams?.get('propertyType');
+      const paramPlan = searchParams?.get('plan') || searchParams?.get('propertyPlan');
+      const paramMinPrice = searchParams?.get('priceMin') || searchParams?.get('minPrice');
+      const paramMaxPrice = searchParams?.get('priceMax') || searchParams?.get('maxPrice');
+      const paramMinArea = searchParams?.get('areaMin') || searchParams?.get('minArea');
+      const paramMaxArea = searchParams?.get('areaMax') || searchParams?.get('maxArea');
+      const paramFurnishing = searchParams?.get('furnishing');
+      const paramRentalPeriod = searchParams?.get('rentalPeriod');
+      const paramBeds = searchParams?.get('beds');
+      const paramBaths = searchParams?.get('baths');
+      const paramAmenities = searchParams?.get('amenities');
+      const paramAgencyId = searchParams?.get('agencyId');
+      const paramDeveloperId = searchParams?.get('developerId');
+      const paramAgentId = searchParams?.get('agentId');
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
+      const apiParams: Record<string, any> = {
+        page: pageNum,
+        limit: 12,
+      };
 
-      const queryParams = new URLSearchParams();
-      queryParams.append('page', pageNum.toString());
-      queryParams.append('limit', '10');
+      if (paramLocation) apiParams.location = paramLocation;
+      if (paramSearch) apiParams.search = paramSearch;
 
-      // Add URL params if present
-      // Everything comes from the URL, so removing a search / location from it also removes it from the results
-      const paramLocation = searchParams.get('location') || searchParams.get('propertyLocation');
-      const paramSearch = searchParams.get('search');
-      const paramPurpose = searchParams.get('listingPurpose') || searchParams.get('purpose');
-      const paramSortBy = searchParams.get('sortBy') || searchParams.get('sort');
-      const paramCategory = searchParams.get('propertyCategory') || searchParams.get('category');
-      const paramType = searchParams.get('propertyType');
-      const paramMinPrice = searchParams.get('minPrice');
-      const paramMaxPrice = searchParams.get('maxPrice');
-      const paramPlan = searchParams.get('propertyPlan');
-
-      if (paramLocation) queryParams.append('location', paramLocation);
-      if (paramSearch) queryParams.append('search', paramSearch);
       if (paramPurpose) {
-        const upperPurpose = paramPurpose.toUpperCase();
-        queryParams.append('listingPurpose', upperPurpose === 'BUY' ? 'SALE' : upperPurpose);
+        const u = paramPurpose.toUpperCase();
+        apiParams.purpose = u === 'BUY' ? 'SALE' : u;
       }
-      if (paramCategory) queryParams.append('propertyCategory', paramCategory);
-      if (paramPlan) queryParams.append('propertyPlan', paramPlan);
-      if (paramMinPrice) queryParams.append('minPrice', paramMinPrice);
-      if (paramMaxPrice) queryParams.append('maxPrice', paramMaxPrice);
+      if (paramCategory) apiParams.category = paramCategory.toUpperCase();
+      if (paramPlan) apiParams.plan = paramPlan.toUpperCase();
+      if (paramFurnishing) apiParams.furnishing = paramFurnishing.toUpperCase();
+      if (paramRentalPeriod) apiParams.rentalPeriod = paramRentalPeriod.toUpperCase();
+      if (paramBeds) apiParams.beds = paramBeds;
+      if (paramBaths) apiParams.baths = paramBaths;
+      if (paramMinPrice) apiParams.priceMin = paramMinPrice;
+      if (paramMaxPrice) apiParams.priceMax = paramMaxPrice;
+      if (paramMinArea) apiParams.areaMin = paramMinArea;
+      if (paramMaxArea) apiParams.areaMax = paramMaxArea;
+      if (paramAmenities) apiParams.amenities = paramAmenities;
+      if (paramAgencyId) apiParams.agencyId = paramAgencyId;
+      if (paramDeveloperId) apiParams.developerId = paramDeveloperId;
+      if (paramAgentId) apiParams.agentId = paramAgentId;
 
-      // Filters from the search widget that the list endpoints understand as-is (comma separated for multi values)
-      ['beds', 'baths', 'minArea', 'maxArea', 'amenities', 'furnishing', 'rentalPeriod'].forEach((key) => {
-        const value = searchParams.get(key);
-        if (value) queryParams.append(key, value);
-      });
-
-      // The quick pills below the hero win over the widget's category / property type (set, not append, to avoid duplicates)
+      // Quick filter pill override
       if (activeType && activeType !== 'All') {
         if (activeType === 'Commercial') {
-          queryParams.set('propertyCategory', 'COMMERCIAL');
-          queryParams.delete('propertyType');
+          apiParams.category = 'COMMERCIAL';
         } else if (activeType === 'Office' || activeType === 'Office Space') {
-          queryParams.set('propertyCategory', 'COMMERCIAL');
-          queryParams.set('propertyType', 'OFFICES');
+          apiParams.category = 'COMMERCIAL';
+          apiParams.type = 'OFFICES';
         } else if (activeType === 'Retail') {
-          queryParams.set('propertyCategory', 'COMMERCIAL');
-          queryParams.set('propertyType', 'RETAIL');
+          apiParams.category = 'COMMERCIAL';
+          apiParams.type = 'RETAIL';
         } else if (activeType === 'Warehouse') {
-          queryParams.set('propertyCategory', 'COMMERCIAL');
-          queryParams.set('propertyType', 'WAREHOUSE');
+          apiParams.category = 'COMMERCIAL';
+          apiParams.type = 'WAREHOUSE';
         } else if (activeType === 'Building') {
-          queryParams.set('propertyCategory', 'COMMERCIAL');
-          queryParams.set('propertyType', 'BUILDING');
+          apiParams.category = 'COMMERCIAL';
+          apiParams.type = 'BUILDING';
         } else if (activeType === 'Land') {
-          queryParams.set('propertyCategory', 'RESIDENTIAL');
-          queryParams.set('propertyType', 'LAND');
+          apiParams.category = 'RESIDENTIAL';
+          apiParams.type = 'LAND';
         } else {
-          queryParams.set('propertyType', activeType.toUpperCase().replace(/\s+/g, '_'));
+          apiParams.type = activeType.toUpperCase().replace(/\s+/g, '_');
         }
       } else if (paramType) {
-        queryParams.set('propertyType', paramType.toUpperCase());
+        apiParams.type = paramType.toUpperCase();
       }
 
       if (selectedType && selectedType !== 'all') {
         if (selectedType === 'land') {
-          queryParams.set('propertyType', 'LAND');
+          apiParams.type = 'LAND';
         } else {
-          queryParams.set('propertyCategory', selectedType.toUpperCase());
+          apiParams.category = selectedType.toUpperCase();
         }
       }
+
       if (priceSort) {
-        queryParams.append('sortBy', priceSort === 'asc' ? 'priceLow' : 'priceHigh');
+        apiParams.sort = priceSort === 'asc' ? 'price_asc' : 'price_desc';
       } else if (paramSortBy) {
-        queryParams.append('sortBy', paramSortBy);
-      }
-
-      const queryString = queryParams.toString();
-
-      let res;
-      if (isAuthenticated && isBuyer) {
-        try {
-          res = await api.get(`/buyer/simpleLiveListings?${queryString}`);
-        } catch (buyerErr: any) {
-          if (buyerErr?.response?.status === 401 || buyerErr?.response?.status === 403) {
-            res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
-          } else {
-            throw buyerErr;
-          }
-        }
+        if (paramSortBy === 'priceLow') apiParams.sort = 'price_asc';
+        else if (paramSortBy === 'priceHigh') apiParams.sort = 'price_desc';
+        else apiParams.sort = paramSortBy;
       } else {
-        res = await axios.get(`${API_URL}/public/simple-live-properties?${queryString}`);
+        apiParams.sort = 'newest';
       }
+
+      // Fetch both listings and filter counts in parallel on first page
+      const [listingsRes, countsRes] = await Promise.all([
+        connectPublicService.getListings(apiParams),
+        pageNum === 1 ? connectPublicService.getFilterCounts(apiParams).catch(() => null) : Promise.resolve(null),
+      ]);
 
       if (requestId !== latestRequestRef.current) return;
 
-      const rawData = res.data.data;
-      const paginationObj = res.data.pagination || res.data.data?.pagination || (typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : null);
+      const newItems = listingsRes.data || [];
+      const pagination = listingsRes.pagination || { total: newItems.length, page: pageNum, pages: 1 };
 
-      const newItems = Array.isArray(rawData) ? rawData : (rawData?.data || []);
-      
-      const calculatedTotalPages = paginationObj?.totalPages 
-        ? Number(paginationObj.totalPages) 
-        : paginationObj?.total 
-        ? Math.ceil(Number(paginationObj.total) / 10) 
-        : typeof rawData === 'object' && !Array.isArray(rawData) && rawData?.totalPages 
-        ? Number(rawData.totalPages) 
-        : 1;
-
-      setTotalPages(calculatedTotalPages);
+      setTotalPages(pagination.pages || 1);
+      setTotalCount(pagination.total || 0);
       setPage(pageNum);
-      setHasMore(pageNum < calculatedTotalPages);
+      setHasMore(pageNum < (pagination.pages || 1));
+
+      if (countsRes) {
+        setFilterCounts(countsRes);
+      }
 
       if (append) {
         setProperties(prev => [
           ...prev,
-          ...newItems.filter((item: any) => !prev.some(p => (p._id || p.id) === (item._id || item.id)))
+          ...newItems.filter(item => !prev.some(p => (p.ref || p.id) === (item.ref || item.id)))
         ]);
       } else {
         setProperties(newItems);
       }
     } catch (err) {
-      console.error("Error fetching properties", err);
+      console.error("Error fetching public listings", err);
     } finally {
       if (requestId === latestRequestRef.current) {
         setIsLoading(false);
@@ -199,7 +178,7 @@ export default function ListingsPage() {
     if (authLoading) return;
     setPage(1);
     fetchProperties(1, false);
-  }, [authLoading, isAuthenticated, buyerType, isSeller, activeType, selectedType, priceSort, searchParams?.toString()]);
+  }, [authLoading, activeType, selectedType, priceSort, searchParams?.toString()]);
 
   const loadNextPage = () => {
     if (isFetchingMore || isLoading || !hasMore) return;
@@ -226,271 +205,206 @@ export default function ListingsPage() {
       
       {/* HERO BANNER */}
       <section className="relative w-full pt-36 sm:pt-40 pb-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
-          style={{
-            backgroundImage: 'url("/hero-bg.svg")'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1B3A2D]/90 via-[#0a1a13]/85 to-[#091711] dark:from-[#091711]/95 dark:via-[#091711]/90 dark:to-[#091711]" />
-        
-        {/* Glow Effects */}
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-[#5CD284]/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-[#c9a14b]/10 rounded-full blur-[90px] pointer-events-none" />
-        
-        <div className="relative z-10 text-center w-full max-w-5xl mx-auto flex flex-col items-center mt-8">
-          <h1 className="text-white text-[40px] sm:text-[56px] font-bold mb-6 leading-[1.1] tracking-tight" style={{ fontFamily: "var(--font-playfair), serif" }} dangerouslySetInnerHTML={{ __html: content.hero.headline.replace('\n', '<br/>') }}>
+        <HeroBackground />
+
+        <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col items-center text-center">
+          <span className="text-[#5CD284] font-bold tracking-widest text-[12px] sm:text-[13px] uppercase mb-3 bg-[#5CD284]/15 px-4 py-1.5 rounded-full border border-[#5CD284]/30 backdrop-blur-md">
+            Direct &amp; Verified Real Estate
+          </span>
+          <h1 
+            className="text-white text-3xl sm:text-5xl lg:text-[54px] font-bold mb-4 leading-tight tracking-tight drop-shadow-md"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
+            {(dict.listings as any)?.heroTitle || dict.listings?.hero?.title || "UAE Property Marketplace"}
           </h1>
-          <p className="text-white/80 text-[16px] sm:text-[18px] max-w-2xl leading-relaxed font-light mb-10">
-            {content.hero.subheadline}
+          <p className="text-gray-200 text-sm sm:text-base max-w-xl mx-auto mb-8 font-light leading-relaxed drop-shadow">
+            {(dict.listings as any)?.heroSubtitle || dict.listings?.hero?.description || "Browse authentic residential & commercial properties directly listed by licensed agents across the UAE."}
           </p>
 
-          {/* Upgraded Hero Search Bar Widget */}
-          <HeroSearchWidget 
-            initialTab={(searchParams?.get("tab") as any) || (searchParams?.get("listingPurpose") === "RENT" ? "RENT" : "BUY")}
-            showTabs={true}
-          />
+          <HeroSearchWidget />
         </div>
       </section>
 
-      {/* SELLER RESTRICTION BANNER */}
-      {isAuthenticated && isSeller && (
-        <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-8 text-center flex flex-col items-center max-w-lg mx-auto">
-            <Building className="w-12 h-12 text-amber-500 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {dict.sellerModeBanner?.title || "Seller Mode Active"}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 text-sm mb-6">
-              {dict.sellerModeBanner?.description || "You are currently logged in as a Seller. Buyer simple listings are reserved exclusively for buyers."}
+      {/* FILTER & LISTINGS SECTION */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto flex flex-col gap-8">
+        
+        {/* Results Header: Count & Sort */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-[#1A3626]">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {totalCount > 0 ? `${totalCount.toLocaleString()} Properties Found` : "All Listings"}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+              {filterCounts?.total !== undefined ? `${filterCounts.total} matching current filters` : "Showing live verified properties"}
             </p>
-            <Link
-              href={`/${locale}/dashboard/seller/simple-listings`}
-              className="px-6 py-3 bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold rounded-xl text-sm"
-            >
-              {dict.sellerModeBanner?.buttonText || "Go to My Simple Listings"}
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* SIMPLE LISTINGS GRID */}
-      {(!isAuthenticated || !isSeller) && (
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-        {/* Header Block */}
-        <div className="mb-8">
-          <h2 className="text-[32px] sm:text-[40px] font-bold text-gray-900 dark:text-white mb-2 tracking-tight leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-            {dict.listings?.pageTitle || "Listings"}
-          </h2>
-          <p className="text-[15px] text-gray-600 dark:text-gray-400 max-w-2xl">
-            {dict.listings?.pageSubtitle || "Explore direct properties for rent or purchase with verified details and direct agent contact."}
-          </p>
-        </div>
-
-        {/* Filter & View Controls Bar */}
-        <div className="flex items-center justify-between mb-10 gap-4">
-          {/* Property Category Pills (Left Side) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-1 min-w-0">
-            {[
-              { key: "all", value: "All" },
-              { key: "apartment", value: "Apartment" },
-              { key: "villa", value: "Villa" },
-              { key: "townhouse", value: "Townhouse" },
-              { key: "penthouse", value: "Penthouse" },
-              { key: "land", value: "Land" },
-              { key: "commercial", value: "Commercial" },
-              { key: "office", value: "Office" },
-              { key: "retail", value: "Retail" },
-              { key: "warehouse", value: "Warehouse" },
-            ].map(({ key, value }) => {
-              const label = dict.categories?.[key as keyof typeof dict.categories] || value;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setActiveType(value)}
-                  className={`px-5 py-2.5 rounded-full text-[13.5px] font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
-                    activeType === value
-                      ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-md scale-105"
-                      : "bg-white dark:bg-[#102418] text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-100 dark:border-[#1A3626]"
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
           </div>
 
-          {/* View Mode Toggle: Grid / List (Right Side) */}
-          <div className="hidden sm:flex items-center bg-white dark:bg-[#102418] p-1 rounded-full border border-gray-100 dark:border-[#1A3626] shadow-sm shrink-0">
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              title="Grid View"
-              className={`p-2 rounded-full transition-all cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
-                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              title="List View"
-              className={`p-2 rounded-full transition-all cursor-pointer ${
-                viewMode === "list"
-                  ? "bg-[#1A3626] text-white dark:bg-[#c9a14b] dark:text-[#1A3626] shadow-sm"
-                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Listings Grid / List Container */}
-        {isLoading ? (
-          viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {Array.from({ length: 6 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
-                >
-                  <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
-                  <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
-                    <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                    <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
-                  </div>
-                </div>
-              ))}
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Price Sort */}
+            <div className="flex items-center gap-1.5 bg-white dark:bg-[#102418] rounded-xl p-1 border border-gray-200 dark:border-[#1A3626] text-xs">
+              <span className="text-gray-400 px-2 font-medium">Price:</span>
+              <button
+                type="button"
+                onClick={() => setPriceSort(priceSort === "asc" ? null : "asc")}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${
+                  priceSort === "asc"
+                    ? "bg-[#5CD284] text-[#0A1C12]"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
+                }`}
+              >
+                Low to High
+              </button>
+              <button
+                type="button"
+                onClick={() => setPriceSort(priceSort === "desc" ? null : "desc")}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors cursor-pointer ${
+                  priceSort === "desc"
+                    ? "bg-[#5CD284] text-[#0A1C12]"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321]"
+                }`}
+              >
+                High to Low
+              </button>
             </div>
-          ) : (
-            <>
-              {/* Mobile Skeleton: Always Grid style */}
-              <div className="grid grid-cols-1 gap-8 md:hidden">
-                {Array.from({ length: 4 }).map((_, idx) => (
-                  <div
-                    key={`mob-skel-${idx}`}
-                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
-                  >
-                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
-                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
-                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-              {/* Desktop Skeleton: List style */}
-              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
-                {Array.from({ length: 6 }).map((_, idx) => (
-                  <div
-                    key={`desk-skel-${idx}`}
-                    className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col md:flex-row gap-4 min-h-[200px]"
-                  >
-                    <div className="bg-gray-200 dark:bg-[#163321] rounded-xl w-full md:w-[280px] h-[200px] md:h-auto" />
-                    <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
-                      <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
-                      <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )
-        ) : (() => {
-          const filteredProperties = properties;
+            {/* View Mode */}
+            <div className="hidden sm:flex items-center bg-white dark:bg-[#102418] p-1 rounded-xl border border-gray-200 dark:border-[#1A3626]">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  viewMode === "grid"
+                    ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12]"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12]"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-white"
+                }`}
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
 
-          if (filteredProperties.length === 0) {
-            return (
-              <div className="col-span-full py-16 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-100 dark:border-[#1A3626] p-8">
-                <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-                  {dict.listings?.emptyTitle || "No Properties Found"}
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
-                  {dict.listings?.emptyDesc || "We couldn't find any properties matching your current search criteria. Try adjusting your filters."}
-                </p>
-              </div>
-            );
-          }
+        {/* Quick Type Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+          {[
+            { label: "All Properties", value: "All" },
+            { label: "Apartment", value: "Apartment" },
+            { label: "Villa", value: "Villa" },
+            { label: "Townhouse", value: "Townhouse" },
+            { label: "Penthouse", value: "Penthouse" },
+            { label: "Commercial", value: "Commercial" },
+            { label: "Office Space", value: "Office Space" },
+            { label: "Retail", value: "Retail" },
+            { label: "Warehouse", value: "Warehouse" },
+            { label: "Land", value: "Land" },
+          ].map(({ label, value }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setActiveType(value);
+                setPage(1);
+              }}
+              className={`px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                activeType === value
+                  ? "bg-[#1A3626] text-white dark:bg-[#5CD284] dark:text-[#0A1C12] shadow-sm"
+                  : "bg-white dark:bg-[#102418] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#163321] border border-gray-200 dark:border-[#1A3626]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-          if (viewMode === "grid") {
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredProperties.map((item, idx) => (
-                  <PropertyGridCard
-                    key={item._id || item.id || idx}
-                    item={item}
-                    locale={locale}
-                    priority={idx < 3}
-                  />
-                ))}
+        {/* Listings Container */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="bg-white dark:bg-[#102418] rounded-2xl p-1.5 border border-gray-100 dark:border-[#1A3626] shadow-sm animate-pulse flex flex-col gap-4"
+              >
+                <div className="bg-gray-200 dark:bg-[#163321] rounded-xl h-[240px] w-full" />
+                <div className="p-4 flex flex-col gap-3 flex-1 justify-center">
+                  <div className="h-6 bg-gray-200 dark:bg-[#163321] rounded-md w-3/4" />
+                  <div className="h-4 bg-gray-200 dark:bg-[#163321] rounded-md w-1/2 mb-2" />
+                </div>
               </div>
-            );
-          }
+            ))}
+          </div>
+        ) : properties.length === 0 ? (
+          <div className="col-span-full py-16 text-center bg-white dark:bg-[#102418] rounded-3xl border border-gray-100 dark:border-[#1A3626] p-8">
+            <Building className="w-12 h-12 text-gray-300 dark:text-[#1A3626] mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+              No Properties Found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+              We couldn&apos;t find any properties matching your current search criteria. Try adjusting your filters.
+            </p>
+          </div>
+        ) : viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {properties.map((item, idx) => (
+              <PropertyGridCard
+                key={item.ref || item.id || idx}
+                item={item}
+                locale={locale}
+                priority={idx < 3}
+                href={`/${locale}/listings/${item.ref || item.id}`}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5 max-w-4xl mx-auto w-full">
+            {properties.map((item, idx) => (
+              <PropertyListCard
+                key={item.ref || item.id || idx}
+                item={item}
+                locale={locale}
+                priority={idx < 3}
+                href={`/${locale}/listings/${item.ref || item.id}`}
+              />
+            ))}
+          </div>
+        )}
 
-          return (
-            <>
-              {/* Mobile View (< md): Always renders default Grid style */}
-              <div className="grid grid-cols-1 gap-8 md:hidden">
-                {filteredProperties.map((item, idx) => (
-                  <PropertyGridCard
-                    key={`mob-${item._id || item.id || idx}`}
-                    item={item}
-                    locale={locale}
-                    priority={idx < 3}
-                  />
-                ))}
-              </div>
-
-              {/* Laptop/Desktop View (md+): Renders List style */}
-              <div className="hidden md:flex flex-col gap-5 max-w-4xl mx-auto w-full">
-                {filteredProperties.map((item, idx) => (
-                  <PropertyListCard
-                    key={`desk-${item._id || item.id || idx}`}
-                    item={item}
-                    locale={locale}
-                    priority={idx < 3}
-                  />
-                ))}
-              </div>
-            </>
-          );
-        })()}
-
-        {/* PAGINATION / INFINITE SCROLL LOADER */}
+        {/* Load More Button */}
         {hasMore && (
           <div className="flex flex-col items-center justify-center my-12 gap-3">
             <button
               onClick={loadNextPage}
               disabled={isFetchingMore}
-              className="px-8 py-3.5 rounded-2xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm hover:opacity-90 transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-8 py-3.5 rounded-2xl bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-sm hover:opacity-90 transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isFetchingMore ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{dict.listings?.loadingMore || "Loading More Listings..."}</span>
+                  <span>Loading More Listings...</span>
                 </>
               ) : (
                 <>
-                  <span>{dict.listings?.loadMore || "Load More Listings"}</span>
+                  <span>Load More Listings</span>
                   <ChevronDown className="w-4 h-4" />
                 </>
               )}
             </button>
             <span className="text-xs text-gray-500 font-medium">
-              {(dict.listings?.showingPage || "Showing page {page} of {totalPages}")
-                .replace("{page}", page.toString())
-                .replace("{totalPages}", totalPages.toString())}
+              Showing page {page} of {totalPages}
             </span>
           </div>
         )}
       </section>
-      )}
 
     </main>
   );

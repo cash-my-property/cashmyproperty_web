@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Bed, Bath, Square, MapPin, Clock } from "lucide-react";
+import { Bed, Bath, Square, MapPin, Clock, Heart } from "lucide-react";
 import Dirham from "@/components/Dirham";
+import RtoStatusBadge from "@/components/listings/RtoStatusBadge";
 import PropertyCardImageCarousel from "@/components/listings/PropertyCardImageCarousel";
 import PropertySellerCardStrip from "@/components/listings/PropertySellerCardStrip";
 import { extractPropertyImages } from "@/utils/imageUrl";
 import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
+import connectPublicService from "@/services/connectPublicService";
 import { 
   formatPropertyType, 
   formatPropertyCategory, 
@@ -31,22 +35,26 @@ export default function PropertyGridCard({
   isAuction = false,
 }: PropertyGridCardProps) {
   const { dict } = useDictionary();
+  const { isAuthenticated } = useAuth();
   const pc = dict.propertyCards;
   const details = item.propertyDetails || item || {};
-  const title = item.title || details.propertyTitle || "Untitled Property";
+  const isAr = locale === "ar";
+  const title = isAr
+    ? (item.titleAr || details.propertyTitleAr || details.titleAr || item.title || details.propertyTitle || "عقار بدون عنوان")
+    : (item.title || details.propertyTitle || "Untitled Property");
   const rawLocation =
     typeof details.propertyLocation === "string"
       ? details.propertyLocation
-      : details.propertyLocation?.city || "Dubai, UAE";
+      : details.propertyLocation?.city || item.location || "Dubai, UAE";
   const formattedLocation = (() => {
     const words = rawLocation.trim().split(/\s+/);
     return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
   })();
 
   const images = extractPropertyImages(item);
-  const beds = item.specs?.beds || details.propertyBedrooms || item.propertyBedrooms || details.bedrooms || 0;
+  const beds = item.bedrooms || item.specs?.beds || details.propertyBedrooms || item.propertyBedrooms || details.bedrooms || 0;
   const baths =
-    item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || item.propertyWashrooms || item.propertyBathrooms || details.bathrooms || 0;
+    item.bathrooms || item.specs?.washrooms || details.propertyWashrooms || details.propertyBathrooms || item.propertyWashrooms || item.propertyBathrooms || details.bathrooms || 0;
   
   const getAreaVal = (a: any) => typeof a === 'object' ? a?.value || 0 : (a || 0);
   const areaVal = getAreaVal(item.area) || getAreaVal(details.propertyArea) || details.propertyBuiltUpArea || 0;
@@ -56,21 +64,23 @@ export default function PropertyGridCard({
   const fallbackPrice = details.propertyPrice?.amount || details.propertyPrice || item.price?.amount || item.price || item.startPrice || 0;
   const price = highestBid || fallbackPrice;
 
-  const type = formatPropertyType(details.propertyType || item.propertyType);
-  const category = formatPropertyCategory(details.propertyCategory || item.propertyCategory);
-  const plan = formatPropertyPlan(details.propertyPlan || item.propertyPlan || item.status);
+  const type = formatPropertyType(item.typeLabel || item.type || details.propertyType || item.propertyType, locale);
+  const category = formatPropertyCategory(item.category || details.propertyCategory || item.propertyCategory, locale);
+  const plan = formatPropertyPlan(item.plan || details.propertyPlan || item.propertyPlan || item.status, locale);
   const trakheesiAgency =
     details.propertyDocuments?.propertyTrakheesi?.agencyName ||
     item.propertyDocuments?.propertyTrakheesi?.agencyName ||
+    item.company?.name ||
     "";
-  const rawSeller = item.sellerInfo || details.sellerInfo || item.sellerId || item.seller || details.seller;
+  const rawSeller = item.agent || item.sellerInfo || details.sellerInfo || item.sellerId || item.seller || details.seller;
   const seller = typeof rawSeller === "object"
     ? {
         ...rawSeller,
-        agentId: rawSeller?.agentId || rawSeller?._id || rawSeller?.id || (typeof item.sellerId === "string" ? item.sellerId : undefined),
+        agentId: rawSeller?.id || rawSeller?.agentId || rawSeller?._id || (typeof item.sellerId === "string" ? item.sellerId : undefined),
         name: rawSeller?.name || rawSeller?.fullName || trakheesiAgency || (item.sellerInfo?.isVerified || item.isVerified ? "Verified Seller" : ""),
-        officeName: rawSeller?.officeName || trakheesiAgency || null,
-        isVerified: Boolean(item.isVerified || item.sellerInfo?.isVerified || rawSeller?.isVerified),
+        thumbnail: rawSeller?.photo || rawSeller?.thumbnail,
+        officeName: item.company?.name || rawSeller?.officeName || trakheesiAgency || null,
+        isVerified: Boolean(item.isVerified || rawSeller?.brnVerified || item.sellerInfo?.isVerified || rawSeller?.isVerified),
       }
     : (trakheesiAgency || item.isVerified || item.sellerInfo?.isVerified
       ? {
@@ -81,38 +91,56 @@ export default function PropertyGridCard({
         }
       : null);
   const isRent =
-    (item.listingPurpose || details.listingPurpose) === "RENT";
+    (item.purpose || item.listingPurpose || details.listingPurpose) === "RENT";
   const rentalPeriod = item.rentalPeriod || details.rentalPeriod;
-  const rentalPeriodLabel = formatRentalPeriodShort(rentalPeriod);
+  const rentalPeriodLabel = formatRentalPeriodShort(rentalPeriod, locale);
 
   const isAuctionItem = isAuction || item.endTime !== undefined || item.currentHighestBid !== undefined;
+  const listingRef = item.ref || item.listingRef || item._id || item.id;
   const targetHref = href || (isAuctionItem 
     ? `/${locale}/auctions/${item._id || item.id}`
-    : `/${locale}/simple-listings/${item._id || item.id}`);
+    : `/${locale}/listings/${listingRef}`);
 
   const remainingTime = isAuctionItem 
     ? formatAuctionRemainingTime(item.endTime, item.startTime, item.status) 
     : null;
+
+  const [isFav, setIsFav] = useState(Boolean(item.isFavourited));
+
+  const handleToggleFav = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      window.location.href = `/${locale}/login`;
+      return;
+    }
+    const nextState = !isFav;
+    setIsFav(nextState);
+    try {
+      await connectPublicService.setFavourite(listingRef, nextState);
+    } catch (err) {
+      setIsFav(!nextState);
+    }
+  };
 
   const topRightBadgeElement = remainingTime ? (
     <div className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-white/15">
       <Clock className="w-3.5 h-3.5 text-[#5CD284]" />
       <span>{remainingTime.label}</span>
     </div>
-  ) : null;
+  ) : (
+    <button
+      type="button"
+      onClick={handleToggleFav}
+      aria-label={isFav ? "Remove from favourites" : "Save to favourites"}
+      className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 cursor-pointer border border-white/20"
+    >
+      <Heart className={`w-4 h-4 ${isFav ? "fill-rose-500 text-rose-500" : "text-white"}`} />
+    </button>
+  );
 
   const badgeElement = isAuctionItem ? (
-    item.status === "UPCOMING" ? (
-      <div className="flex items-center gap-1.5 bg-amber-600/90 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border border-white/20">
-        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-        <span>{pc?.upcoming || "Upcoming"}</span>
-      </div>
-    ) : (
-      <div className="flex items-center gap-1.5 bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border border-white/20">
-        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-        <span>{pc?.liveOffer || "Live Offer"}</span>
-      </div>
-    )
+    <RtoStatusBadge status={item.status} />
   ) : (
     <div className="bg-[#1A3626]/85 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border border-white/10">
       {item.status || pc?.active || "Active"}
@@ -164,7 +192,7 @@ export default function PropertyGridCard({
             <Bath className="w-4 h-4 text-[#5CD284]" /> {baths}
           </div>
           <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
-            <Square className="w-3.5 h-3.5 text-[#5CD284]" /> {area}
+            <Square className="w-4 h-4 text-[#5CD284]" /> {area}
           </div>
         </div>
 
@@ -199,7 +227,11 @@ export default function PropertyGridCard({
         {/* Seller / Agent Info & Action CTAs Strip (Simple Listings Only) */}
         {!isAuctionItem && (
           <div className="mt-auto">
-            <PropertySellerCardStrip seller={seller} propertyTitle={title} />
+            <PropertySellerCardStrip
+              seller={seller}
+              propertyTitle={title}
+              listingRef={listingRef}
+            />
           </div>
         )}
       </div>

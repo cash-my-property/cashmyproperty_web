@@ -2,12 +2,10 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import axios from "axios";
 import { Sparkles, ArrowRight, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import PropertyGridCard from "@/components/listings/PropertyGridCard";
 import { useDictionary } from "@/components/DictionaryProvider";
-import api from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
+import connectPublicService, { PublicListingCard } from "@/services/connectPublicService";
 
 interface RecommendedPropertiesProps {
   currentPropertyId: string;
@@ -15,6 +13,8 @@ interface RecommendedPropertiesProps {
   propertyType?: string;
   location?: string | any;
   price?: number | string;
+  purpose?: string;
+  initialSimilar?: any[];
   isAuction?: boolean;
   locale: string;
 }
@@ -25,13 +25,27 @@ export default function RecommendedProperties({
   propertyType,
   location,
   price,
+  purpose,
+  initialSimilar,
   isAuction = false,
   locale,
 }: RecommendedPropertiesProps) {
   const { dict } = useDictionary();
-  const { isAuthenticated, isBuyer } = useAuth();
-  const [properties, setProperties] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize with initialSimilar if provided from backend detail endpoint (API 20)
+  const [properties, setProperties] = useState<any[]>(() => {
+    if (Array.isArray(initialSimilar) && initialSimilar.length > 0) {
+      return initialSimilar.filter((item: any) => {
+        if (!item) return false;
+        const itemId = String(item.ref || item._id || item.id || "");
+        return itemId && itemId !== String(currentPropertyId);
+      });
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    return !(Array.isArray(initialSimilar) && initialSimilar.length > 0);
+  });
 
   // Carousel scroll ref and state
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -72,123 +86,140 @@ export default function RecommendedProperties({
     });
   };
 
+  // Sync if initialSimilar updates from parent
   useEffect(() => {
+    if (Array.isArray(initialSimilar) && initialSimilar.length > 0) {
+      const filtered = initialSimilar.filter((item: any) => {
+        if (!item) return false;
+        const itemId = String(item.ref || item._id || item.id || "");
+        return itemId && itemId !== String(currentPropertyId);
+      });
+      if (filtered.length > 0) {
+        setProperties(filtered);
+        setIsLoading(false);
+      }
+    }
+  }, [initialSimilar, currentPropertyId]);
+
+  // Section page ke neeche hai — viewport ke qareeb aane pe hi fetch karo
+  const sectionRef = useRef<HTMLElement>(null);
+  const [isNearViewport, setIsNearViewport] = useState(false);
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      const raf = requestAnimationFrame(() => setIsNearViewport(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setIsNearViewport(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "600px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Effect ko sirf primitive values pe depend karao. Pehle `location` (object), `price`
+  // aur `initialSimilar` (har parent refetch pe naya reference) ki wajah se 3 sequential
+  // requests har render pe dobara chalti thin.
+  const rawLocationStr =
+    typeof location === "string" ? location : location?.city || location?.address || "";
+  // Primary area keyword (e.g. "Downtown", "Marina", "Palm", "Business Bay")
+  const areaKeyword = rawLocationStr.split(/[,-]/)[0]?.trim() || "";
+  const initialCount = Array.isArray(initialSimilar) ? initialSimilar.length : 0;
+  const initialIdsKey = Array.isArray(initialSimilar)
+    ? initialSimilar.map((i: any) => String(i?.ref || i?._id || i?.id || "")).join(",")
+    : "";
+  // Latest-value ref (effect mein update hota hai, render mein nahi) — fetch effect isse
+  // padhta hai taake initialSimilar ka naya reference effect dobara na chalaye
+  const initialSimilarRef = useRef(initialSimilar);
+  useEffect(() => {
+    initialSimilarRef.current = initialSimilar;
+  });
+
+  useEffect(() => {
+    if (!isNearViewport) return;
     let isMounted = true;
+    const initialSimilar = initialSimilarRef.current;
 
     async function fetchSmartRecommendations() {
+      // If we already have 3 or more similar properties passed from backend, use them directly
+      if (initialCount >= 3) {
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
-      const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/auth", "") || "https://testapi.cmpdubai.com/api";
 
       try {
-        // Extract location string or search keyword
-        const rawLocationStr =
-          typeof location === "string"
-            ? location
-            : location?.city || location?.address || "";
-        
-        // Extract primary area keyword (e.g. "Downtown", "Marina", "Palm", "Business Bay")
-        const areaKeyword = rawLocationStr.split(/[,-]/)[0]?.trim() || "";
 
-        let allFetched: any[] = [];
-
-        if (isAuction) {
-          // 1. Fetch targeted auction properties
-          const queryParams = new URLSearchParams({ limit: "15" });
-          if (category) queryParams.append("category", category);
-          if (propertyType) queryParams.append("propertyType", propertyType);
-          if (areaKeyword && areaKeyword.length > 2) queryParams.append("search", areaKeyword);
-
-          let res;
-          if (isAuthenticated && isBuyer) {
-            try {
-              res = await api.get(`/buyer/live-listings?${queryParams.toString()}`);
-            } catch {
-              res = await axios.get(`${API_URL}/public/live-properties?${queryParams.toString()}`);
-            }
-          } else {
-            res = await axios.get(`${API_URL}/public/live-properties?${queryParams.toString()}`);
-          }
-
-          const rawData = res.data?.data;
-          const targetItems = Array.isArray(rawData) ? rawData : rawData?.data || [];
-          allFetched = [...targetItems];
-
-          // 2. If fewer than 6 items, fetch general live properties
-          if (allFetched.length < 6) {
-            const fallbackRes = await axios.get(`${API_URL}/public/live-properties?limit=15`);
-            const fallbackData = fallbackRes.data?.data;
-            const fallbackItems = Array.isArray(fallbackData) ? fallbackData : fallbackData?.data || [];
-            allFetched = [...allFetched, ...fallbackItems];
-          }
-        } else {
-          // 1. Fetch targeted simple listings
-          const queryParams = new URLSearchParams({ limit: "15" });
-          if (category) queryParams.append("propertyCategory", category);
-          if (propertyType) queryParams.append("propertyType", propertyType);
-          if (areaKeyword && areaKeyword.length > 2) queryParams.append("search", areaKeyword);
-
-          let res;
-          if (isAuthenticated && isBuyer) {
-            try {
-              res = await api.get(`/buyer/simpleLiveListings?${queryParams.toString()}`);
-            } catch {
-              res = await axios.get(`${API_URL}/public/simple-live-properties?${queryParams.toString()}`);
-            }
-          } else {
-            res = await axios.get(`${API_URL}/public/simple-live-properties?${queryParams.toString()}`);
-          }
-
-          const rawData = res.data?.data;
-          const targetItems = Array.isArray(rawData) ? rawData : rawData?.data || [];
-          allFetched = [...targetItems];
-
-          // 2. Fallback to general simple listings if fewer than 6 items
-          if (allFetched.length < 6) {
-            const fallbackRes = await axios.get(`${API_URL}/public/simple-live-properties?limit=15`);
-            const fallbackData = fallbackRes.data?.data;
-            const fallbackItems = Array.isArray(fallbackData) ? fallbackData : fallbackData?.data || [];
-            allFetched = [...allFetched, ...fallbackItems];
-          }
-        }
-
-        // Deduplicate and filter current property
         const seenIds = new Set<string>();
-        const uniqueItems: any[] = [];
+        const candidates: any[] = [];
 
-        for (const item of allFetched) {
-          const itemId = String(item._id || item.id || "");
-          if (itemId && itemId !== String(currentPropertyId) && !seenIds.has(itemId)) {
-            seenIds.add(itemId);
-
-            // Calculate relevance score
-            let score = 0;
-            const itemDetails = item.propertyDetails || item || {};
-            const itemLocation = String(itemDetails.propertyLocation || itemDetails.location || item.location || "").toLowerCase();
-            const itemType = String(itemDetails.propertyType || item.propertyType || "").toUpperCase();
-            const itemCat = String(itemDetails.propertyCategory || item.propertyCategory || "").toUpperCase();
-
-            if (areaKeyword && itemLocation.includes(areaKeyword.toLowerCase())) {
-              score += 30; // Location match
+        const addUnique = (items: any[]) => {
+          for (const item of items) {
+            if (!item) continue;
+            const itemId = String(item.ref || item._id || item.id || "");
+            if (
+              itemId &&
+              itemId !== String(currentPropertyId) &&
+              !seenIds.has(itemId) &&
+              (item.title || item.propertyTitle)
+            ) {
+              seenIds.add(itemId);
+              candidates.push(item);
             }
-            if (propertyType && itemType === propertyType.toUpperCase()) {
-              score += 20; // Type match
-            }
-            if (category && itemCat === category.toUpperCase()) {
-              score += 10; // Category match
-            }
+          }
+        };
 
-            uniqueItems.push({ item, score });
+        // 1. First add any initial similar properties if available
+        if (Array.isArray(initialSimilar) && initialSimilar.length > 0) {
+          addUnique(initialSimilar);
+        }
+
+        // 2. Fetch targeted CMP Connect public listings (API 17)
+        if (candidates.length < 6) {
+          const queryParams: Record<string, any> = { limit: 12 };
+          if (purpose) queryParams.purpose = purpose;
+          if (category) queryParams.category = category;
+          if (propertyType) queryParams.type = propertyType;
+          if (areaKeyword && areaKeyword.length > 2) queryParams.location = areaKeyword;
+
+          const res = await connectPublicService.getListings(queryParams).catch(() => null);
+          if (res?.data && Array.isArray(res.data)) {
+            addUnique(res.data);
           }
         }
 
-        // Sort by smart relevance score descending
-        uniqueItems.sort((a, b) => b.score - a.score);
+        // 3. If fewer than 6 items, broaden query by purpose + category
+        if (candidates.length < 6) {
+          const broaderParams: Record<string, any> = { limit: 12 };
+          if (purpose) broaderParams.purpose = purpose;
+          if (category) broaderParams.category = category;
+
+          const broaderRes = await connectPublicService.getListings(broaderParams).catch(() => null);
+          if (broaderRes?.data && Array.isArray(broaderRes.data)) {
+            addUnique(broaderRes.data);
+          }
+        }
+
+        // 4. If still fewer than 4 items, fetch latest authentic CMP Connect listings
+        if (candidates.length < 4) {
+          const generalRes = await connectPublicService.getListings({ limit: 12 }).catch(() => null);
+          if (generalRes?.data && Array.isArray(generalRes.data)) {
+            addUnique(generalRes.data);
+          }
+        }
 
         if (isMounted) {
-          setProperties(uniqueItems.slice(0, 9).map((u) => u.item));
+          setProperties(candidates.slice(0, 9));
         }
       } catch (err) {
-        console.error("Failed to load smart recommended properties:", err);
+        console.error("Failed to load CMP Connect recommended properties:", err);
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -199,7 +230,7 @@ export default function RecommendedProperties({
     return () => {
       isMounted = false;
     };
-  }, [currentPropertyId, category, propertyType, location, price, isAuction, isAuthenticated, isBuyer]);
+  }, [isNearViewport, currentPropertyId, category, propertyType, areaKeyword, purpose, initialCount, initialIdsKey]);
 
   if (!isLoading && properties.length === 0) {
     return null;
@@ -208,7 +239,7 @@ export default function RecommendedProperties({
   const recDict = (dict as any).recommendations || {};
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mt-16 pt-12 border-t border-gray-200 dark:border-[#1A3626] relative">
+    <section ref={sectionRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mt-16 pt-12 border-t border-gray-200 dark:border-[#1A3626] relative">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
@@ -276,7 +307,6 @@ export default function RecommendedProperties({
 
       {/* 3-Card Carousel Container */}
       <div className="relative">
-
         {/* Horizontal Smooth Scroll Track (Exactly 3 cards per row on desktop) */}
         {isLoading ? (
           <div className="flex gap-6 overflow-hidden">
@@ -302,7 +332,7 @@ export default function RecommendedProperties({
           >
             {properties.map((item, idx) => (
               <div
-                key={item._id || item.id || idx}
+                key={item._id || item.id || item.ref || idx}
                 className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0 snap-start transition-transform duration-300"
               >
                 <PropertyGridCard

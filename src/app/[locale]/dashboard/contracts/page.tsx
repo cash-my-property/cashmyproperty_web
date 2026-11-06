@@ -1,135 +1,111 @@
 "use client";
 
-import { useDictionary } from "@/components/DictionaryProvider";
-import { Search, FileText, CheckCircle2, Clock, XCircle, ArrowRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import api from "@/lib/api";
-import { useSocket } from "@/context/SocketContext";
+import { FileCheck2, Loader2, MapPin, RefreshCw } from "lucide-react";
+import { useDictionary } from "@/components/DictionaryProvider";
+import { useAuth } from "@/context/AuthContext";
+import { getOptimizedImageUrl } from "@/utils/imageUrl";
+import { rtoService, type RtoMyContract } from "@/services/rtoService";
 
-export default function ContractsPage() {
+// My Contracts — GET /cmpConnect/public/me/contracts. Contract ka detail offer page pe hota hai
+// (wahan status, rejection reason aur dobara upload), isliye card offer page kholta hai.
+const STATUS_STYLE: Record<string, string> = {
+  APPROVED: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+  PENDING: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+  REJECTED: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+};
+
+export default function MyContractsPage() {
   const { dict, locale } = useDictionary();
-  const { addToast } = useSocket();
-  const [contracts, setContracts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const t = dict.rto.dashboard;
+  // Backend: /me/offers aur /me/contracts sirf agency brokers ke liye (baaki ko 403)
+  const { isBroker, isLoading: authLoading } = useAuth();
+  const [items, setItems] = useState<RtoMyContract[] | null>(null);
+  const [error, setError] = useState(false);
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString(locale === "ar" ? "ar-AE" : "en-AE", { dateStyle: "medium" }) : null;
+
+  const load = async () => {
+    try {
+      setError(false);
+      setItems(await rtoService.getMyContracts());
+    } catch {
+      setError(true);
+    }
+  };
 
   useEffect(() => {
-    const fetchContracts = async () => {
-      try {
-        setIsLoading(true);
-        const res = await api.get('/buyer/my-contracts');
-        setContracts(res.data.data || []);
-      } catch (err: any) {
-        const errorMsg = err?.response?.data?.message || "Failed to load your contracts. Please try refreshing.";
-        addToast("Error", errorMsg, "warning");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchContracts();
-  }, []);
+    if (authLoading || !isBroker) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount pe data fetch
+    load();
+  }, [authLoading, isBroker]);
+
+  if (!authLoading && !isBroker) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t.myContracts}</h1>
+        <div className="bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] p-10 text-center">
+          <p className="text-gray-600 dark:text-gray-300 mb-5">{t.brokersOnly}</p>
+          <Link href={`/${locale}/auctions`} className="inline-block px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm">{t.browse}</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-          My Contracts
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your signed purchase contracts and view approval status.</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{t.myContracts}</h1>
+        <p className="text-gray-500 dark:text-gray-400">{t.myContractsSubtitle}</p>
       </div>
 
-      <div className="bg-white dark:bg-[#102418] rounded-2xl shadow-sm border border-gray-100 dark:border-[#1A3626] overflow-hidden min-h-[400px]">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full min-h-[300px]">
-            <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
-          </div>
-        ) : contracts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-gray-500 dark:text-gray-400">
-            <FileText className="w-12 h-12 mb-4 text-gray-300 dark:text-[#1A3626]" />
-            <p>You have not signed any contracts yet.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 dark:bg-[#102418]/50 border-b border-gray-100 dark:border-[#1A3626]">
-                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property</th>
-                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Highest Offer</th>
-                  <th className="px-6 py-4 text-right"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-[#1A3626]">
-                {contracts.map((contract) => (
-                  <tr key={contract.contractId} className="hover:bg-gray-50/50 dark:hover:bg-[#102418]/30 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-lg overflow-hidden relative flex-shrink-0 bg-gray-100 dark:bg-[#163321]">
-                          <Image
-                            src={contract.property?.thumbnail || "/property-placeholder.svg"}
-                            alt={contract.property?.title || 'Property'}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div>
-                          <Link href={`/${locale}/dashboard/contracts/${contract.contractId}`}>
-                            <p className="text-[14px] font-bold text-gray-900 dark:text-white group-hover:text-[#1A3626] dark:group-hover:text-[#5CD284] transition-colors line-clamp-1 cursor-pointer">
-                              {contract.property?.title || (contract.auction?.auctionId ? `Auction Offer #${contract.auction.auctionId.slice(-6).toUpperCase()}` : 'Purchase Contract')}
-                            </p>
-                          </Link>
-                          <p className="text-[12px] text-gray-500 dark:text-gray-400">
-                            {contract.property?.location || (contract.auction?.status ? `Auction Status: ${contract.auction.status}` : 'Contract Reference')}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] font-bold uppercase ${
-                        contract.status === 'APPROVED' ? 'bg-green-500/10 text-green-600 dark:text-green-400' :
-                        contract.status === 'PENDING' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
-                        'bg-red-500/10 text-red-600 dark:text-red-400'
-                      }`}>
-                        {contract.status === 'APPROVED' && <CheckCircle2 className="w-3.5 h-3.5" />}
-                        {contract.status === 'PENDING' && <Clock className="w-3.5 h-3.5" />}
-                        {contract.status === 'REJECTED' && <XCircle className="w-3.5 h-3.5" />}
-                        {contract.status}
-                      </span>
-                      {contract.status === 'REJECTED' && contract.rejectionInfo?.reason && (
-                        <p className="text-[11px] text-red-500 mt-1 max-w-[200px] truncate" title={contract.rejectionInfo.reason}>
-                          {contract.rejectionInfo.reason}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-[13px] text-gray-700 dark:text-gray-200 font-semibold">
-                        {contract.auction?.currentHighestBid
-                          ? `AED ${contract.auction.currentHighestBid.toLocaleString()}`
-                          : '—'}
-                      </p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        {new Date(contract.createdAt).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {contract.auction?.auctionId ? (
-                        <Link href={`/${locale}/auctions/${contract.auction.auctionId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
-                          View Auction <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      ) : contract.property?.propertyId ? (
-                        <Link href={`/${locale}/simple-listings/${contract.property.propertyId}`} className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1A3626] dark:text-[#c9a14b] hover:underline">
-                          View Listing <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {error ? (
+        <div className="bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] p-10 text-center">
+          <p className="text-gray-700 dark:text-gray-200 font-semibold mb-4">{t.loadError}</p>
+          <button onClick={load} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm cursor-pointer">
+            <RefreshCw className="w-4 h-4" /> {dict.rto.list.retry}
+          </button>
+        </div>
+      ) : !items ? (
+        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#c9a14b]" /></div>
+      ) : items.length === 0 ? (
+        <div className="bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] p-12 text-center">
+          <FileCheck2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-600 dark:text-gray-300 mb-5">{t.emptyContracts}</p>
+          <Link href={`/${locale}/auctions`} className="inline-block px-6 py-3 rounded-xl bg-[#1A3626] dark:bg-[#c9a14b] text-white dark:text-[#1A3626] font-bold text-sm">{t.browse}</Link>
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {items.map((c) => (
+            <li key={c.contractId}>
+              <Link href={`/${locale}/auctions/${c.id}`} className="flex gap-4 bg-white dark:bg-[#102418] rounded-2xl border border-gray-100 dark:border-[#1A3626] p-3 hover:border-[#5CD284]/50 transition-colors">
+                <div className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-[#163321]">
+                  {c.property.coverImage && <Image src={getOptimizedImageUrl(c.property.coverImage)} alt={c.property.title} fill sizes="96px" className="object-cover" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1">{c.property.title}</h3>
+                    <span className={`text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${STATUS_STYLE[c.status] || "bg-gray-100 text-gray-600"}`}>
+                      {t.statusLabels[c.status as keyof typeof t.statusLabels] || c.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 line-clamp-1"><MapPin className="w-3 h-3 text-[#5CD284] shrink-0" /> {c.property.location}</p>
+                  <p className="text-[11px] font-mono text-gray-400 mt-1">{c.contractId} · {c.property.rtoRef} · {dict.rto.contract.submission} #{c.submissionNumber}</p>
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    {fmt(c.signedAt) && <>{t.signedAt}: {fmt(c.signedAt)}</>}
+                    {fmt(c.reviewedAt) && <> · {t.reviewedAt}: {fmt(c.reviewedAt)}</>}
+                  </p>
+                  {c.status === "REJECTED" && c.rejectionReason && (
+                    <p className="text-xs text-rose-600 dark:text-rose-300 mt-1.5 line-clamp-2">{c.rejectionReason}</p>
+                  )}
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

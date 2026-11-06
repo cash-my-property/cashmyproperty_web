@@ -1,5 +1,6 @@
 /**
  * Formatter utilities for property types, categories, plans, furnishing, rental periods, and amenities.
+ * Supports bilingual formatting (English & Arabic).
  */
 
 const PROPERTY_TYPE_MAP: Record<string, string> = {
@@ -39,6 +40,43 @@ const PROPERTY_TYPE_MAP: Record<string, string> = {
   COMMERCIAL: "Commercial"
 };
 
+const PROPERTY_TYPE_MAP_AR: Record<string, string> = {
+  APARTMENT: "شقة",
+  VILLA: "فيلا",
+  TOWNHOUSE: "تاون هاوس",
+  PENTHOUSE: "بنتهاوس",
+  COMPOUND: "مجمع سكني",
+  DUPLEX: "دوبلكس",
+  FULL_FLOOR: "طابق كامل",
+  HALF_FLOOR: "نصف طابق",
+  BUILDING: "مبنى بالكامل",
+  WHOLE_BUILDING: "مبنى بالكامل",
+  LAND: "أرض",
+  BULK_RENT_UNIT: "وحدات للإيجار بالجملة",
+  BULK_SALE_UNIT: "وحدات للبيع بالجملة",
+  BULK_UNIT: "وحدات بالجملة",
+  BUNGALOW: "بنغلو",
+  HOTEL_APARTMENT: "شقة فندقية",
+  OFFICES: "مكتب",
+  OFFICE: "مكتب",
+  RETAIL: "محل تجاري",
+  WAREHOUSE: "مستودع",
+  SHOP: "متجر",
+  SHOWROOM: "صالة عرض",
+  SHOW_ROOM: "صالة عرض",
+  FACTORY: "مصنع",
+  LABOR_CAMP: "سكن عمال",
+  STAFF_ACCOMMODATION: "سكن موظفين",
+  BUSINESS_CENTRE: "مركز أعمال",
+  CO_WORKING_SPACE: "مساحة عمل مشتركة",
+  COWORKING_SPACE: "مساحة عمل مشتركة",
+  FARM: "مزرعة",
+  COMMERCIAL_VILLA: "فيلا تجارية",
+  COMMERCIAL_LAND: "أرض تجارية",
+  RESIDENTIAL: "سكني",
+  COMMERCIAL: "تجاري"
+};
+
 const AMENITY_MAP: Record<string, string> = {
   BALCONY: "Balcony",
   BARBECUE_AREA: "Barbecue Area",
@@ -73,6 +111,40 @@ const AMENITY_MAP: Record<string, string> = {
   CONFERENCE_ROOM: "Conference room"
 };
 
+const AMENITY_MAP_AR: Record<string, string> = {
+  BALCONY: "شرفة",
+  BARBECUE_AREA: "منطقة شواء",
+  BUILT_IN_WARDROBES: "خزائن مدمجة",
+  CENTRAL_AC: "تكييف مركزي",
+  CENTRAL_A_C: "تكييف مركزي",
+  COVERED_PARKING: "موقف سيارات مغطى",
+  PRIVATE_GYM: "صالة رياضية خاصة",
+  PRIVATE_JACUZZI: "جاكوزي خاص",
+  KITCHEN_APPLIANCES: "أجهزة المطبخ",
+  MAIDS_ROOM: "غرفة خادمة",
+  PETS_ALLOWED: "يسمح بالحيوانات الأليفة",
+  PRIVATE_GARDEN: "حديقة خاصة",
+  PRIVATE_POOL: "مسبح خاص",
+  SHARED_POOL: "مسبح مشترك",
+  STUDY: "غرفة دراسة",
+  VIEW_OF_WATER: "إطلالة على الماء",
+  SECURITY: "أمن وحراسة",
+  CONCIERGE: "خدمة كونسيرج",
+  SHARED_SPA: "سبا مشترك",
+  SHARED_GYM: "صالة رياضية مشتركة",
+  MAID_SERVICE: "خدمة تنظيف",
+  WALK_IN_CLOSET: "خزانة ملابس واسعة",
+  VIEW_OF_LANDMARK: "إطلالة على معلم بارز",
+  CHILDRENS_PLAY_AREA: "منطقة لعب للأطفال",
+  CHILDREN_PLAY_AREA: "منطقة لعب للأطفال",
+  LOBBY_IN_BUILDING: "بهو في المبنى",
+  CHILDRENS_POOL: "مسبح للأطفال",
+  VASTU_COMPLIANT: "متوافق مع فاستو",
+  NETWORKED: "مجهز بشبكة إنترنت",
+  DINING_IN_BUILDING: "مطاعم في المبنى",
+  CONFERENCE_ROOM: "قاعة مؤتمرات"
+};
+
 export const toTitleCase = (str: string): string => {
   if (!str) return "";
   return str
@@ -84,95 +156,101 @@ export const toTitleCase = (str: string): string => {
     .join(" ");
 };
 
-export const formatPropertyType = (type?: string | null): string => {
-  if (!type) return "Property";
+export const formatPropertyType = (type?: string | null, locale?: string): string => {
+  if (!type) return locale === "ar" ? "عقار" : "Property";
   const upper = type.toUpperCase().trim();
+  if (locale === "ar" && PROPERTY_TYPE_MAP_AR[upper]) {
+    return PROPERTY_TYPE_MAP_AR[upper];
+  }
   if (PROPERTY_TYPE_MAP[upper]) {
     return PROPERTY_TYPE_MAP[upper];
   }
   return toTitleCase(type);
 };
 
-export const formatPropertyCategory = (category?: string | null): string => {
-  if (!category) return "Residential";
+export const formatPropertyCategory = (category?: string | null, locale?: string): string => {
+  if (!category) return locale === "ar" ? "سكني" : "Residential";
   const upper = category.toUpperCase().trim();
-  if (upper === "RESIDENTIAL") return "Residential";
-  if (upper === "COMMERCIAL") return "Commercial";
+  if (upper === "RESIDENTIAL") return locale === "ar" ? "سكني" : "Residential";
+  if (upper === "COMMERCIAL") return locale === "ar" ? "تجاري" : "Commercial";
   return toTitleCase(category);
 };
 
-export const formatPropertyPlan = (plan?: string | null): string => {
-  if (!plan) return "Ready";
+export const formatPropertyPlan = (plan?: string | null, locale?: string): string => {
+  if (!plan) return locale === "ar" ? "جاهز" : "Ready";
   const upper = plan.toUpperCase().trim();
-  if (upper === "READY") return "Ready";
-  if (upper === "OFF_PLAN" || upper === "OFFPLAN") return "Off-Plan";
+  if (upper === "READY") return locale === "ar" ? "جاهز" : "Ready";
+  if (upper === "OFF_PLAN" || upper === "OFFPLAN") return locale === "ar" ? "على المخطط" : "Off-Plan";
   return toTitleCase(plan);
 };
 
-export const formatListingPurpose = (purpose?: string | null): string => {
-  if (!purpose) return "Sale";
+export const formatListingPurpose = (purpose?: string | null, locale?: string): string => {
+  if (!purpose) return locale === "ar" ? "للبيع" : "Sale";
   const upper = purpose.toUpperCase().trim();
-  if (upper === "RENT") return "Rent";
-  if (upper === "SALE") return "Sale";
+  if (upper === "RENT") return locale === "ar" ? "للإيجار" : "Rent";
+  if (upper === "SALE") return locale === "ar" ? "للبيع" : "Sale";
   return toTitleCase(purpose);
 };
 
-export const formatFurnishingStatus = (status?: string | null): string => {
-  if (!status) return "Unfurnished";
+export const formatFurnishingStatus = (status?: string | null, locale?: string): string => {
+  if (!status) return locale === "ar" ? "غير مفروش" : "Unfurnished";
   const upper = status.toUpperCase().trim();
-  if (upper === "NOT_FURNISHED" || upper === "UNFURNISHED") return "Unfurnished";
-  if (upper === "SEMI" || upper === "SEMI_FURNISHED") return "Semi Furnished";
-  if (upper === "FULL" || upper === "FURNISHED" || upper === "FULLY_FURNISHED") return "Furnished";
+  if (upper === "NOT_FURNISHED" || upper === "UNFURNISHED") return locale === "ar" ? "غير مفروش" : "Unfurnished";
+  if (upper === "SEMI" || upper === "SEMI_FURNISHED") return locale === "ar" ? "مفروش جزئياً" : "Semi Furnished";
+  if (upper === "FULL" || upper === "FURNISHED" || upper === "FULLY_FURNISHED") return locale === "ar" ? "مفروش" : "Furnished";
   return toTitleCase(status);
 };
 
-export const formatRentalPeriod = (period?: string | null): string => {
+export const formatRentalPeriod = (period?: string | null, locale?: string): string => {
   if (!period) return "";
   const upper = period.toUpperCase().trim();
-  if (upper === "PER_YEAR") return "Yearly";
-  if (upper === "PER_MONTH") return "Monthly";
-  if (upper === "PER_WEEK") return "Weekly";
-  if (upper === "PER_DAY") return "Daily";
+  if (upper === "PER_YEAR") return locale === "ar" ? "سنوياً" : "Yearly";
+  if (upper === "PER_MONTH") return locale === "ar" ? "شهرياً" : "Monthly";
+  if (upper === "PER_WEEK") return locale === "ar" ? "أسبوعياً" : "Weekly";
+  if (upper === "PER_DAY") return locale === "ar" ? "يومياً" : "Daily";
   return toTitleCase(period.replace(/^PER_/i, ""));
 };
 
-export const formatRentalPeriodShort = (period?: string | null): string => {
+export const formatRentalPeriodShort = (period?: string | null, locale?: string): string => {
   if (!period) return "";
   const upper = period.toUpperCase().trim();
-  if (upper === "PER_YEAR") return "yr";
-  if (upper === "PER_MONTH") return "mo";
-  if (upper === "PER_WEEK") return "wk";
-  if (upper === "PER_DAY") return "day";
+  if (upper === "PER_YEAR") return locale === "ar" ? "سنة" : "yr";
+  if (upper === "PER_MONTH") return locale === "ar" ? "شهر" : "mo";
+  if (upper === "PER_WEEK") return locale === "ar" ? "أسبوع" : "wk";
+  if (upper === "PER_DAY") return locale === "ar" ? "يوم" : "day";
   return period.replace(/^PER_/i, "").toLowerCase();
 };
 
-export const formatAmenity = (amenity?: string | null): string => {
+export const formatAmenity = (amenity?: string | null, locale?: string): string => {
   if (!amenity) return "";
   const upper = amenity.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+  if (locale === "ar" && AMENITY_MAP_AR[upper]) {
+    return AMENITY_MAP_AR[upper];
+  }
   if (AMENITY_MAP[upper]) {
     return AMENITY_MAP[upper];
   }
-  // If already formatted nicely with spaces or special chars
   if (amenity.includes(" ") && /[a-z]/.test(amenity)) {
     return amenity;
   }
   return toTitleCase(amenity);
 };
 
-export const formatAvailability = (availability?: string | null): string => {
-  if (!availability) return "Immediately";
+export const formatAvailability = (availability?: string | null, locale?: string): string => {
+  if (!availability) return locale === "ar" ? "فوراً" : "Immediately";
   const trimmed = availability.trim();
   const lower = trimmed.toLowerCase();
   if (lower === "immediate" || lower === "immediately" || lower === "vacant") {
-    return "Immediately";
+    return locale === "ar" ? "فوراً" : "Immediately";
   }
-  // Check if it's a date e.g. YYYY-MM-DD
   const dateMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (dateMatch) {
     try {
       const d = new Date(trimmed);
       if (!isNaN(d.getTime())) {
-        return `From ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`;
+        return locale === "ar"
+          ? `ابتداءً من ${d.toLocaleDateString("ar-EG", { day: "numeric", month: "short", year: "numeric" })}`
+          : `From ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`;
       }
     } catch {}
   }
@@ -240,4 +318,3 @@ export const formatBlogDate = (dateStr?: string | Date | null, locale: string = 
     return String(dateStr);
   }
 };
-

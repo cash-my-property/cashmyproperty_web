@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { 
   ShieldCheck, 
   MapPin, 
@@ -21,7 +20,6 @@ import {
   Camera,
   Award,
   Sparkles,
-  Lock,
   X,
   FileText,
   Eye,
@@ -31,11 +29,11 @@ import {
   Car
 } from "lucide-react";
 import { useDictionary } from "@/components/DictionaryProvider";
-import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import RecommendedProperties from "@/components/listings/RecommendedProperties";
-import BuyerActionSidebar from "@/components/listings/BuyerActionSidebar";
-import api from "@/lib/api";
+import AgentContactSidebar from "@/components/listings/AgentContactSidebar";
+import connectPublicService from "@/services/connectPublicService";
+import api, { PUBLIC_API_PREFIX } from "@/lib/api";
 import { useSocket } from "@/context/SocketContext";
 import { 
   formatPropertyType, 
@@ -50,7 +48,6 @@ import {
 } from "@/utils/formatters";
 import dynamic from "next/dynamic";
 import Dirham from "@/components/Dirham";
-import { generateShareToken } from "@/lib/shareToken";
 import PropertyRegulatoryInfo from "@/components/listings/PropertyRegulatoryInfo";
 import PropertyBreadcrumb from "@/components/listings/PropertyBreadcrumb";
 
@@ -68,9 +65,7 @@ interface PropertyDetailClientProps {
 export default function PropertyDetailClient({ id, initialData, locale }: PropertyDetailClientProps) {
   const { dict } = useDictionary();
   const { isAuthenticated, user, isLoading: authLoading, isBuyer, isSeller, fetchProfile } = useAuth();
-  const { socket, isConnected, joinRoom, leaveRoom, addToast } = useSocket();
-  const searchParams = useSearchParams();
-  const st = searchParams?.get('st');
+  const { addToast } = useSocket();
 
   const [activeImage, setActiveImage] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -79,25 +74,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isFavourited, setIsFavourited] = useState(initialData?.isFavourited || false);
   const [isFavouriting, setIsFavouriting] = useState(false);
-  const [showOfflineWarning, setShowOfflineWarning] = useState(false);
   const hasFetchedRef = useRef<string | null>(null);
-  const hasSwitchedRef = useRef(false);
-
-  useEffect(() => {
-    if (!isAuthenticated || isConnected) {
-      setShowOfflineWarning(false);
-      return;
-    }
-
-    // Grace period: only show warning if socket remains disconnected for > 3.5s
-    const timer = setTimeout(() => {
-      if (isAuthenticated && !isConnected) {
-        setShowOfflineWarning(true);
-      }
-    }, 3500);
-
-    return () => clearTimeout(timer);
-  }, [isAuthenticated, isConnected]);
 
   useEffect(() => {
     if (propertyInfo) {
@@ -118,13 +95,16 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   }, [isLightboxOpen, propertyInfo]);
 
   const handleToggleFavourite = async () => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
     try {
       setIsFavouriting(true);
       const targetState = !isFavourited;
-      await api.put("/buyer/favourites", {
-        _id: id,
-        listingType: "REGULAR",
-        isFavourited: targetState
+      const targetRef = propertyInfo?.ref || propertyInfo?.listingRef || id;
+      await api.put(`${PUBLIC_API_PREFIX}/me/favourites/${targetRef}`, {
+        saved: targetState,
       });
       setIsFavourited(targetState);
       setPropertyInfo((prev: any) => (prev ? { ...prev, isFavourited: targetState } : prev));
@@ -141,116 +121,18 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
     }
   };
 
-  useEffect(() => {
-    if (!id || !socket || !isConnected) return;
-
-    joinRoom(`auction_${id}`);
-
-    const handleUpdateBid = (data: any) => {
-      if (data.auctionId === id) {
-        console.log("📡 Real-time bid update received:", data);
-        setPropertyInfo((prev: any) => {
-          if (!prev) return prev;
-          const currentBids = prev.bids || [];
-          return {
-            ...prev,
-            currentBidPrice: data.bidAmount,
-            totalBids: (prev.totalBids || 0) + 1,
-            bids: [
-              {
-                _id: data.bidId || Date.now().toString(),
-                amount: data.bidAmount,
-                bidderName: data.bidderName || "Anonymous",
-                createdAt: new Date().toISOString()
-              },
-              ...currentBids
-            ]
-          };
-        });
-      }
-    };
-
-    const handleAuctionEnded = (data: any) => {
-      if (data.auctionId === id) {
-        console.log("📡 Auction ended event received:", data);
-        setPropertyInfo((prev: any) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            status: "ENDED",
-            winner: data.winner
-          };
-        });
-      }
-    };
-
-    socket.on("update_bid", handleUpdateBid);
-    socket.on("auction_ended", handleAuctionEnded);
-
-    return () => {
-      leaveRoom(`auction_${id}`);
-      socket.off("update_bid", handleUpdateBid);
-      socket.off("auction_ended", handleAuctionEnded);
-    };
-  }, [id, socket, isConnected]);
-
   const fetchDetails = async () => {
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/auth', '') || 'https://testapi.cmpdubai.com/api';
-      
-      let res: any;
-      if (isAuthenticated) {
-        // If logged-in user is a Buyer and not in REGULAR mode, auto-switch to REGULAR mode first (once per lifecycle)
-        const currentType = (user as any)?.sellerType?.toUpperCase() || (typeof user?.role === 'object' ? (user.role as any)?.type?.toUpperCase() : 'REGULAR');
-        if (isBuyer && currentType !== 'REGULAR' && !hasSwitchedRef.current) {
-          hasSwitchedRef.current = true;
-          try {
-            await api.put('/switch/toggleRole', { type: 'REGULAR' });
-            if (fetchProfile) await fetchProfile();
-          } catch (switchErr) {
-            console.error("Auto switch to REGULAR mode failed", switchErr);
-          }
-        }
-
-        try {
-          const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
-          res = await api.get(`/buyer/auction-details/${id}${queryStr}`);
-          if (res.data?.roleWasSwitched && !hasSwitchedRef.current) {
-            hasSwitchedRef.current = true;
-            await fetchProfile();
-            addToast("Role Switched", "Your mode was automatically switched to Buyer mode to view this shared property.", "info");
-          }
-        } catch (apiErr: any) {
-          const errMsg = apiErr?.response?.data?.message || "";
-          if (!hasSwitchedRef.current && (apiErr?.response?.status === 403 || errMsg.includes("Regular Buyer mode"))) {
-            hasSwitchedRef.current = true;
-            try {
-              await api.put('/switch/toggleRole', { type: 'REGULAR' });
-              if (fetchProfile) await fetchProfile();
-              const queryStr = st ? `?st=${encodeURIComponent(st)}` : '';
-              res = await api.get(`/buyer/auction-details/${id}${queryStr}`);
-            } catch (retryErr) {
-              if (!propertyInfo && !initialData) {
-                res = await axios.get(`${API_URL}/public/property-details/${id}`);
-              }
-            }
-          } else if (!propertyInfo && !initialData) {
-            res = await axios.get(`${API_URL}/public/property-details/${id}`);
-          }
-        }
-      } else {
-        if (!propertyInfo && !initialData) {
-          res = await axios.get(`${API_URL}/public/property-details/${id}`);
+      setIsLoading(true);
+      // CMP Connect Public Listings API (GET /listings/:ref)
+      const connectData = await connectPublicService.getListingDetail(id).catch(() => null);
+      if (connectData) {
+        setPropertyInfo(connectData);
+        if (typeof connectData.isFavourited === 'boolean') {
+          setIsFavourited(connectData.isFavourited);
         }
       }
-      
-      if (res?.data) {
-        const data = res.data.data || res.data;
-        setPropertyInfo(data);
-        if (typeof data?.isFavourited === 'boolean') {
-          setIsFavourited(data.isFavourited);
-        }
-      }
+      // Purane /public/property-details aur /buyer/auction-details fallbacks hata diye (legacy app).
     } catch (err: any) {
       if (err?.response?.status === 429) {
         console.warn("Property details rate limit reached. Using cached/server data.");
@@ -346,29 +228,37 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   }
 
   const details = propertyInfo.propertyDetails || propertyInfo || {};
-  const images = details.propertyImages?.length > 0 ? details.propertyImages.map((i:any) => i.url || i) : ["/property-placeholder.svg"];
-  const title = details.propertyTitle || propertyInfo.title || "Untitled Property";
-  const location = typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || propertyInfo.location || "Dubai, UAE");
-  const priceAmount = details.propertyPrice?.amount || details.propertyPrice || propertyInfo.startPrice || propertyInfo.price || 0;
+  const rawImages = details.propertyImages || propertyInfo.images || [];
+  const images = rawImages.length > 0 
+    ? rawImages.map((i: any) => typeof i === 'string' ? i : (i.url || i)) 
+    : (propertyInfo.coverImage ? [propertyInfo.coverImage] : ["/property-placeholder.svg"]);
+  const isAr = locale === "ar";
+  const title = isAr
+    ? (propertyInfo.titleAr || details.propertyTitleAr || details.titleAr || propertyInfo.title || details.propertyTitle || "عقار بدون عنوان")
+    : (propertyInfo.title || details.propertyTitle || "Untitled Property");
+  const location = typeof propertyInfo.location === 'string' && propertyInfo.location
+    ? propertyInfo.location
+    : (typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE"));
+  const priceAmount = (typeof propertyInfo.price === 'number' ? propertyInfo.price : null) ?? (details.propertyPrice?.amount || details.propertyPrice || propertyInfo.startPrice || 0);
   const highestBid = propertyInfo.currentHighestBid || (typeof propertyInfo.currentHighestOffer === 'object' ? propertyInfo.currentHighestOffer?.amount : propertyInfo.currentHighestOffer);
-  const priceValue = highestBid ? highestBid.toLocaleString() : priceAmount.toLocaleString();
-  const downPaymentAmount = details.propertyPrice?.downPayment ?? propertyInfo.propertyPrice?.downPayment;
+  const priceValue = highestBid ? highestBid.toLocaleString() : (typeof priceAmount === 'number' ? priceAmount.toLocaleString() : priceAmount);
+  const downPaymentAmount = propertyInfo.downPayment ?? details.propertyPrice?.downPayment ?? propertyInfo.propertyPrice?.downPayment;
   const downPaymentValue = (downPaymentAmount !== undefined && downPaymentAmount !== null && Number(downPaymentAmount) > 0)
     ? Number(downPaymentAmount).toLocaleString()
     : null;
-  const type = details.propertyType || propertyInfo.propertyType || "N/A";
-  const purpose = details.listingPurpose || propertyInfo.listingPurpose || "";
-  const category = details.propertyCategory || propertyInfo.propertyCategory || "";
-  const plan = details.propertyPlan || propertyInfo.propertyPlan || "";
-  const beds = details.propertyBedrooms || propertyInfo.bedrooms || 0;
-  const baths = details.propertyWashrooms || details.propertyBathrooms || propertyInfo.bathrooms || 0;
-  const parkingSpaces = details.parkingSpaces !== undefined ? details.parkingSpaces : propertyInfo.parkingSpaces;
-  const permitNumber = details.permitNumber || propertyInfo.permitNumber || details.trakheesiNumber || propertyInfo.trakheesiNumber || "";
-  const referenceNumber = details.referenceNumber || propertyInfo.referenceNumber || details.propertyId || propertyInfo.propertyId || details.PID || propertyInfo.PID || details.listingId || propertyInfo.listingId || "";
-  const listingId = details.listingId || propertyInfo.listingId || "";
-  const availability = details.availability || propertyInfo.availability || "";
-  const furnishingStatus = details.furnishingStatus || propertyInfo.furnishingStatus || "";
-  const rentalPeriod = details.rentalPeriod || propertyInfo.rentalPeriod || "";
+  const type = formatPropertyType(propertyInfo.typeLabel || details.propertyType || propertyInfo.type || propertyInfo.propertyType || "N/A", locale);
+  const purpose = propertyInfo.purpose || details.listingPurpose || propertyInfo.listingPurpose || "";
+  const category = propertyInfo.category || details.propertyCategory || propertyInfo.propertyCategory || "";
+  const plan = propertyInfo.plan || details.propertyPlan || propertyInfo.propertyPlan || "";
+  const beds = propertyInfo.bedrooms || details.propertyBedrooms || 0;
+  const baths = propertyInfo.bathrooms || details.propertyWashrooms || details.propertyBathrooms || 0;
+  const parkingSpaces = propertyInfo.parkingSpaces ?? details.parkingSpaces;
+  const permitNumber = propertyInfo.permitNumber || details.permitNumber || details.trakheesiNumber || propertyInfo.trakheesiNumber || "";
+  const referenceNumber = propertyInfo.ref || propertyInfo.referenceNumber || details.referenceNumber || details.propertyId || propertyInfo.propertyId || details.PID || propertyInfo.PID || details.listingId || propertyInfo.listingId || "";
+  const listingId = propertyInfo.id || propertyInfo.ref || details.listingId || propertyInfo.listingId || "";
+  const availability = propertyInfo.availability || details.availability || "";
+  const furnishingStatus = propertyInfo.furnishing || details.furnishingStatus || propertyInfo.furnishingStatus || "";
+  const rentalPeriod = propertyInfo.rentalPeriod || details.rentalPeriod || "";
   const isForRent = purpose === "RENT" || details.listingPurpose === "RENT" || propertyInfo.listingPurpose === "RENT";
   
   const getAreaValue = (area: any) => {
@@ -379,7 +269,9 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
   const totalArea = getAreaValue(details.propertyArea || propertyInfo.propertyArea || propertyInfo.area);
   const builtUpArea = getAreaValue(details.propertyBuiltUpArea || propertyInfo.propertyBuiltUpArea);
   const sqft = builtUpArea || totalArea;
-  const description = details.propertyDescription || propertyInfo.description || "No description provided.";
+  const description = isAr
+    ? (propertyInfo.descriptionAr || details.propertyDescriptionAr || details.descriptionAr || details.propertyDescription || propertyInfo.description || "لا يوجد وصف متوفر.")
+    : (details.propertyDescription || propertyInfo.description || "No description provided.");
   
   const getAmenitiesList = (): string[] => {
     const raw = details.propertyAmenities || propertyInfo.propertyAmenities || details.propertyFeatures || propertyInfo.features;
@@ -467,13 +359,6 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
   return (
     <main className="flex-1 flex flex-col min-h-screen bg-[#F4F5F7] dark:bg-[#091711] pt-28 sm:pt-32 pb-16 transition-colors">
-      {showOfflineWarning && (
-        <div className="w-full bg-amber-500/10 border-b border-amber-500/20 py-2.5 px-6 text-center text-[13px] font-semibold text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 animate-pulse mb-6">
-          <AlertTriangle className="w-4 h-4 shrink-0" />
-          Live connection offline. Offers may not update in real-time. Retrying...
-        </div>
-      )}
-      
       {/* Top Breadcrumb & Status */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -492,7 +377,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
           <div className="flex items-center gap-3 shrink-0">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284] uppercase tracking-wider border border-[#1A3626]/20 dark:border-[#5CD284]/30">
-              {formatPropertyType(type)}
+              {type}
             </span>
           </div>
         </div>
@@ -641,7 +526,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   </span>
                   {isForRent && rentalPeriod && (
                     <span className="text-xs sm:text-sm font-bold text-white/80 tracking-normal lowercase">
-                      / {formatRentalPeriodShort(rentalPeriod)}
+                      / {formatRentalPeriodShort(rentalPeriod, locale)}
                     </span>
                   )}
                 </p>
@@ -660,10 +545,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-gray-100 dark:border-[#1A3626]">
               <button 
                 onClick={() => {
-                  const token = generateShareToken(id, user?._id);
-                  const shareUrl = typeof window !== 'undefined' 
-                    ? `${window.location.origin}${window.location.pathname}?st=${token}` 
-                    : '';
+                  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '';
                   if (navigator.share) {
                     navigator.share({ title: title, url: shareUrl }).catch(console.error);
                   } else if (shareUrl) {
@@ -701,7 +583,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] sm:text-[11px] text-gray-400 font-semibold uppercase tracking-wider truncate">Property Type</p>
-                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={formatPropertyType(type)}>{formatPropertyType(type)}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate" title={type}>{type}</p>
                 </div>
               </div>
 
@@ -742,7 +624,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                     {parkingSpaces ? "Parking" : "Property Plan"}
                   </p>
                   <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
-                    {parkingSpaces ? `${parkingSpaces} Spaces` : formatPropertyPlan(plan)}
+                    {parkingSpaces ? `${parkingSpaces} Spaces` : formatPropertyPlan(plan, locale)}
                   </p>
                 </div>
               </div>
@@ -779,40 +661,40 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 {purpose && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Purpose</span>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatListingPurpose(purpose, locale)}</span>
                   </div>
                 )}
                 {isForRent && rentalPeriod && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Rental Period</span>
                     <span className="text-xs sm:text-sm font-semibold text-[#1A3626] dark:text-[#5CD284] truncate">
-                      {formatRentalPeriod(rentalPeriod)}
+                      {formatRentalPeriod(rentalPeriod, locale)}
                     </span>
                   </div>
                 )}
                 {category && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Category</span>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyCategory(category, locale)}</span>
                   </div>
                 )}
                 {plan && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Plan</span>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatPropertyPlan(plan, locale)}</span>
                   </div>
                 )}
                 {availability && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Availability</span>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatAvailability(availability)}</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{formatAvailability(availability, locale)}</span>
                   </div>
                 )}
                 {furnishingStatus && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Furnishing</span>
                     <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
-                      {formatFurnishingStatus(furnishingStatus)}
+                      {formatFurnishingStatus(furnishingStatus, locale)}
                     </span>
                   </div>
                 )}
@@ -850,7 +732,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/10 dark:bg-[#163321] text-emerald-900 dark:text-emerald-300 text-xs font-bold border border-emerald-500/20 shadow-sm hover:scale-105 transition-transform"
                     >
                       <CheckCircle2 className="w-4 h-4 text-[#5CD284]" />
-                      <span>{formatAmenity(feature)}</span>
+                      <span>{formatAmenity(feature, locale)}</span>
                     </span>
                   ))}
                 </div>
@@ -862,52 +744,24 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
           </div>
         </div>
 
-        {/* Right Column: Bidding Sidebar (4 cols) */}
+        {/* Right Column: Bidding or Agent Contact Sidebar (4 cols) */}
         <div className="lg:col-span-4">
           <div className="sticky top-28 space-y-6">
-            {isAuthenticated ? (
-              <BuyerActionSidebar 
-                auctionId={id}
-                contractStatus={propertyInfo.userContractStatus?.status || 'NOT_SIGNED'}
-                canBid={propertyInfo.userContractStatus?.canBid || false}
-                currentValue={highestBid || priceAmount}
-                onBidSuccess={() => fetchDetails()}
-                onContractSubmitted={() => fetchDetails()}
-                onBidOptimistic={(amount) => {
-                  setPropertyInfo((prev: any) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      currentHighestBid: amount
-                    };
-                  });
-                }}
+            {/* Listings ka sidebar: agent contact. Real Time Offer ka flow /auctions/[id] (RtoDetailClient) pe hai. */}
+            <AgentContactSidebar
+                listingRef={propertyInfo.ref || propertyInfo.listingRef || id}
+                agent={propertyInfo.agent || propertyInfo.sellerInfo || (details.sellerId ? { id: details.sellerId, name: details.sellerInfo?.fullName || "Agent" } : null)}
+                company={propertyInfo.company || (details.propertyDocuments?.propertyTrakheesi ? { name: details.propertyDocuments.propertyTrakheesi.agencyName, orn: details.propertyDocuments.propertyTrakheesi.permitNumber } : null)}
+                permitNumber={permitNumber}
+                videoUrl={propertyInfo.videoUrl || details.videoUrl}
+                virtualTourUrl={propertyInfo.virtualTourUrl || details.virtualTourUrl}
+                floorPlan={propertyInfo.floorPlan || details.floorPlan}
+                locale={locale}
               />
-            ) : (
-              <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-[#1A3626] text-center space-y-4">
-                <div className="w-14 h-14 bg-[#5CD284]/15 rounded-2xl flex items-center justify-center mx-auto text-[#5CD284]">
-                  <Lock className="w-7 h-7" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {detailDict.interestedTitle || "Interested in this property?"}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    {detailDict.interestedDesc || "Log in to place your bid or make an offer on this auction property."}
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setShowLoginModal(true)}
-                  className="w-full py-3.5 bg-[#1A3626] dark:bg-[#5CD284] text-white dark:text-[#0A1C12] font-bold text-sm rounded-xl hover:opacity-90 transition-opacity flex justify-center items-center gap-2 cursor-pointer shadow-md"
-                >
-                  {detailDict.makeOffer || "Make Offer / Place Bid"}
-                </button>
-              </div>
-            )}
 
             {/* Google Map Location Card (Square Shape) */}
             <PropertyMapCard 
-              coordinates={details.propertyCoordinates || propertyInfo.propertyCoordinates || details.locationCoordinates || propertyInfo.locationCoordinates} 
+              coordinates={propertyInfo.coordinates || details.propertyCoordinates || propertyInfo.propertyCoordinates || details.locationCoordinates} 
               location={location} 
               title={title} 
             />
@@ -918,11 +772,13 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
 
       {/* Recommended Properties Section (Full Width Grid Style) */}
       <RecommendedProperties
-        currentPropertyId={id || propertyInfo._id || propertyInfo.id}
-        category={details.propertyCategory || propertyInfo.propertyCategory}
-        propertyType={details.propertyType || propertyInfo.propertyType}
-        location={location || details.propertyLocation || propertyInfo.propertyLocation}
-        price={highestBid || priceAmount}
+        currentPropertyId={id || propertyInfo?._id || propertyInfo?.id || propertyInfo?.ref}
+        category={propertyInfo?.category || details?.propertyCategory || propertyInfo?.propertyCategory}
+        propertyType={propertyInfo?.type || details?.propertyType || propertyInfo?.propertyType}
+        location={location || propertyInfo?.location || details?.propertyLocation || propertyInfo?.propertyLocation}
+        price={propertyInfo?.price || highestBid || priceAmount}
+        purpose={propertyInfo?.purpose || details?.listingPurpose || propertyInfo?.listingPurpose}
+        initialSimilar={propertyInfo?.similar}
         isAuction={false}
         locale={locale}
       />

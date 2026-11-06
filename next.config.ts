@@ -39,11 +39,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "mediaoffice.ae",
       },
+      // Google sign-in avatars (avatarUrl = Google profile picture)
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "*.googleusercontent.com",
       },
+      // NOTE: "**" wildcard jaan bujh kar hataya gaya hai — usse /_next/image kisi bhi
+      // domain ki image proxy/optimize kar deta tha (bandwidth/cost abuse). Naya image
+      // host aaye to yahan explicitly add karein.
     ],
+  },
+  // My Offers / My Contracts ab CMP Connect RTO API pe hain (/me/offers, /me/contracts).
+  // Single contract ki alag API nahi — contract ka status/dobara upload offer page pe hota hai.
+  async redirects() {
+    return [
+      { source: "/:locale(en|ar)/dashboard/contracts/:id", destination: "/:locale/dashboard/contracts", permanent: false },
+    ];
   },
   async headers() {
     return [

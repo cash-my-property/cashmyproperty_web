@@ -1,15 +1,38 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '@/lib/api';
-import Cookies from 'js-cookie';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api, { PUBLIC_API_PREFIX, refreshPublicSession } from '@/lib/api';
+import { setAuthHint, clearAuthHint, hasAuthHint } from '@/lib/authHint';
+import { unregisterPushToken } from '@/lib/pushToken';
 
-interface User {
+export interface PublicAgentCompany {
+  companyType: 'AGENCY' | 'DEVELOPER' | string;
+  companyId: string;
+  companyName: string | null;
+  companyLogo: string | null;
+}
+
+export interface User {
+  id: string;
   _id: string;
+  code?: string;
+  accountType: 'PUBLIC' | 'AGENT' | string;
+  fullName: string;
   first_name: string;
   last_name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  role: string | any;
+  mobile: string | null;
+  phone: string;
+  avatarUrl: string | null;
+  picture: string | null;
+  emailVerified: boolean;
+  hasPassword: boolean;
+  signupSource: string | null;
+  signupMethod?: 'EMAIL' | 'GOOGLE' | string;
+  agent: PublicAgentCompany | null;
+  role: { main: string; type: string } | string;
   [key: string]: any;
 }
 
@@ -19,134 +42,141 @@ interface AuthContextType {
   isLoading: boolean;
   isBuyer: boolean;
   isSeller: boolean;
-  login: (token: string, userData: User) => void;
-  logout: () => void;
+  isAgent: boolean;
+  /** Agency ka team member (DLD broker) — Real Time Offer mein contract/offer sirf yahi kar sakta hai */
+  isBroker: boolean;
+  login: (tokenOrUser: string | Partial<User>, maybeUser?: Partial<User>) => void;
+  setUserData: (userData: Partial<User> | null) => void;
+  logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
   fetchProfile: () => Promise<void>;
   refreshSession: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper to extract the main role string regardless of format
-function getUserMainRole(user: User | null): string {
-  if (!user) return '';
-  const role = user.role;
-  if (typeof role === 'string') return role.toLowerCase();
-  if (typeof role === 'object' && role !== null && role.main) return role.main.toLowerCase();
-  return '';
+export function normalizePublicUser(raw: any): User | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const account = raw.account || raw.user || raw.data || raw;
+  if (!account || (!account.id && !account._id && !account.email)) return null;
+
+  const id = String(account.id || account._id || '');
+  const fullName = String(
+    account.fullName ||
+      `${account.first_name || account.firstName || ''} ${account.last_name || account.lastName || ''}`.trim() ||
+      account.email?.split('@')[0] ||
+      'User'
+  ).trim();
+  const nameParts = fullName.split(/\s+/);
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
+  const mobile = account.mobile ?? account.phone ?? null;
+  const avatarUrl = account.avatarUrl ?? account.picture ?? null;
+  const accountType = account.accountType || 'PUBLIC';
+
+  return {
+    ...account,
+    id,
+    _id: id,
+    accountType,
+    fullName,
+    first_name: firstName,
+    last_name: lastName,
+    firstName,
+    lastName,
+    email: account.email || '',
+    mobile,
+    phone: mobile || '',
+    avatarUrl,
+    picture: avatarUrl,
+    emailVerified: account.emailVerified !== false,
+    hasPassword: account.hasPassword !== false,
+    signupSource: account.signupSource ?? null,
+    signupMethod: account.signupMethod ?? 'EMAIL',
+    agent: account.agent ?? null,
+    // Buyer portal compatibility role
+    role: { main: 'BUYER', type: 'SIMPLE' },
+  };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const mainRole = getUserMainRole(user);
-  const isBuyer = mainRole === 'buyer';
-  const isSeller = mainRole === 'seller';
+  const isBuyer = !!user;
+  const isSeller = false;
+  const isAgent = user?.accountType === 'AGENT';
+  // Backend rule (e26dade): RTO offers sirf AGENT jiski company AGENCY ho; developer staff aur public sirf dekh sakte hain
+  const isBroker = isAgent && user?.agent?.companyType === 'AGENCY';
 
-  const refreshSession = async (): Promise<boolean> => {
-    try {
-      const res = await api.post('/auth/refresh');
-      const newToken = res.data?.token || res.data?.accessToken;
-      if (newToken) {
-        Cookies.set('token', newToken, { expires: 7 });
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('token', newToken);
-        }
-      }
-      return true;
-    } catch (err) {
-      console.error("Manual session refresh failed", err);
-      return false;
-    }
-  };
+  const refreshSession = useCallback(async (): Promise<boolean> => {
+    return await refreshPublicSession();
+  }, []);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
-      const response = await api.get('/auth/my-profile');
-      setUser(response.data.user || response.data.data || response.data);
-    } catch (error) {
-      console.error("Failed to fetch profile", error);
-      Cookies.remove('token');
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-      }
+      // Guest (hint cookie nahi) ke liye 401 pe refresh mat try karo — pehle har guest page
+      // load pe /auth/me 401 ke baad ek faltu /auth/refresh 401 bhi jaata tha.
+      const response = await api.get(`${PUBLIC_API_PREFIX}/auth/me`, { skipAuthRefresh: !hasAuthHint() });
+      const accountData = response.data?.data || response.data?.account || response.data;
+      setUser(normalizePublicUser(accountData));
+    } catch {
+      // 401 = guest
+      clearAuthHint();
       setUser(null);
     } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const token = Cookies.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
-    if (token) {
-      fetchProfile();
-    } else {
-      setUser(null);
       setIsLoading(false);
     }
   }, []);
 
-  // Proactive Silent Background Token Refresh (every 5 minutes)
-  // Prevents Access Token from ever expiring while user is active on page
+  // On initial page load: always check GET /cmpConnect/public/auth/me (httpOnly cookies)
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  // Proxy ke optimistic dashboard guard ke liye hint cookie ko auth state se sync rakho
+  useEffect(() => {
+    if (isLoading) return;
+    if (user) setAuthHint();
+    else clearAuthHint();
+  }, [user, isLoading]);
+
+  // Proactive silent background refresh (every 10 minutes while logged in; access token TTL is 15m)
   useEffect(() => {
     if (!user) return;
 
     const refreshInterval = setInterval(async () => {
-      try {
-        const res = await api.post('/auth/refresh');
-        const newToken = res.data?.token || res.data?.accessToken;
-        if (newToken) {
-          Cookies.set('token', newToken, { expires: 7 });
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('token', newToken);
-          }
-        }
-      } catch (err) {
-        console.error("Background token refresh failed", err);
-      }
-    }, 5 * 60 * 1000); // 5 minutes (well before token expiry)
+      await refreshPublicSession();
+    }, 10 * 60 * 1000);
 
     return () => clearInterval(refreshInterval);
   }, [user]);
 
-  const login = (token: string, userData: User) => {
-    Cookies.set('token', token, { expires: 7 }); // 7 days
-    setUser(userData);
-  };
+  const setUserData = useCallback((userData: Partial<User> | null) => {
+    if (!userData) {
+      setUser(null);
+      return;
+    }
+    setUser(normalizePublicUser(userData));
+  }, []);
 
-  const logout = async () => {
+  const login = useCallback((tokenOrUser: string | Partial<User>, maybeUser?: Partial<User>) => {
+    const rawUser = typeof tokenOrUser === 'string' ? maybeUser : tokenOrUser;
+    const normalized = normalizePublicUser(rawUser);
+    if (normalized) {
+      setUser(normalized);
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
     try {
-      let webDeviceId = "web_default_device_id";
-      if (typeof window !== "undefined") {
-        const ua = window.navigator.userAgent || '';
-        const platform = window.navigator.platform || '';
-        const screenWidth = window.screen?.width || 0;
-        const screenHeight = window.screen?.height || 0;
-        const rawFingerprint = `${platform}_${screenWidth}x${screenHeight}_${ua}`;
-        
-        let hash = 0;
-        for (let i = 0; i < rawFingerprint.length; i++) {
-          const char = rawFingerprint.charCodeAt(i);
-          hash = (hash << 5) - hash + char;
-          hash |= 0;
-        }
-        webDeviceId = `web_${Math.abs(hash)}`;
-      }
-
-      // Call backend logout
-      await api.post('/auth/logout', {
-        deviceInformation: {
-          deviceId: webDeviceId
-        }
-      });
+      // Is browser ki web push band — logout ke baad is device pe is account ki notifications na aayein
+      await unregisterPushToken();
+      await api.post(`${PUBLIC_API_PREFIX}/auth/logout`);
     } catch (e) {
-      console.error("Logout API failed", e);
+      console.error('Logout API failed', e);
     } finally {
-      Cookies.remove('token');
-      // Redirect to the logout success page first
-      // We don't call setUser(null) here because the dashboard layout will instantly catch it 
-      // and redirect to /login before the window.location.href can execute, causing a race condition.
+      clearAuthHint();
       if (typeof window !== 'undefined') {
         const locale = window.location.pathname.split('/')[1] || 'en';
         window.location.href = `/${locale}/logout`;
@@ -154,10 +184,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
     }
-  };
+  }, []);
+
+  const logoutAll = useCallback(async () => {
+    try {
+      // Is browser ki web push band — logout ke baad is device pe is account ki notifications na aayein
+      await unregisterPushToken();
+      await api.post(`${PUBLIC_API_PREFIX}/auth/logout-all`);
+    } catch (e) {
+      console.error('Logout-all API failed', e);
+    } finally {
+      clearAuthHint();
+      if (typeof window !== 'undefined') {
+        const locale = window.location.pathname.split('/')[1] || 'en';
+        window.location.href = `/${locale}/logout`;
+      } else {
+        setUser(null);
+      }
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, isBuyer, isSeller, login, logout, fetchProfile, refreshSession }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        isBuyer,
+        isSeller,
+        isAgent,
+        isBroker,
+        login,
+        setUserData,
+        logout,
+        logoutAll,
+        fetchProfile,
+        refreshSession,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

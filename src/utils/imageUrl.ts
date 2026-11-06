@@ -27,6 +27,10 @@ export function extractPropertyImages(itemOrDetails: any): string[] {
     itemOrDetails.allPropertyImages ||
     details.propertyImages ||
     itemOrDetails.propertyImages ||
+    (Array.isArray(itemOrDetails.images) && itemOrDetails.images.length > 0 ? itemOrDetails.images : null) ||
+    (Array.isArray(details.images) && details.images.length > 0 ? details.images : null) ||
+    (itemOrDetails.coverImage ? [itemOrDetails.coverImage] : null) ||
+    (details.coverImage ? [details.coverImage] : null) ||
     (itemOrDetails.image ? [itemOrDetails.image] : []) ||
     (details.image ? [details.image] : []);
 
