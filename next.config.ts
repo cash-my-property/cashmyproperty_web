@@ -1,7 +1,22 @@
 import type { NextConfig } from "next";
 
+// Har page pe security headers. Poori CSP (script-src) jaan bujh kar nahi — Firebase, Google sign-in,
+// Maps, Vercel analytics ke saath pehle staging pe report-only test chahiye. Yeh wale kuch nahi todte.
+const securityHeaders = [
+  // Koi doosri site hamara page iframe mein na daal sake (clickjacking)
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // Site camera/mic/location use nahi karti (share + clipboard default allowed rehte hain)
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()" },
+  // Sirf HTTPS (localhost http pe browser ise ignore karta hai)
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: false,
+  poweredByHeader: false,
   compress: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
@@ -58,6 +73,7 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      { source: "/:path*", headers: securityHeaders },
       {
         source: "/images/:path*",
         headers: [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { safeExternalUrl } from "@/utils/safeUrl";
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, Mail, ShieldCheck, Building, Video, Compass, FileText, Loader2, ExternalLink } from "lucide-react";
@@ -47,11 +48,16 @@ export default function AgentContactSidebar({
   agent,
   company,
   permitNumber,
-  videoUrl,
-  virtualTourUrl,
-  floorPlan,
+  videoUrl: rawVideoUrl,
+  virtualTourUrl: rawVirtualTourUrl,
+  floorPlan: rawFloorPlan,
   locale = "en",
 }: AgentContactSidebarProps) {
+  // Agent ke CRM se aaye links — sirf http(s) (javascript: / data: waghera ka link banta hi nahi)
+  const videoUrl = safeExternalUrl(rawVideoUrl);
+  const virtualTourUrl = safeExternalUrl(rawVirtualTourUrl);
+  const floorPlanUrl = safeExternalUrl(rawFloorPlan?.url);
+  const floorPlan = floorPlanUrl ? { ...rawFloorPlan, url: floorPlanUrl } : null;
   const [loadingChannel, setLoadingChannel] = useState<string | null>(null);
 
   const handleContact = async (channel: "CALL" | "WHATSAPP" | "EMAIL") => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { safeExternalUrl } from "@/utils/safeUrl";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -212,9 +213,9 @@ export default function AgencyDetailClient({ id, initialData, locale }: AgencyDe
                 <Mail className="w-3.5 h-3.5" /> {agency.email}
               </a>
             )}
-            {agency.website && (
+            {safeExternalUrl(agency.website) && (
               <a
-                href={agency.website.startsWith("http") ? agency.website : `https://${agency.website}`}
+                href={safeExternalUrl(agency.website)!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-[#142e1d] border border-gray-200 dark:border-[#1A3626] text-[#1A3626] dark:text-[#5CD284] hover:underline"
