@@ -2,21 +2,20 @@
 
 import { useState } from "react";
 import { BellRing, BellOff, Loader2 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { usePushPermission } from "@/hooks/usePushPermission";
 
 /**
  * Bell panel ke andar "Enable notifications" — browser permission sirf user ke click pe (login pe zabardasti popup nahi).
- * Chhupa rehta hai: agent accounts (backend push nahi bhejta), already allowed, ya unsupported browser
+ * Buyer aur agent dono ke liye (backend 17cf575 se agents ko bhi push jata hai — RTO offers agent lagata hai).
+ * Chhupa rehta hai: already allowed, ya unsupported browser
  * (iPhone Safari bina Home Screen) — wahan bell polling (unread-count) backup hai hi.
  */
 export default function PushOptIn() {
-  const { isAgent } = useAuth();
   const permission = usePushPermission();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
 
-  if (isAgent || permission === "unsupported" || permission === "granted") return null;
+  if (permission === "unsupported" || permission === "granted") return null;
 
   if (permission === "denied") {
     return (

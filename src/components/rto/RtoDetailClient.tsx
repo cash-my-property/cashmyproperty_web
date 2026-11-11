@@ -7,6 +7,7 @@ import { ArrowLeft, Bath, BedDouble, Building2, ChevronLeft, ChevronRight, Expan
 import Dirham from "@/components/Dirham";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { useAuth } from "@/context/AuthContext";
+import { useSocket } from "@/context/SocketContext";
 import PropertyMapCard from "@/components/listings/PropertyMapCard";
 import RtoStatusBadge from "@/components/listings/RtoStatusBadge";
 import RtoActionPanel from "@/components/rto/RtoActionPanel";
@@ -83,6 +84,16 @@ export default function RtoDetailClient({ id, initialData, locale }: { id: strin
     if (prevStatus.current && liveStatus && prevStatus.current !== liveStatus) loadDetail();
     prevStatus.current = liveStatus;
   }, [liveStatus, loadDetail]);
+
+  // Agency (CRM) / admin contract approve-decline kare → buyer ko bell + push aata hai (backend db3cffb).
+  // Isi offer ki nayi notification aaye to detail dobara: "pending" panel khud offer form / rejection mein badle, reload ke bina.
+  const { notifications } = useSocket();
+  const latestForThis = notifications.find((n) => n.href?.endsWith(`/auctions/${id}`))?.id;
+  const prevNotif = useRef(latestForThis);
+  useEffect(() => {
+    if (latestForThis && latestForThis !== prevNotif.current && isAuthenticated) loadDetail();
+    prevNotif.current = latestForThis;
+  }, [latestForThis, isAuthenticated, loadDetail]);
 
   const onChanged = useCallback(async () => {
     await Promise.all([loadDetail(), loadHistory(), refreshLive()]);
@@ -173,21 +184,22 @@ export default function RtoDetailClient({ id, initialData, locale }: { id: strin
               </p>
 
               {/* Price + countdown */}
-              <div className="rounded-2xl bg-gradient-to-br from-[#1A3626] to-[#0f2418] text-white p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div className="sm:col-span-1">
+              {/* Price apni poori line pe — badi raqam (e.g. 55,556,555,555) Offers / Ends in column pe na chadhe */}
+              <div className="rounded-2xl bg-gradient-to-br from-[#1A3626] to-[#0f2418] text-white p-5 sm:p-6 grid grid-cols-2 gap-x-5 gap-y-5">
+                <div className="col-span-2 min-w-0 pb-5 border-b border-white/10">
                   <p className="text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">{priceLabel}</p>
-                  <p className="text-3xl font-extrabold text-[#5CD284] flex items-baseline gap-1" aria-live="polite">
+                  <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#5CD284] flex flex-wrap items-baseline gap-x-1.5 tabular-nums break-all" dir="ltr" aria-live="polite">
                     <Dirham /> {price.toLocaleString()}
                   </p>
                   {priceLabel !== t.detail.startingPrice && (
                     <p className="text-xs text-white/60 mt-1">{t.detail.startingPrice}: AED {detail.startPrice.toLocaleString()}</p>
                   )}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1 flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {t.detail.offers}</p>
-                  <p className="text-3xl font-extrabold">{offerCount}</p>
+                  <p className="text-2xl sm:text-3xl font-extrabold tabular-nums">{offerCount}</p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   {status === "PAUSED" ? (
                     <p className="text-sm text-white/80 flex items-start gap-2"><PauseCircle className="w-5 h-5 shrink-0" /> {t.detail.pausedNote}</p>
                   ) : isFinal ? (
@@ -198,7 +210,7 @@ export default function RtoDetailClient({ id, initialData, locale }: { id: strin
                   ) : d ? (
                     <>
                       <p className="text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">{status === "UPCOMING" ? t.detail.startsIn : t.detail.endsIn}</p>
-                      <p className="text-2xl font-extrabold tabular-nums" dir="ltr">
+                      <p className="text-lg sm:text-2xl font-extrabold tabular-nums whitespace-nowrap" dir="ltr">
                         {d.days > 0 && <>{d.days}{t.detail.days} </>}
                         {String(d.hours).padStart(2, "0")}{t.detail.hours} {String(d.minutes).padStart(2, "0")}{t.detail.minutes} {String(d.seconds).padStart(2, "0")}{t.detail.seconds}
                       </p>

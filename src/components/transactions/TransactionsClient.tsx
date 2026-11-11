@@ -210,6 +210,9 @@ export default function TransactionsClient() {
                       <span className="flex items-center gap-2 min-w-0">
                         {d.agent?.id ? (
                           <Link href={`/${locale}/agents/${d.agent.id}`} className="font-bold text-gray-800 dark:text-gray-100 hover:text-[#5CD284] truncate">{d.agent.name}</Link>
+                        ) : d.agent?.name ? (
+                          // Agent delete ho chuka (backend d283602 snapshot) — sirf naam, profile link nahi
+                          <span className="font-bold text-gray-800 dark:text-gray-100 truncate">{d.agent.name}</span>
                         ) : null}
                         {d.company?.name && (
                           <span className="text-gray-500 dark:text-gray-400 truncate">· {d.company.name}</span>

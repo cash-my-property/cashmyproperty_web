@@ -9,16 +9,16 @@ import { Bell } from "lucide-react";
 /**
  * Web push (FCM). Permission KHUD nahi maangta — wo bell panel ke "Enable notifications" button (PushOptIn) se aati hai.
  * Yahan sirf: permission "granted" ho to token sync + foreground messages ka toast.
- * Agent accounts ko backend push nahi bhejta (setPushToken → saved:false), isliye unke liye kuch nahi.
+ * Buyer (PUBLIC) aur agent (AGENT) dono — backend 17cf575 se agent ka token bhi save hota hai.
  */
 export default function FcmListener() {
-  const { isAuthenticated, isLoading, isAgent, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const { addToast, pushNotification } = useSocket();
   const permission = usePushPermission();
   const userId = user?.id ?? user?._id;
 
   useEffect(() => {
-    if (isLoading || !isAuthenticated || isAgent || permission !== "granted") return;
+    if (isLoading || !isAuthenticated || permission !== "granted") return;
 
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
@@ -49,7 +49,7 @@ export default function FcmListener() {
       unsubscribe?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, isLoading, isAgent, permission, userId]);
+  }, [isAuthenticated, isLoading, permission, userId]);
 
   return null;
 }
