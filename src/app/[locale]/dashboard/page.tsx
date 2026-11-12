@@ -5,38 +5,43 @@ import { Heart, Building2, ChevronRight, UserCheck, Settings, Loader2 } from "lu
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import api, { PUBLIC_API_PREFIX } from "@/lib/api";
+import connectPublicService from "@/services/connectPublicService";
 import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardOverviewPage() {
   const { dict, locale } = useDictionary();
   const content = dict.dashboard.overview;
 
-  const [savedCount, setSavedCount] = useState<string>("0");
+  // Teeno cards asli API counts se. API fail ho to "—" (chupke se "0" nahi)
+  const [savedCount, setSavedCount] = useState<string>("—");
+  const [listingsCount, setListingsCount] = useState<string>("—");
+  const [agentsCount, setAgentsCount] = useState<string>("—");
   const [isLoading, setIsLoading] = useState(true);
 
   const { user, isAgent, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     if (authLoading || !user) return;
+    const num = (n: unknown) => (typeof n === "number" && Number.isFinite(n) ? n.toLocaleString(locale === "ar" ? "ar-AE" : "en-AE") : "—");
     const fetchTotals = async () => {
-      try {
-        setIsLoading(true);
-        const favRes = await api.get(`${PUBLIC_API_PREFIX}/me/favourites?page=1&limit=1`).catch(() => ({ data: {} as { pagination?: { total?: number }; data?: unknown[] } }));
-        const favTotal = favRes.data?.pagination?.total ?? favRes.data?.data?.length ?? 0;
-        setSavedCount(String(favTotal));
-      } catch {
-        setSavedCount("0");
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(true);
+      const [fav, home, agents] = await Promise.allSettled([
+        api.get(`${PUBLIC_API_PREFIX}/me/favourites?page=1&limit=1`),
+        connectPublicService.getHome(),
+        connectPublicService.getAgents({ limit: 1 }),
+      ]);
+      if (fav.status === "fulfilled") setSavedCount(num(fav.value.data?.pagination?.total ?? fav.value.data?.data?.length));
+      if (home.status === "fulfilled") setListingsCount(num(home.value?.totals?.live));
+      if (agents.status === "fulfilled") setAgentsCount(num(agents.value?.pagination?.total));
+      setIsLoading(false);
     };
     fetchTotals();
-  }, [authLoading, user]);
+  }, [authLoading, user, locale]);
 
   const stats = [
     {
       label: "Browse Properties",
-      value: "Listings",
+      value: listingsCount,
       icon: Building2,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
@@ -44,7 +49,7 @@ export default function DashboardOverviewPage() {
     },
     {
       label: "Verified Agents",
-      value: "Directory",
+      value: agentsCount,
       icon: UserCheck,
       color: "text-[#5CD284]",
       bg: "bg-[#5CD284]/10",

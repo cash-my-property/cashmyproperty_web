@@ -45,15 +45,15 @@ export async function generateMetadata(props: {
   }
 
   const name = developer.name || "Property Developer";
-  const emirate = developer.emirate || "Dubai";
+  const emirate = developer.emirate || "";
 
   const title = isAr
-    ? `${name} - شركة تطوير عقاري في ${emirate} | كاش ماي بروبرتي`
-    : `${name} - Master Property Developer in ${emirate} | Cash My Property`;
+    ? `${name} - شركة تطوير عقاري في ${emirate || "الإمارات"} | كاش ماي بروبرتي`
+    : `${name} - Master Property Developer in ${emirate || "the UAE"} | Cash My Property`;
 
   const desc = isAr
-    ? `اكتشف المشاريع العقارية الجاهزة وقيد الإنشاء لشركة ${name} في ${emirate} ودولة الإمارات.`
-    : `Discover master planned ready and off-plan development projects by ${name} in ${emirate} and UAE.`;
+    ? `اكتشف المشاريع العقارية الجاهزة وقيد الإنشاء لشركة ${name} في ${emirate ? `${emirate} ودولة الإمارات` : "دولة الإمارات"}.`
+    : `Discover master planned ready and off-plan development projects by ${name} in ${emirate ? `${emirate} and the UAE` : "the UAE"}.`;
 
   const siteUrl = "https://cashmyproperty.com";
   const canonicalUrl = `${siteUrl}/${params.locale}/developers/${encodeURIComponent(params.id)}`;
@@ -108,7 +108,7 @@ export default async function DeveloperDetailPage(props: {
         "address": {
           "@type": "PostalAddress",
           ...(developer.address ? { "streetAddress": developer.address } : {}),
-          "addressLocality": developer.emirate || "Dubai",
+          "addressLocality": developer.emirate || undefined,
           "addressCountry": "AE",
         },
         "knowsAbout": "Real Estate Development",

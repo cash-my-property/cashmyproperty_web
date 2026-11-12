@@ -165,7 +165,7 @@ export default function FavoritesPage() {
               ? details.location
               : typeof details.propertyLocation === 'string'
               ? details.propertyLocation
-              : (details.propertyLocation?.city || "Dubai, UAE");
+              : (details.propertyLocation?.city || "");
 
             const formattedLocation = (() => {
               const words = rawLocation.trim().split(/\s+/);
@@ -226,9 +226,11 @@ export default function FavoritesPage() {
                       : details.title || details.propertyTitle || "Untitled Property"}
                   </h3>
                   
+                  {rawLocation && (
                   <p title={rawLocation} className="text-gray-500 dark:text-gray-400 text-xs font-medium flex items-center gap-1.5 mb-4 line-clamp-1 min-w-0 overflow-hidden">
                     <MapPin className="w-3.5 h-3.5 text-[#5CD284] shrink-0" /> <span className="truncate">{formattedLocation}</span>
                   </p>
+                  )}
 
                   <div className="mt-auto pt-3.5 border-t border-gray-100 dark:border-[#1A3626] flex items-center justify-between">
                     <span className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">

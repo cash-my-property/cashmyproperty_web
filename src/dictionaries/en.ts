@@ -237,15 +237,6 @@ export const content = {
       backToBlogs: "Back to All Articles",
       notFoundTitle: "Article Not Found",
       notFoundDesc: "The blog post you're looking for does not exist, has been unpublished, or is temporarily unavailable.",
-      posts: [
-        {
-          id: 1,
-          title: "The Future of Digital Real Estate in Dubai",
-          date: "August 4, 2026",
-          category: "Market Trends",
-          excerpt: "How technology is reshaping the property market and making transactions more transparent than ever before."
-        }
-      ]
     }
   },
   contact: {
@@ -417,98 +408,6 @@ export const content = {
       viewDetails: "View Details",
       startingOffer: "Starting Offer"
     },
-    items: [
-      {
-        id: 1,
-        title: "Luxury Penthouse in Palm Jumeirah",
-        location: "Palm Jumeirah, Dubai",
-        price: "15,000,000 AED",
-        beds: 5,
-        baths: 6,
-        sqft: "8,500",
-        image: "/property-placeholder.svg",
-        type: "Villa"
-      },
-      {
-        id: 2,
-        title: "Modern Apartment with Marina View",
-        location: "Dubai Marina, Dubai",
-        price: "3,200,000 AED",
-        beds: 3,
-        baths: 3,
-        sqft: "2,100",
-        image: "/property-placeholder.svg",
-        type: "Apartment"
-      },
-      {
-        id: 3,
-        title: "Exclusive Penthouse Downtown",
-        location: "Downtown Dubai",
-        price: "8,500,000 AED",
-        beds: 4,
-        baths: 5,
-        sqft: "4,200",
-        image: "/property-placeholder.svg",
-        type: "Penthouse"
-      },
-      {
-        id: 4,
-        title: "Family Townhouse in Arabian Ranches",
-        location: "Arabian Ranches, Dubai",
-        price: "4,800,000 AED",
-        beds: 4,
-        baths: 4,
-        sqft: "3,500",
-        image: "/property-placeholder.svg",
-        type: "Townhouse"
-      },
-      {
-        id: 5,
-        title: "Beachfront Mansion",
-        location: "Jumeirah Bay Island, Dubai",
-        price: "45,000,000 AED",
-        beds: 7,
-        baths: 8,
-        sqft: "14,000",
-        image: "/property-placeholder.svg",
-        type: "Villa"
-      },
-      {
-        id: 6,
-        title: "Luxury High Floor Apartment",
-        location: "Business Bay, Dubai",
-        price: "2,500,000 AED",
-        beds: 2,
-        baths: 2,
-        sqft: "1,450",
-        image: "/property-placeholder.svg",
-        type: "Apartment"
-      }
-    ],
-    propertyData: {
-      id: "PROP-2026-105",
-      title: "Luxury Villa in Palm Jumeirah",
-      location: "Frond M, Palm Jumeirah, Dubai",
-      type: "Villa",
-      beds: 5,
-      baths: 6,
-      sqft: "8,500",
-      price: "15,000,000 AED",
-      description: "Experience unparalleled luxury in this exquisite 5-bedroom villa in Palm Jumeirah. Boasting stunning views of the Dubai skyline and the Arabian Gulf, this property features direct private beach access, a landscaped garden, and an infinity pool. The interior is meticulously designed with premium finishes, spacious living areas, and a state-of-the-art kitchen. Ideal for those seeking a prestigious lifestyle in one of Dubai's most iconic locations.",
-      features: [
-        "Private beach access",
-        "Infinity pool",
-        "Smart home system",
-        "Maid's room",
-        "Landscaped garden",
-        "Fully equipped kitchen"
-      ],
-      images: [
-        "/property-placeholder.svg",
-        "/property-placeholder.svg",
-        "/property-placeholder.svg"
-      ]
-    },
     contactForm: {
       title: "Contact Agent",
       name: "Your Name",
@@ -549,28 +448,6 @@ export const content = {
       location: "Location",
       documents: "Verified Documents"
     },
-    auctionData: {
-      id: "AUC-2026-892",
-      title: "Signature Villa in Palm Jumeirah",
-      location: "Frond M, Palm Jumeirah, Dubai",
-      type: "Villa",
-      beds: 6,
-      baths: 7,
-      sqft: "13,000",
-      basePrice: 25000000,
-      minIncrement: 100000,
-      images: [
-        "https://images.unsplash.com/photo-1613490908836-8b217036a143?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-      ],
-      initialBids: [
-        { id: 1, user: "A***K", amount: 26500000, time: "2 mins ago" },
-        { id: 2, user: "M***R", amount: 26200000, time: "15 mins ago" },
-        { id: 3, user: "S***D", amount: 25800000, time: "1 hour ago" },
-        { id: 4, user: "H***N", amount: 25100000, time: "3 hours ago" }
-      ]
-    }
   },
   navbar: {
     links: [

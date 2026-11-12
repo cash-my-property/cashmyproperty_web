@@ -47,17 +47,20 @@ export default function PropertyMapCard({ coordinates, location, title }: Proper
   }
 
   const hasValidCoordinates = lat !== null && lng !== null;
-  const displayLocation = location || "Dubai, United Arab Emirates";
+  const displayLocation = (location || "").trim();
+  // Na pin na pata → gadha hua Dubai ka map nahi, card hi nahi
+  if (!hasValidCoordinates && !displayLocation) return null;
+  const mapQuery = /\b(UAE|United Arab Emirates)\b/i.test(displayLocation) ? displayLocation : `${displayLocation}, UAE`;
 
   // Google Maps embed URL
   const embedUrl = hasValidCoordinates
     ? `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
-    : `https://maps.google.com/maps?q=${encodeURIComponent(displayLocation + ", Dubai, UAE")}&z=14&output=embed`;
+    : `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=14&output=embed`;
 
   // External Google Maps redirection URL
   const externalMapUrl = hasValidCoordinates
     ? `https://www.google.com/maps?q=${lat},${lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayLocation)}`;
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`;
 
   return (
     <div className="bg-white dark:bg-[#102418] rounded-[28px] p-5 sm:p-6 border border-gray-200/80 dark:border-[#1A3626] shadow-xl hover:shadow-2xl transition-all duration-500 space-y-4 relative overflow-hidden group">

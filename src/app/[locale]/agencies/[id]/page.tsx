@@ -46,15 +46,15 @@ export async function generateMetadata(props: {
 
   const name = agency.name || "Real Estate Agency";
   const ornInfo = agency.orn ? ` (ORN: ${agency.orn})` : "";
-  const emirate = agency.emirate || "Dubai";
+  const emirate = agency.emirate || "";
 
   const title = isAr
-    ? `${name}${ornInfo} - وكالة عقارية معتمدة في ${emirate} | كاش ماي بروبرتي`
-    : `${name}${ornInfo} - Verified Real Estate Agency in ${emirate} | Cash My Property`;
+    ? `${name}${ornInfo} - وكالة عقارية معتمدة في ${emirate || "الإمارات"} | كاش ماي بروبرتي`
+    : `${name}${ornInfo} - Verified Real Estate Agency in ${emirate || "the UAE"} | Cash My Property`;
 
   const desc = isAr
-    ? `استعرض العقارات المعروضة وفريق الوسطاء المعتمدين لدى ${name}${ornInfo} في ${emirate}، الإمارات العربية المتحدة.`
-    : `Explore verified properties, brokers roster, and track record of ${name}${ornInfo} in ${emirate}, UAE.`;
+    ? `استعرض العقارات المعروضة وفريق الوسطاء المعتمدين لدى ${name}${ornInfo} في ${emirate ? `${emirate}، ` : ""}الإمارات العربية المتحدة.`
+    : `Explore verified properties, brokers roster, and track record of ${name}${ornInfo} in ${emirate ? `${emirate}, UAE` : "the UAE"}.`;
 
   const siteUrl = "https://cashmyproperty.com";
   const canonicalUrl = `${siteUrl}/${params.locale}/agencies/${encodeURIComponent(params.id)}`;
@@ -109,7 +109,7 @@ export default async function AgencyDetailPage(props: {
         "address": {
           "@type": "PostalAddress",
           ...(agency.address ? { "streetAddress": agency.address } : {}),
-          "addressLocality": agency.emirate || "Dubai",
+          "addressLocality": agency.emirate || undefined,
           "addressCountry": "AE",
         },
         ...(agency.orn

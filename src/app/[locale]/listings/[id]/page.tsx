@@ -147,8 +147,8 @@ export default async function PropertyDetailPage(props: {
         "propertyType": initialData.typeLabel || initialData.type || initialData.propertyType,
         "address": {
           "@type": "PostalAddress",
-          "addressLocality": initialData.locationParts?.[0] || initialData.location || "Dubai",
-          "addressRegion": initialData.locationParts?.[1] || "Dubai",
+          "addressLocality": initialData.locationParts?.[0] || initialData.location || undefined,
+          "addressRegion": initialData.locationParts?.[1] || undefined,
           "addressCountry": "AE",
         },
         ...(initialData.coordinates?.latitude && initialData.coordinates?.longitude

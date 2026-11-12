@@ -46,7 +46,7 @@ export default function PropertyListCard({
   const rawLocation =
     typeof details.propertyLocation === "string"
       ? details.propertyLocation
-      : details.propertyLocation?.city || item.location || "Dubai, UAE";
+      : details.propertyLocation?.city || item.location || "";
   const formattedLocation = (() => {
     const words = rawLocation.trim().split(/\s+/);
     return words.length > 8 ? words.slice(0, 8).join(" ") + "..." : rawLocation;
@@ -59,7 +59,7 @@ export default function PropertyListCard({
   
   const getAreaVal = (a: any) => typeof a === 'object' ? a?.value || 0 : (a || 0);
   const areaVal = getAreaVal(item.area) || getAreaVal(details.propertyArea) || details.propertyBuiltUpArea || 0;
-  const area = `${areaVal} sqft`;
+  const area = `${areaVal} ${item.areaUnit || details.areaUnit || "sqft"}`;
 
   const highestBid = item.currentHighestBid || (typeof item.currentHighestOffer === 'object' ? item.currentHighestOffer?.amount : item.currentHighestOffer);
   const fallbackPrice = details.propertyPrice?.amount || details.propertyPrice || item.price?.amount || item.price || item.startPrice || 0;
@@ -180,6 +180,7 @@ export default function PropertyListCard({
             </span>
           </div>
 
+          {rawLocation && (
           <p
             title={rawLocation}
             className="text-gray-500 dark:text-gray-400 text-[12.5px] font-medium flex items-center gap-1.5 mb-3.5 line-clamp-1"
@@ -187,17 +188,24 @@ export default function PropertyListCard({
             <MapPin className="w-3.5 h-3.5 text-[#5CD284] shrink-0" />
             <span className="truncate">{formattedLocation}</span>
           </p>
+          )}
 
           <div className="flex items-center gap-4 mb-4">
+            {!!beds && (
             <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
               <Bed className="w-4 h-4 text-[#5CD284]" /> {beds}
             </div>
+            )}
+            {!!baths && (
             <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
               <Bath className="w-4 h-4 text-[#5CD284]" /> {baths}
             </div>
+            )}
+            {!!areaVal && (
             <div className="flex items-center gap-1.5 text-[13.5px] font-bold text-gray-900 dark:text-white">
               <Square className="w-4 h-4 text-[#5CD284]" /> {area}
             </div>
+            )}
           </div>
 
           {/* Property Meta Grid */}

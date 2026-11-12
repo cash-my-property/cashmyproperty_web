@@ -238,7 +238,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
     : (propertyInfo.title || details.propertyTitle || "Untitled Property");
   const location = typeof propertyInfo.location === 'string' && propertyInfo.location
     ? propertyInfo.location
-    : (typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || "Dubai, UAE"));
+    : (typeof details.propertyLocation === 'string' ? details.propertyLocation : (details.propertyLocation?.city || ""));
   const priceAmount = (typeof propertyInfo.price === 'number' ? propertyInfo.price : null) ?? (details.propertyPrice?.amount || details.propertyPrice || propertyInfo.startPrice || 0);
   const highestBid = propertyInfo.currentHighestBid || (typeof propertyInfo.currentHighestOffer === 'object' ? propertyInfo.currentHighestOffer?.amount : propertyInfo.currentHighestOffer);
   const priceValue = highestBid ? highestBid.toLocaleString() : (typeof priceAmount === 'number' ? priceAmount.toLocaleString() : priceAmount);
@@ -267,17 +267,21 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
     return Number(area) || 0;
   };
   const totalArea = getAreaValue(details.propertyArea || propertyInfo.propertyArea || propertyInfo.area);
-  const builtUpArea = getAreaValue(details.propertyBuiltUpArea || propertyInfo.propertyBuiltUpArea);
+  // API: builtUpArea + areaUnit (purane propertyBuiltUpArea ke saath)
+  const builtUpArea = getAreaValue(propertyInfo.builtUpArea || details.propertyBuiltUpArea || propertyInfo.propertyBuiltUpArea);
+  const areaUnit = propertyInfo.areaUnit || "sqft";
   const sqft = builtUpArea || totalArea;
   const description = isAr
     ? (propertyInfo.descriptionAr || details.propertyDescriptionAr || details.descriptionAr || details.propertyDescription || propertyInfo.description || "لا يوجد وصف متوفر.")
     : (details.propertyDescription || propertyInfo.description || "No description provided.");
   
   const getAmenitiesList = (): string[] => {
-    const raw = details.propertyAmenities || propertyInfo.propertyAmenities || details.propertyFeatures || propertyInfo.features;
+    // API field `amenities` hai — pehle sirf purane naam padhe jate the, isliye hamesha static list dikhti thi
+    const raw = propertyInfo.amenities || details.propertyAmenities || propertyInfo.propertyAmenities || details.propertyFeatures || propertyInfo.features;
     if (Array.isArray(raw)) return raw.filter(Boolean);
     if (typeof raw === 'string' && raw.trim()) return raw.split(',').map((s: string) => s.trim()).filter(Boolean);
-    return ["Central A/C", "Balcony", "Shared Pool", "Security"];
+    // Amenities na hon to section hi nahi (gadhi hui list nahi)
+    return [];
   };
   const features = getAmenitiesList();
 
@@ -506,12 +510,14 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                   {title}
                 </h1>
                 
+                {location && (
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium">
                   <div className="p-1 rounded-md bg-[#5CD284]/15 text-[#5CD284]">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <span>{location}</span>
                 </div>
+                )}
               </div>
 
               {/* High-End Price Banner */}
@@ -649,13 +655,13 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 {builtUpArea > 0 && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Built Up Area</span>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} sqft</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{builtUpArea.toLocaleString()} {areaUnit}</span>
                   </div>
                 )}
                 {totalArea > 0 && (
                   <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] flex flex-col gap-1 min-w-0 hover:border-[#5CD284]/40 transition-colors">
                     <span className="text-[10px] sm:text-[11px] font-semibold text-gray-400 uppercase tracking-wider truncate">Property Area</span>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} sqft</span>
+                    <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">{totalArea.toLocaleString()} {areaUnit}</span>
                   </div>
                 )}
                 {purpose && (
