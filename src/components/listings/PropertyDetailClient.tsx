@@ -762,6 +762,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
                 videoUrl={propertyInfo.videoUrl || details.videoUrl}
                 virtualTourUrl={propertyInfo.virtualTourUrl || details.virtualTourUrl}
                 floorPlan={propertyInfo.floorPlan || details.floorPlan}
+                propertyTitle={title}
                 locale={locale}
               />
 

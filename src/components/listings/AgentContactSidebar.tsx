@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { listingPageUrl, listingWhatsAppText, whatsappLink } from "@/lib/whatsapp";
 import { safeExternalUrl } from "@/utils/safeUrl";
 import Image from "next/image";
 import Link from "next/link";
@@ -40,6 +41,8 @@ interface AgentContactSidebarProps {
   videoUrl?: string | null;
   virtualTourUrl?: string | null;
   floorPlan?: { url?: string; label?: string } | null;
+  /** WhatsApp message ke liye */
+  propertyTitle?: string;
   locale?: string;
 }
 
@@ -51,8 +54,14 @@ export default function AgentContactSidebar({
   videoUrl: rawVideoUrl,
   virtualTourUrl: rawVirtualTourUrl,
   floorPlan: rawFloorPlan,
+  propertyTitle,
   locale = "en",
 }: AgentContactSidebarProps) {
+  // Dostana message + property ka link (backend ke "Hi, I am interested in CLID-..." ki jagah)
+  const openWhatsApp = (number?: string | null) => {
+    const link = whatsappLink(number, listingWhatsAppText({ agentName: agent?.name, title: propertyTitle, url: listingPageUrl(locale, listingRef), locale }));
+    if (link) window.open(link, "_blank", "noopener,noreferrer");
+  };
   // Agent ke CRM se aaye links — sirf http(s) (javascript: / data: waghera ka link banta hi nahi)
   const videoUrl = safeExternalUrl(rawVideoUrl);
   const virtualTourUrl = safeExternalUrl(rawVirtualTourUrl);
@@ -65,11 +74,8 @@ export default function AgentContactSidebar({
       setLoadingChannel(channel);
       const res = await connectPublicService.contactListing(listingRef, channel);
       if (channel === "WHATSAPP") {
-        if (res?.whatsappUrl) {
-          window.open(res.whatsappUrl, "_blank", "noopener,noreferrer");
-        } else if (res?.whatsapp) {
-          window.open(`https://wa.me/${res.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer");
-        }
+        // Contact API sirf lead + number ke liye; message hamara
+        openWhatsApp(res?.whatsapp || agent?.whatsapp);
       } else if (channel === "CALL") {
         const tel = res?.phone || agent?.phone;
         if (tel) window.location.href = `tel:${tel.replace(/[^0-9+]/g, "")}`;
@@ -84,7 +90,7 @@ export default function AgentContactSidebar({
       console.error("Contact error:", err);
       // Fallback to direct props if contact endpoint fails
       if (channel === "WHATSAPP" && agent?.whatsapp) {
-        window.open(`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer");
+        openWhatsApp(agent.whatsapp);
       } else if (channel === "CALL" && agent?.phone) {
         window.location.href = `tel:${agent.phone.replace(/[^0-9+]/g, "")}`;
       } else if (channel === "EMAIL" && agent?.email) {

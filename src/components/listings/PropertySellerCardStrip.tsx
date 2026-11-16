@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { listingPageUrl, listingWhatsAppText, whatsappLink } from "@/lib/whatsapp";
 import { useRouter } from "next/navigation";
 import { useDictionary } from "@/components/DictionaryProvider";
 import { Phone, Mail, ShieldCheck, ArrowUpRight } from "lucide-react";
@@ -71,29 +72,32 @@ export default function PropertySellerCardStrip({
     }
   };
 
+  const waText = () =>
+    listingWhatsAppText({
+      agentName: sellerName,
+      title: propertyTitle === "this property" ? "" : propertyTitle,
+      url: listingRef ? listingPageUrl(locale, listingRef) : (typeof window !== "undefined" ? window.location.href : ""),
+      locale,
+    });
+
   const handleWhatsApp = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (listingRef) {
       try {
         const res = await connectPublicService.contactListing(listingRef, "WHATSAPP");
-        if (res?.whatsappUrl) {
-          window.open(res.whatsappUrl, "_blank", "noopener,noreferrer");
-          return;
-        } else if (res?.whatsapp) {
-          window.open(`https://wa.me/${res.whatsapp.replace(/\D/g, "")}`, "_blank", "noopener,noreferrer");
+        // Contact API sirf lead + number ke liye; message hamara (ID ki jagah property ka link)
+        const link = whatsappLink(res?.whatsapp || whatsappClean, waText());
+        if (link) {
+          window.open(link, "_blank", "noopener,noreferrer");
           return;
         }
       } catch (err) {
         console.error("WhatsApp contact error", err);
       }
     }
-    if (whatsappClean) {
-      const text = encodeURIComponent(
-        `Hi ${sellerName || ""}, I am interested in your property "${propertyTitle}" listed on Cash My Property.`
-      );
-      window.open(`https://wa.me/${whatsappClean}?text=${text}`, "_blank", "noopener,noreferrer");
-    }
+    const link = whatsappLink(whatsappClean, waText());
+    if (link) window.open(link, "_blank", "noopener,noreferrer");
   };
 
   const handleCall = async (e: React.MouseEvent) => {
