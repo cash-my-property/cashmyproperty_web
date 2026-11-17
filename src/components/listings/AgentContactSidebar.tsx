@@ -101,9 +101,10 @@ export default function AgentContactSidebar({
     }
   };
 
-  const agentName = agent?.name || "CMP Verified Broker";
-  const agentPosition = agent?.position || "Property Consultant";
-  const companyName = company?.name || "CMP Verified Agency";
+  // Sirf API ka data — agent ka naam na ho to company ka asli naam (gadha hua "CMP Verified Broker" nahi)
+  const agentName = agent?.name || company?.name || "";
+  const agentPosition = agent?.position || "";
+  const companyName = company?.name || "";
 
   return (
     <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-7 shadow-sm border border-gray-100 dark:border-[#1A3626] space-y-6">
@@ -137,12 +138,14 @@ export default function AgentContactSidebar({
               </span>
             )}
           </div>
+          {agentPosition && (
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
             {agentPosition}
           </p>
+          )}
 
           {/* Company */}
-          {company && (
+          {company && companyName && (
             <Link
               href={`/${locale}/${company.type === "DEVELOPER" ? "developers" : "agencies"}/${company.id || ""}`}
               className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[#1A3626] dark:text-[#5CD284] hover:underline truncate"

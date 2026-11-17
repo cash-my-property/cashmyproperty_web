@@ -184,13 +184,13 @@ export default function PropertySellerCardStrip({
           </span>
           <div className="flex items-center gap-1">
             <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate group-hover/agent:text-[#5CD284] transition-colors leading-tight">
-              {sellerName || pc?.verifiedAgent || "Real Estate Agent"}
+              {sellerName || seller?.officeName}
             </span>
             {agentId && (
               <ArrowUpRight className="w-3 h-3 text-gray-400 group-hover/agent:text-[#5CD284] transition-colors shrink-0 opacity-0 group-hover/agent:opacity-100" />
             )}
           </div>
-          {(seller?.officeName || (seller?.isVerified ?? true)) && (
+          {(seller?.officeName || seller?.isVerified === true) && (
             <span className="text-[11px] font-medium text-gray-500 dark:text-[#5CD284] truncate leading-tight">
               {seller?.officeName || pc?.verifiedAgent || "Verified Agent"}
             </span>

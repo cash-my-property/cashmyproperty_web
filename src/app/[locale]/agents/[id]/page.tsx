@@ -107,7 +107,7 @@ export default async function AgentProfilePage(props: {
         "image": agent.photo || undefined,
         "description": agent.about || `${agent.name} is a licensed property broker in UAE.`,
         "url": agentUrl,
-        "jobTitle": agent.position || "Licensed Property Broker",
+        "jobTitle": agent.position || undefined,
         ...(agent.company
           ? {
               "worksFor": {

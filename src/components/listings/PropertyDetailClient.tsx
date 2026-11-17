@@ -746,7 +746,7 @@ export default function PropertyDetailClient({ id, initialData, locale }: Proper
             )}
 
             {/* Regulatory Information Component */}
-            <PropertyRegulatoryInfo propertyInfo={propertyInfo} details={details} />
+            <PropertyRegulatoryInfo propertyInfo={propertyInfo} locale={locale} />
           </div>
         </div>
 

@@ -77,7 +77,7 @@ export default function PropertyGridCard({
     ? {
         ...rawSeller,
         agentId: rawSeller?.id || rawSeller?.agentId || rawSeller?._id || (typeof item.sellerId === "string" ? item.sellerId : undefined),
-        name: rawSeller?.name || rawSeller?.fullName || trakheesiAgency || (item.sellerInfo?.isVerified || item.isVerified ? "Verified Seller" : ""),
+        name: rawSeller?.name || rawSeller?.fullName || trakheesiAgency || "",
         thumbnail: rawSeller?.photo || rawSeller?.thumbnail,
         officeName: item.company?.name || rawSeller?.officeName || trakheesiAgency || null,
         isVerified: Boolean(item.isVerified || rawSeller?.brnVerified || item.sellerInfo?.isVerified || rawSeller?.isVerified),
@@ -85,8 +85,8 @@ export default function PropertyGridCard({
     : (trakheesiAgency || item.isVerified || item.sellerInfo?.isVerified
       ? {
           agentId: typeof item.sellerId === "string" ? item.sellerId : undefined,
-          name: trakheesiAgency || "Verified Seller",
-          officeName: trakheesiAgency || "Verified Partner",
+          name: trakheesiAgency || "",
+          officeName: trakheesiAgency || null,
           isVerified: Boolean(item.isVerified || item.sellerInfo?.isVerified),
         }
       : null);

@@ -176,7 +176,7 @@ export default async function PropertyDetailPage(props: {
               "author": {
                 "@type": "Person",
                 "name": initialData.agent.name,
-                "jobTitle": initialData.agent.position || "Licensed Property Broker",
+                "jobTitle": initialData.agent.position || undefined,
               },
             }
           : {}),

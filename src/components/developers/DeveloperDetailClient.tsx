@@ -377,9 +377,11 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
                       )}
                     </div>
 
+                    {ag.position && (
                     <p className="text-[11px] text-gray-400 mb-2">
-                      {ag.position || "Sales Representative"}
+                      {ag.position}
                     </p>
+                    )}
 
                     <span className="mt-auto text-xs font-bold text-[#1A3626] dark:text-[#5CD284] group-hover:underline inline-flex items-center gap-1">
                       View Profile <ChevronRight className="w-3 h-3" />

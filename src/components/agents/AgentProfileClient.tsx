@@ -167,9 +167,11 @@ export default function AgentProfileClient({ id, initialData, locale }: AgentPro
                     </span>
                   )}
                 </div>
+                {agent.position && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                  {agent.position || "Licensed Property Broker"}
+                  {agent.position}
                 </p>
+                )}
 
                 {agent.company && (
                   <Link

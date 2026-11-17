@@ -377,9 +377,11 @@ export default function AgencyDetailClient({ id, initialData, locale }: AgencyDe
                       )}
                     </div>
 
+                    {ag.position && (
                     <p className="text-[11px] text-gray-400 mb-2">
-                      {ag.position || "Property Broker"}
+                      {ag.position}
                     </p>
+                    )}
 
                     {ag.brn && (
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-gray-50 dark:bg-[#163321] text-gray-600 dark:text-gray-300 font-bold mb-3">

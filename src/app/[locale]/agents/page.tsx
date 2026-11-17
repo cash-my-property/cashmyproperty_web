@@ -285,9 +285,11 @@ export default function FindAgentsPage({ params }: { params: Promise<{ locale: s
                           </span>
                         )}
                       </div>
+                      {agent.position && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {agent.position || "Real Estate Broker"}
+                        {agent.position}
                       </p>
+                      )}
 
                       {agent.company?.name && (
                         <p className="text-xs font-semibold text-[#1A3626] dark:text-[#5CD284] truncate mt-0.5 flex items-center gap-1">
