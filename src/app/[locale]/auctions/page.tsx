@@ -136,7 +136,7 @@ export default function AuctionsListingPage() {
   return (
     <main className="flex-1 flex flex-col bg-gray-50 dark:bg-[#091711] transition-colors min-h-screen">
       {/* HERO BANNER */}
-      <section className="relative w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center overflow-hidden">
+      <section className="relative z-30 w-full pt-36 sm:pt-40 pb-16 px-6 lg:px-12 flex flex-col items-center justify-center overflow-x-clip">
         <HeroBackground />
 
         <div className="relative z-10 text-center w-full max-w-5xl mx-auto flex flex-col items-center mt-8">

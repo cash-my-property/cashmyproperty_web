@@ -64,7 +64,7 @@ export default function HomePage() {
       <section className="relative w-full min-h-[780px] lg:min-h-[860px] flex items-center justify-center pt-24 pb-16">
         <HeroBackground />
         
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-4">
+        <div className="relative z-30 w-full max-w-5xl mx-auto px-6 flex flex-col items-center text-center mt-4">
           <h1 className="text-white text-4xl sm:text-5xl lg:text-[60px] font-bold mb-6 leading-[1.15] tracking-tight max-w-4xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]" style={{ fontFamily: "var(--font-playfair), serif" }}>
             {home.hero.headline}
           </h1>

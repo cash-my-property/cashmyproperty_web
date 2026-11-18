@@ -1023,7 +1023,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
               <div
                 data-dropdown-popup="true"
                 onMouseDown={(e) => e.preventDefault()}
-                className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3 overflow-hidden"
+                className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3"
               >
                 {/* Locations Section */}
                 {suggestions.locations.length > 0 && (
