@@ -10,6 +10,7 @@ import Image from "next/image";
 import Dirham from "@/components/Dirham";
 import HeroSearchWidget from "@/components/search/HeroSearchWidget";
 import HeroBackground from "@/components/search/HeroBackground";
+import HomeProjectsSlider from "@/components/projects/HomeProjectsSlider";
 import { features } from "@/config/features";
 import PropertyGridCard from "@/components/listings/PropertyGridCard";
 import connectPublicService, { PublicHomeData, PublicListingCard } from "@/services/connectPublicService";
@@ -224,6 +225,9 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* 3b. NEW PROJECTS SLIDER (developer projects API) — khaali ho to render nahi */}
+      <HomeProjectsSlider />
 
       {/* 4. POPULAR COMMUNITIES (FROM /home API) */}
       {homeData?.communities && homeData.communities.length > 0 && (

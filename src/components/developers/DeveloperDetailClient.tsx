@@ -22,6 +22,7 @@ import {
   Sparkles
 } from "lucide-react";
 import PropertyGridCard from "@/components/listings/PropertyGridCard";
+import DeveloperProjects from "@/components/projects/DeveloperProjects";
 import connectPublicService, { 
   PublicCompanyDetail, 
   PublicListingCard, 
@@ -137,6 +138,13 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
           </Link>
         </div>
 
+        {/* Cover banner (backend: developer ka cover, na ho to pehle project ki cover photo) */}
+        {developer.coverImage && (
+          <div className="relative w-full h-44 sm:h-64 rounded-3xl overflow-hidden mb-6 bg-gray-100 dark:bg-[#102418]">
+            <Image src={developer.coverImage} alt={developer.name} fill priority sizes="(max-width: 1280px) 100vw, 1280px" className="object-cover" />
+          </div>
+        )}
+
         {/* Developer Profile Header Card */}
         <div className="bg-white dark:bg-[#102418] rounded-3xl p-6 sm:p-10 border border-gray-100 dark:border-[#1A3626] shadow-sm mb-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -161,7 +169,7 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
 
                 <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold bg-[#1A3626]/10 text-[#1A3626] dark:bg-[#5CD284]/15 dark:text-[#5CD284]">
-                    Master Developer
+                    Developer
                   </span>
                   {developer.emirate && (
                     <span className="inline-flex items-center gap-1">
@@ -175,6 +183,12 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
                     {developer.address}
                   </p>
                 )}
+                {developer.about && (
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-3 max-w-2xl leading-relaxed">{developer.about}</p>
+                )}
+                {developer.founded && (
+                  <p className="text-xs text-gray-400 mt-1">Founded {developer.founded}</p>
+                )}
               </div>
             </div>
 
@@ -182,9 +196,9 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
             <div className="grid grid-cols-2 gap-3 w-full md:w-auto">
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] text-center min-w-[120px]">
                 <span className="block text-2xl font-extrabold text-[#1A3626] dark:text-[#5CD284]">
-                  {developer.liveListings ?? listings.length ?? 0}
+                  {developer.projectsCount ?? developer.liveListings ?? listings.length ?? 0}
                 </span>
-                <span className="text-[10px] text-gray-400 font-semibold uppercase">Active Developments</span>
+                <span className="text-[10px] text-gray-400 font-semibold uppercase">Projects</span>
               </div>
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#142e1d] border border-gray-100 dark:border-[#1A3626] text-center min-w-[120px]">
                 <span className="block text-2xl font-extrabold text-gray-900 dark:text-white">
@@ -195,7 +209,8 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
             </div>
           </div>
 
-          {/* Contact Bar */}
+          {/* Contact Bar — koi contact na ho to khaali patti nahi */}
+          {(developer.phone || developer.email || safeExternalUrl(developer.website)) && (
           <div className="mt-8 pt-6 border-t border-gray-100 dark:border-[#1A3626] flex flex-wrap items-center gap-4 text-xs font-semibold">
             {developer.phone && (
               <a
@@ -224,6 +239,7 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
               </a>
             )}
           </div>
+          )}
         </div>
 
         {/* Navigation Tabs */}
@@ -239,7 +255,7 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
               }`}
             >
               <Home className="w-4 h-4" />
-              <span>Projects ({developer.liveListings ?? listings.length ?? 0})</span>
+              <span>Projects ({developer.projectsCount ?? developer.liveListings ?? listings.length ?? 0})</span>
             </button>
             <button
               type="button"
@@ -282,12 +298,14 @@ export default function DeveloperDetailClient({ id, initialData, locale }: Devel
         {/* Tab 1 Content: Active Projects */}
         {activeTab === "projects" && (
           <div>
+            {/* New Projects (developer projects API) — listings se upar */}
+            <DeveloperProjects key={developer.id} developerId={id} initial={developer.projects} initialTotal={developer.projectsCount} />
             {isListingsLoading ? (
               <div className="py-20 flex flex-col items-center justify-center gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-[#1A3626] dark:text-[#5CD284]" />
                 <p className="text-xs font-semibold text-gray-500">Loading developments...</p>
               </div>
-            ) : listings.length === 0 ? (
+            ) : listings.length === 0 && developer.projects?.length ? null : listings.length === 0 ? (
               <div className="bg-white dark:bg-[#102418] rounded-2xl p-12 text-center border border-gray-100 dark:border-[#1A3626]">
                 <Building className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                 <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1">

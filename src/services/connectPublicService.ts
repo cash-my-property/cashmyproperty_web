@@ -48,6 +48,101 @@ export interface PublicListingCard {
   isFavourited?: boolean;
 }
 
+// ── Developer projects (backend c966a75) ──
+export type ProjectStage = "Off-plan" | "Under Construction" | "Ready";
+export type ProjectUnitKind = "Apartment" | "Townhouse" | "Villa" | "Penthouse" | "Duplex" | "Plot";
+
+export interface PublicProjectCard {
+  id: string;
+  projectRef: string;
+  name: string;
+  community?: string | null;
+  emirate?: string | null;
+  location?: string | null;
+  stage?: ProjectStage | null;
+  status?: "LIVE" | "SOLD_OUT" | "HANDED_OVER" | string;
+  offPlan?: boolean;
+  coverPhoto?: string | null;
+  fromPrice?: number | null;
+  bedsRange?: { min: number; max: number } | null;
+  unitKinds?: string[];
+  paymentPlanLabel?: string | null;
+  handoverDate?: string | null;
+  deliveryLabel?: string | null;
+  buildPct?: number;
+  developer?: { id: string; name: string; logo?: string | null } | null;
+}
+
+export interface PublicProjectUnit {
+  id: string;
+  label: string;
+  type: string;
+  beds: number | null;
+  sizeFrom?: number | null;
+  sizeTo?: number | null;
+  priceFrom?: number | null;
+  available: boolean;
+}
+
+export interface PublicProjectDetail extends PublicProjectCard {
+  description?: string | null;
+  /** "Number of buildings" — null = developer ne nahi bataya */
+  buildingsCount?: number | null;
+  amenities?: string[];
+  launchDate?: string | null;
+  serviceCharge?: number | null;
+  dldWaiver?: number | null;
+  ownershipType?: string | null;
+  governmentFeePct?: number | null;
+  video?: { url: string } | null;
+  geo?: { lat: number; lng: number } | null;
+  rera?: string | null;
+  escrowBank?: string | null;
+  unitTypes?: PublicProjectUnit[];
+  paymentPlan?: { milestone: string; share: number; due?: string | null }[];
+  photos?: { url: string; caption?: string | null; cover?: boolean }[];
+  brochure?: { url: string; fileName?: string | null } | null;
+  seller?: {
+    developer?: {
+      id: string; name: string; logo?: string | null; about?: string | null; founded?: string | number | null;
+      website?: string | null; phone?: string | null; whatsapp?: string | null; email?: string | null;
+    } | null;
+    members?: { id: string; name: string; brn?: string | null; languages?: string[]; photo?: string | null }[];
+  };
+}
+
+export interface PublicProjectOptions {
+  unitKinds: string[];
+  stages: string[];
+  sorts: { value: string; label: string }[];
+  developers: { id: string; name: string; logo?: string | null }[];
+}
+
+export interface PublicProjectQuery {
+  developerId?: string;
+  q?: string;
+  type?: string;
+  beds?: number | string;
+  priceMin?: number | string;
+  priceMax?: number | string;
+  stage?: string;
+  sort?: "featured" | "price_asc" | "price_desc" | "handover";
+  page?: number;
+  limit?: number;
+}
+
+export interface PublicProjectEnquiry {
+  name: string;
+  phone: string;
+  email?: string | null;
+  unitTypeId?: string | null;
+  budget?: { min: number | null; max: number | null } | null;
+  nationality?: string | null;
+  intent?: "LIVE_IN" | "INVESTOR" | null;
+  message?: string | null;
+  channel?: "CALL" | "WHATSAPP" | "EMAIL" | null;
+}
+
 export interface PublicPagination {
   total: number;
   page: number;
@@ -218,6 +313,13 @@ export interface PublicCompanyDetail {
   email?: string | null;
   liveListings: number;
   agents: Array<PublicListingCard["agent"]>;
+  // Developer page (backend 679e243): hero banner (na ho to pehle project ki cover), about, projects
+  coverImage?: string | null;
+  about?: string | null;
+  founded?: string | number | null;
+  whatsapp?: string | null;
+  projectsCount?: number;
+  projects?: PublicProjectCard[];
 }
 
 export const connectPublicService = {
@@ -374,6 +476,28 @@ export const connectPublicService = {
   },
 
   // Dubai-wide confirmed (CLAIMED) deals register
+  // ── Developer projects (New Projects) — GET/POST /projects* ──
+  async getProjectOptions(): Promise<PublicProjectOptions> {
+    const res = await api.get(`${PUBLIC_API_PREFIX}/projects/options`);
+    return res.data?.data;
+  },
+
+  async getProjects(params: PublicProjectQuery = {}): Promise<{ data: PublicProjectCard[]; pagination: PublicPagination }> {
+    const res = await api.get(`${PUBLIC_API_PREFIX}/projects`, { params: clean(params) });
+    return res.data;
+  },
+
+  async getProject(ref: string): Promise<PublicProjectDetail> {
+    const res = await api.get(`${PUBLIC_API_PREFIX}/projects/${encodeURIComponent(ref)}`);
+    return res.data?.data;
+  },
+
+  /** Buyer enquiry → developer ke Enquiries inbox (CRM lead) */
+  async enquireProject(ref: string, body: PublicProjectEnquiry): Promise<{ received: boolean; message?: string }> {
+    const res = await api.post(`${PUBLIC_API_PREFIX}/projects/${encodeURIComponent(ref)}/enquire`, body);
+    return res.data?.data;
+  },
+
   async getTransactions(
     params: { outcome?: "SOLD" | "RENTED"; location?: string; page?: number; limit?: number } = {}
   ): Promise<{ data: PublicTrackRecord[]; pagination: PublicPagination }> {

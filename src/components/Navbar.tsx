@@ -175,9 +175,9 @@ export default function Navbar() {
                   Rent
                 </Link>
                 <Link
-                  href={`/${locale}/listings?sortBy=newest`}
+                  href={`/${locale}/projects`}
                   className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
-                    !isHomePage && currentSort === 'newest' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                    pathname.includes('/projects') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                   }`}
                 >
                   New Projects
@@ -619,9 +619,9 @@ export default function Navbar() {
                     Rent
                   </Link>
                   <Link
-                    href={`/${locale}/listings?sortBy=newest`}
+                    href={`/${locale}/projects`}
                     className={`hover:text-[#5CD284] dark:hover:text-[#5CD284] transition-colors whitespace-nowrap py-1 ${
-                      !isHomePage && currentSort === 'newest' ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
+                      pathname.includes('/projects') ? 'text-[#5CD284] dark:text-[#5CD284] font-bold' : ''
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >

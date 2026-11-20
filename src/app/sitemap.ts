@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/about',
     '/guide',
     '/listings',
+    '/projects',
     ...(features.realTimeOffers ? ['/auctions'] : []),
     '/agents',
     '/agencies',

@@ -28,10 +28,12 @@ interface SuggestionState {
   locations: { name: string; count: number }[];
   properties: { title: string; count: number; listingId?: string; location?: string; propertyType?: string; price?: number }[];
   agents: { agentId: string; name: string; officeName?: string | null; isVerified?: boolean; listingCount: number }[];
-  companies: { name: string; agentCount: number; listingCount: number }[];
+  companies: { name: string; agentCount?: number; listingCount?: number; id?: string; type?: string }[];
+  /** New projects tab — GET /projects?q= */
+  projects: { ref: string; name: string; place?: string; developer?: string; fromPrice?: number | null }[];
 }
 
-const EMPTY_SUGGESTIONS: SuggestionState = { locations: [], properties: [], agents: [], companies: [] };
+const EMPTY_SUGGESTIONS: SuggestionState = { locations: [], properties: [], agents: [], companies: [], projects: [] };
 
 // Which dropdowns each tab shows (mirrors the "Filters per tab" table of the search v2 docs)
 const TAB_FILTERS: Record<string, string[]> = {
@@ -608,8 +610,50 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     let cancelled = false;
     const timer = setTimeout(() => {
       setIsFetchingSuggestions(true);
+      // Agents tab: /search-suggestions ab agents nahi deta (backend) — directory APIs se seedha suggest karo
+      if (activeTab === "AGENTS") {
+        const req =
+          agentSubTab === "AGENTS"
+            ? connectPublicService.getAgents({ search: q, limit: 6 }).then((res) => ({
+                ...EMPTY_SUGGESTIONS,
+                agents: (res.data || []).map((a) => ({
+                  agentId: a.id,
+                  name: a.name,
+                  officeName: a.company?.name || null,
+                  isVerified: a.brnVerified === true,
+                  listingCount: a.listings?.total ?? 0,
+                })),
+              }))
+            : Promise.all([
+                connectPublicService.getCompanies("AGENCY", { search: q, limit: 4 }).catch(() => ({ data: [] })),
+                connectPublicService.getCompanies("DEVELOPER", { search: q, limit: 4 }).catch(() => ({ data: [] })),
+              ]).then(([ag, dv]) => ({
+                ...EMPTY_SUGGESTIONS,
+                companies: [...(ag.data || []), ...(dv.data || [])].map((c) => ({
+                  id: c.id,
+                  type: c.type,
+                  name: c.name,
+                  agentCount: c.agents ?? 0,
+                  listingCount: c.listings?.total ?? 0,
+                })),
+              }));
+        req
+          .then((next) => {
+            if (cancelled) return;
+            setSuggestions(next);
+            setShowDropdown(true);
+          })
+          .catch((err) => console.error("Agent suggestions error:", err))
+          .finally(() => {
+            if (!cancelled) setIsFetchingSuggestions(false);
+          });
+        return;
+      }
+
+      // Tab ke hisaab se scope (backend 6f456c2): buy = sirf SALE, rent = sirf RENT, projects = projects + developers + communities
+      const scope = activeTab === "BUY" ? "buy" : activeTab === "RENT" ? "rent" : activeTab === "NEW_PROJECTS" ? "projects" : "";
       api
-        .get(`/cmpConnect/public/search-suggestions?q=${encodeURIComponent(q)}`)
+        .get(`/cmpConnect/public/search-suggestions?q=${encodeURIComponent(q)}${scope ? `&scope=${scope}` : ""}`)
         .then((res) => {
           if (cancelled || !(res.data?.success || res.data?.status === "success")) return;
           const s = res.data.data || res.data.suggestions || {};
@@ -617,7 +661,13 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
             locations: s.locations || [],
             properties: s.properties || (s.listings || []).map((l: any) => ({ title: l.title, count: 1, listingId: l.ref || l.id, location: l.location })),
             agents: s.agents || [],
-            companies: (s.companies || []).map((c: any) => ({ name: c.name, id: c.id, type: c.type, agentCount: c.agentCount || 0, listingCount: c.listingCount || 0 })),
+            // Backend counts nahi deta — "0 agents / 0 listings" mat gadho (undefined = row type label dikhati hai)
+            companies: (s.companies || []).map((c: any) => ({ name: c.name, id: c.id, type: c.type, agentCount: c.agentCount, listingCount: c.listingCount })),
+            projects: ((s.projects || []) as { projectRef: string; name: string; community?: string | null; emirate?: string | null }[]).map((pr) => ({
+              ref: pr.projectRef,
+              name: pr.name,
+              place: [pr.community, pr.emirate].filter(Boolean).join(", "),
+            })),
           });
           setShowDropdown(true);
         })
@@ -631,7 +681,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [inputFocused, searchQuery, selectedLocation]);
+  }, [inputFocused, searchQuery, selectedLocation, activeTab, agentSubTab]);
 
   const closeSuggestions = () => {
     setShowDropdown(false);
@@ -736,6 +786,22 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
 
     const renamed: Record<string, string> = { category: "propertyCategory", plan: "propertyPlan" };
     Object.entries(filterParams).forEach(([key, value]) => params.append(renamed[key] || key, value));
+
+    // New projects → CMP Connect /projects page (developer projects API): q, type (Apartment...), beds, priceMin/Max
+    if (activeTab === "NEW_PROJECTS" && (showTabs || !onSearch)) {
+      const pp = new URLSearchParams();
+      const text = (selectedLocation || searchQuery).trim();
+      if (text) pp.set("q", text);
+      const kind = selectedPropertyTypes[0];
+      if (kind) pp.set("type", kind.charAt(0) + kind.slice(1).toLowerCase());
+      const bed = selectedBeds[0];
+      if (bed) pp.set("beds", bed === "Studio" ? "0" : bed.replace(/\D/g, ""));
+      if (minPrice) pp.set("priceMin", String(minPrice).replace(/\D/g, ""));
+      if (maxPrice) pp.set("priceMax", String(maxPrice).replace(/\D/g, ""));
+      const qs = pp.toString();
+      router.push(`/${locale}/projects${qs ? `?${qs}` : ""}`);
+      return;
+    }
 
     if (showTabs) {
       if (activeTab === "AGENTS") {
@@ -864,7 +930,8 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
     suggestions.locations.length > 0 ||
     suggestions.properties.length > 0 ||
     suggestions.agents.length > 0 ||
-    suggestions.companies.length > 0;
+    suggestions.companies.length > 0 ||
+    suggestions.projects.length > 0;
 
   const listingsLabel = (n: number) => `${n} ${n === 1 ? "listing" : "listings"}`;
 
@@ -1025,6 +1092,26 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                 onMouseDown={(e) => e.preventDefault()}
                 className="absolute left-0 right-0 top-full mt-2.5 bg-white dark:bg-[#102418] shadow-2xl rounded-2xl border border-gray-200/90 dark:border-[#1A3626] p-3 z-[100] max-h-80 overflow-y-auto custom-scrollbar flex flex-col gap-3"
               >
+                {/* New Projects Section — click → project page */}
+                {suggestions.projects.length > 0 && (
+                  <div className="flex flex-col gap-1">
+                    <span className={suggestionHeaderClass}>
+                      <Building2 className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
+                      <span>Projects</span>
+                    </span>
+                    {suggestions.projects.map((pr) =>
+                      renderSuggestionRow(
+                        `proj-${pr.ref}`,
+                        <Building2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />,
+                        pr.name,
+                        [pr.place, pr.developer].filter(Boolean).join(" • ") || undefined,
+                        pr.fromPrice ? `AED ${pr.fromPrice.toLocaleString()}` : "Project",
+                        () => { closeSuggestions(); router.push(`/${locale}/projects/${encodeURIComponent(pr.ref)}`); }
+                      )
+                    )}
+                  </div>
+                )}
+
                 {/* Locations Section */}
                 {suggestions.locations.length > 0 && (
                   <div className="flex flex-col gap-1">
@@ -1038,7 +1125,7 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                         <MapPin className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />,
                         loc.name,
                         undefined,
-                        listingsLabel(loc.count),
+                        activeTab === "NEW_PROJECTS" ? `${loc.count} ${loc.count === 1 ? "project" : "projects"}` : listingsLabel(loc.count),
                         () => handleSelectLocation(loc.name)
                       )
                     )}
@@ -1090,16 +1177,16 @@ export default function HeroSearchWidget({ onSearch, initialTab = "BUY", variant
                   <div className="flex flex-col gap-1 pt-2 border-t border-gray-100 dark:border-[#1A3626]">
                     <span className={suggestionHeaderClass}>
                       <Building2 className="w-3.5 h-3.5 text-[#1A3626] dark:text-[#5CD284]" />
-                      <span>Agencies & Companies</span>
+                      <span>{activeTab === "NEW_PROJECTS" ? "Developers" : "Agencies & Companies"}</span>
                     </span>
                     {suggestions.companies.map((comp) =>
                       renderSuggestionRow(
                         `comp-${comp.name}`,
                         <Building2 className="w-4 h-4 text-[#1A3626] dark:text-[#c9a14b] shrink-0" />,
                         comp.name,
-                        `${comp.agentCount} ${comp.agentCount === 1 ? "agent" : "agents"}`,
-                        listingsLabel(comp.listingCount),
-                        () => { if ((comp as any).id) { closeSuggestions(); router.push(`/${locale}/${(comp as any).type === "DEVELOPER" ? "developers" : "agencies"}/${(comp as any).id}`); } else { handleSelectCompany(comp.name); } }
+                        comp.agentCount != null ? `${comp.agentCount} ${comp.agentCount === 1 ? "agent" : "agents"}` : undefined,
+                        comp.listingCount != null ? listingsLabel(comp.listingCount) : comp.type === "DEVELOPER" ? "Developer" : "Agency",
+                        () => { if (comp.id) { closeSuggestions(); router.push(`/${locale}/${comp.type === "DEVELOPER" ? "developers" : "agencies"}/${comp.id}`); } else { handleSelectCompany(comp.name); } }
                       )
                     )}
                   </div>
